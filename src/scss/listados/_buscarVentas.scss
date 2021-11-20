@@ -1,0 +1,44 @@
+.buscarVentas {
+  .invisible {
+    visibility: hidden;
+  }
+  .seleccionar {
+    display: flex;
+    justify-content: space-around;
+    margin: 1rem auto;
+  }
+  .buscador {
+    margin: 1rem auto;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .numeros {
+    display: flex;
+    #primerNumero {
+      width: 4%;
+      padding: 0;
+      height: 65%;
+    }
+    #segundoNumero {
+      width: 7%;
+      padding: 0;
+      height: 65%;
+    }
+  }
+
+  .listar {
+    table {
+      caption {
+        font-size: 2.4rem;
+        font-weight: bold;
+      }
+      .tbody {
+        h2 {
+          margin: 0 auto;
+        }
+      }
+      width: 100%;
+    }
+  }
+}

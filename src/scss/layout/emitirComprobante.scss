@@ -1,0 +1,173 @@
+.emitir {
+  padding: 0;
+}
+
+.emitirComprobante {
+  &.mostrarNegro {
+    background-color: black;
+  }
+  width: 100%;
+  .buscarAfip {
+    position: fixed;
+    right: 15rem;
+    top: 2rem;
+  }
+  background-color: gray;
+  .formulario-verde {
+    background-color: lightgreen;
+  }
+
+  .formularioFactura {
+    #codigo {
+      padding: 1rem;
+    }
+    .arriba {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 10rem;
+    }
+
+    .medio {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10rem;
+    }
+
+    .abajo {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10rem;
+    }
+
+    .formulario__campo {
+      margin-bottom: 0.5rem;
+
+      input {
+        padding: 0.5rem;
+        width: 90%;
+      }
+    }
+  }
+  .table {
+    background-color: white;
+    width: 100%;
+    border-collapse: collapse;
+    thead {
+      tr {
+        background-color: rgb(255, 223, 223);
+        td {
+          border: 0.1rem solid black;
+          font-size: 2rem;
+        }
+      }
+    }
+    tbody {
+      tr {
+        td {
+          margin: 0;
+          border: 0.1rem solid black;
+        }
+        &:hover {
+          cursor: pointer;
+        }
+      }
+    }
+  }
+
+  .total {
+    display: flex;
+    padding-top: 1rem;
+    .descuento {
+      margin-left: auto;
+    }
+    .total__input {
+      margin-left: auto;
+    }
+
+    .usuario p {
+      font-size: 1rem;
+      margin: 0;
+      padding: 1rem;
+      border: 1px solid #000;
+    }
+
+    #total {
+      padding: 0.9rem;
+    }
+  }
+
+  .tipoVenta {
+    display: flex;
+    justify-content: center;
+
+    .form-check {
+      margin-right: 2rem;
+    }
+  }
+
+  label {
+    font-size: 2rem;
+  }
+
+  .listaProductos {
+    background-color: white;
+    overflow: scroll;
+    height: 30rem;
+    border: 0.1rem solid black;
+  }
+
+  #conIva {
+    padding: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .partefinal {
+    display: flex;
+    justify-content: space-between;
+
+    .cobrado {
+      input {
+        padding: 1rem;
+      }
+    }
+
+    .numeroFactura {
+      margin-left: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-size: 1rem;
+    }
+
+    .seccion-enviar {
+      margin-top: 2rem;
+      display: flex;
+      align-items: center;
+
+      .seccion-enviar-boton {
+        margin-left: 5rem;
+        p {
+          margin: 0;
+        }
+        background-color: transparent;
+        border: none;
+        .seccion-enviar-div {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          margin-top: 2rem;
+          margin-right: 2rem;
+        }
+
+        &:hover {
+          cursor: pointer;
+          background-color: rgb(68, 206, 68);
+        }
+      }
+    }
+  }
+
+  @media print {
+    display: none;
+  }
+}

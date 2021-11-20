@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Ver Pedidos</title>
+    <link rel="stylesheet" href="../../build/css/app.css" />
+  </head>
+  <body class="contenedor-verPedidos">
+    <h1>Lista de pedido</h1>
+    <div class="tablaPedidos">
+      <table class="verPedido">
+        <thead>
+          <tr>
+            <th>Fecha:</th>
+            <th>Codigo</th>
+            <th>Producto:</th>
+            <th>Cantidad</th>
+            <th>Cliente</th>
+            <th>Telefono</th>
+            <th>Vendedor</th>
+            <th>Stock</th>
+            <th>Estado Pedido</th>
+          </tr>
+        </thead>
+        <tbody class="tbody"></tbody>
+      </table>
+    </div>
+
+    <div class="botonesPedidos">
+      <a href="../index.html" class="boton-pedidos">Volver</a>
+
+      <button class="guardar boton-pedidos">Guardar Cambios</button>
+
+      <button class="eliminarPedido boton-pedidos">Eliminar</button>
+    </div>
+  </body>
+  <script src="./verPedidos.js"></script>
+</html>

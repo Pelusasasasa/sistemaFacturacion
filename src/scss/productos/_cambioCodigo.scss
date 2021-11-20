@@ -1,0 +1,39 @@
+.seccionCambioCodigo {
+  background-color: lightgreen;
+  display: flex;
+  flex-direction: column;
+  margin: 2rem auto;
+
+  .codigo {
+    margin: 1rem auto;
+  }
+
+  .descripcion {
+    margin: 1rem 0;
+    display: flex;
+    justify-content: center;
+    input {
+      width: 90%;
+    }
+  }
+
+  .nuevoCodigo {
+    margin: 1rem auto;
+  }
+
+  .botones {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-around;
+    button {
+      border: none;
+      border-radius: 7.5rem;
+      padding: 1rem;
+
+      &:hover {
+        cursor: pointer;
+        transform: scale(1.2);
+      }
+    }
+  }
+}

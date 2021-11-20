@@ -1,0 +1,19 @@
+#iframeListado {
+  width: 300mm;
+  height: 148mm;
+  //   position: fixed;
+  top: 0px;
+  left: -2rem;
+  z-index: -1;
+}
+.listado {
+  width: 100%;
+}
+.listar {
+  table {
+    width: 100%;
+  }
+}
+.total {
+  font-weight: bold;
+}

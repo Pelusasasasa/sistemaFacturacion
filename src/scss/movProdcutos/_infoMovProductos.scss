@@ -1,0 +1,25 @@
+.contenedor-info-movProducto {
+  background-color: lightgreen;
+  .tabla {
+    height: 50rem;
+    overflow: scroll;
+    border: 0.1rem soid black;
+    background-color: white;
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      thead {
+        th {
+          border: 0.1rem solid black;
+        }
+      }
+
+      tbody {
+        td {
+          border: 0.1rem solid black;
+          text-align: center;
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Presupuestos</title>
+    <link rel="stylesheet" href="../../build/css/app.css" />
+  </head>
+  <body class="presupuestos">
+    <div class="buscador">
+      <div>
+        <label for="desde">Desde</label>
+        <input type="date" autofocus name="desde" id="desde" />
+      </div>
+      <div>
+        <label for="Hasta">Hasta</label>
+        <input type="date" name="hasta" id="hasta" />
+      </div>
+
+      <div>
+        <button class="buscar">Buscar</button>
+      </div>
+
+      <div>
+        <button class="imprimir">Imprimir</button>
+      </div>
+    </div>
+
+    <div class="listar">
+      <table>
+        <caption>
+          Informe Presupuesto
+        </caption>
+        <thead>
+          <tr>
+            <th>Nro Comp</th>
+            <th>Fecha</th>
+            <th>Cliente</th>
+            <th>Cod Prod</th>
+            <th>Descripcion</th>
+            <th>Egreso</th>
+            <th>Precio</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody class="tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- <div class="divImprimir">
+      <iframe
+        id="iframeListado"
+        src="./imprimirListado.html"
+        width="210mm "
+        height="148mm"
+      ></iframe>
+    </div> -->
+    <script src="./presupuestos.js"></script>
+  </body>
+</html>

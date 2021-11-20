@@ -1,0 +1,84 @@
+.contenedor-agregarProductos {
+  background-color: lightgreen;
+  display: flex;
+  flex-direction: column;
+
+  h3 {
+    text-align: center;
+    font-size: 2.4rem;
+  }
+
+  .formularioAgregar {
+    display: grid;
+
+    .codigos {
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .descripcionStock {
+      display: flex;
+      justify-content: space-around;
+      input {
+        width: 100%;
+      }
+    }
+
+    .marcaProvedor {
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .precio {
+      border: 0.1rem solid black;
+      display: flex;
+      justify-content: space-around;
+      .formulario__campo {
+        width: 10%;
+      }
+    }
+
+    .observaciones {
+      display: flex;
+      justify-content: center;
+
+      .formulario__campo {
+        width: 50%;
+      }
+    }
+
+    .precioFinal {
+      display: flex;
+      justify-content: space-evenly;
+    }
+
+    .formulario__campo {
+      width: 25%;
+      margin-bottom: 0.9rem;
+      display: flex;
+      flex-direction: column;
+
+      label {
+        font-size: 2.4rem;
+      }
+    }
+  }
+
+  .botones-productos {
+    display: flex;
+    justify-content: space-evenly;
+    padding: 1rem;
+    background-color: lightgreen;
+
+    .boton-producto {
+      background-color: lightgrey;
+      padding: 1.5rem;
+      border-radius: 7.5rem;
+
+      &:hover {
+        cursor: pointer;
+        transform: scale(1.2);
+      }
+    }
+  }
+}

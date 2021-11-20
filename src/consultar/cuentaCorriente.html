@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Consultar Cuenta Corriente</title>
+    <link rel="stylesheet" href="../../build/css/app.css" />
+  </head>
+  <body class="consultaCtaCte">
+    <div class="buscador">
+      <label for="">Buscar Cliente</label>
+      <input
+        autofocus
+        type="text"
+        placeholder="Cliente"
+        id="buscador"
+        name="buscador"
+      />
+      <input type="text" placeholder="Saldo" id="saldo" name="saldo" />
+
+      <button class="actualizar">Actualizar</button>
+    </div>
+
+    <div class="listarventas">
+      <table>
+        <thead>
+          <th>Fecha</th>
+          <th>Tipo Comp</th>
+          <th>Nro-Comp</th>
+          <th>Importe</th>
+          <th>Pagado</th>
+          <th>Saldo</th>
+          <th>Observaciones</th>
+        </thead>
+
+        <tbody class="listar"></tbody>
+      </table>
+    </div>
+
+    <div class="listarDetalleVenta">
+      <table>
+        <thead>
+          <th>Codigo</th>
+          <th>Descripcion</th>
+          <th>Cantidad</th>
+          <th>Precio</th>
+          <th>Total</th>
+          <th>Vendedor</th>
+        </thead>
+        <tbody class="detalle"></tbody>
+      </table>
+    </div>
+
+    <div class="seccion_botones">
+      <button class="botones"><a href="../index.html">Volver</a></button>
+    </div>
+  </body>
+  <script src="./cuentaCorriente.js"></script>
+</html>

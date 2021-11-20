@@ -1,0 +1,31 @@
+.seccionCancelados {
+  .buscador {
+    display: flex;
+    justify-content: space-around;
+    margin: 1rem auto;
+  }
+
+  .listar {
+    border: 0.1rem solid black;
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      thead {
+        tr {
+          font-weight: bold;
+          border: 0.1rem solid black;
+        }
+      }
+      .tbody {
+        margin-top: 0.5rem;
+        tr {
+          &:hover {
+            border-bottom: 0.1rem solid black;
+            cursor: pointer;
+            background-color: lightgray;
+          }
+        }
+      }
+    }
+  }
+}

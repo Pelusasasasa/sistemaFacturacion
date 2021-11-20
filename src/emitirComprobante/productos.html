@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Electro Avenida</title>
+    <link rel="stylesheet" href="../../build/css/app.css" />
+  </head>
+  <body class="productosEmitirComprobante">
+    <div class="contenedor productos">
+      <fieldset>
+        <legend>Buscador</legend>
+        <div class="buscador">
+          <div class="productos-codigo">
+            <label for="">Seleccion</label>
+            <select class="" name="seleccion" id="seleccion">
+              <option value="codigo">Codigo</option>
+              <option value="descripcion" selected>Descripcion</option>
+              <option value="marca">Marca</option>
+              <option value="codFabrica">Fabrica</option>
+            </select>
+          </div>
+
+          <div class="buscador-producto">
+            <label for="buscarProducto" class="">Buscar Producto</label>
+            <input
+            autofocus
+              type="search"
+              name="buscarProducto"
+              id="buscarProducto"
+              class="fs-2 form-control"
+            />
+          </div>
+        </div>
+      </fieldset>
+
+      <div class="listar-productos">
+        <div class="m-0">
+          <table class="tabla-productos">
+            <thead>
+              <tr>
+                <th scope="col">Codigo</th>
+                <th scope="col">Descripcion</th>
+                <th scope="col">Precio</th>
+                <th scope="col">Marca</th>
+                <th scope="col">Stock</th>
+                <th scope="col">Cod-Fabrica</th>
+              </tr>
+            </thead>
+            <tbody id="resultado" class="tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    <script src="productos.js"></script>
+  </body>
+</html>

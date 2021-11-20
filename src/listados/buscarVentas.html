@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Informe por Comprobante</title>
+    <link rel="stylesheet" href="../../build/css/app.css" />
+  </head>
+  <body class="buscarVentas">
+    <div class="seleccionar">
+      <div class="numero">
+        <label for="porNumero">Por Numero</label>
+        <input type="radio" id="porNumero" checked name="seleccionar" />
+      </div>
+
+      <div class="razon">
+        <label for="razonSocial">Por Razon Social</label>
+        <input type="radio" id="razonSocial" name="seleccionar" />
+      </div>
+    </div>
+
+    <div class="numeros">
+      <label for="">Numero</label>
+      <input type="text" value="0000" id="primerNumero" />
+      <input type="text" name="hasta" id="segundoNumero" value="00000000" />
+    </div>
+
+    <div class="nombre invisible">
+      <label for="Hasta">Razon social</label>
+      <input type="text" id="razon" name="razon" />
+    </div>
+
+    <div class="buscador">
+      <div class="desde invisible">
+        <label for="desde">Desde</label>
+        <input type="date" autofocus name="desde" id="desde" />
+      </div>
+
+      <div class="hasta invisible">
+        <label for="Hasta">Hasta</label>
+        <input type="date" name="hasta" id="hasta" />
+      </div>
+
+      <div>
+        <button class="buscar">Buscar</button>
+      </div>
+    </div>
+
+    <div class="listar">
+      <table>
+        <caption>
+          Ventas
+        </caption>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Codigo</th>
+            <th>Descripcion</th>
+            <th>Nro Comp</th>
+            <th>Cantidad</th>
+            <th>Precio</th>
+            <th>Total</th>
+          </tr>
+        </thead>
+        <tbody class="tbody"></tbody>
+      </table>
+    </div>
+    <script src="./buscarVentas.js"></script>
+  </body>
+</html>

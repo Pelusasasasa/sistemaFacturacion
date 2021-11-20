@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Modificar Producto</title>
+    <link rel="stylesheet" href="../../build/css/app.css" />
+  </head>
+  <body class="contenedor-modificarProducto">
+    <form class="formularioModificar">
+      <div class="codigo">
+        <div class="">
+          <label class="" for="codigo">Codigo</label>
+          <input
+            class=""
+            type="text"
+            name="codigo"
+            id="codigo"
+            placeholder="codigo"
+          />
+        </div>
+
+        <div class="">
+          <label class="" for="cod-fabrica">cod-Fabrica</label>
+          <input
+            class=""
+            type="tel"
+            name="cod-fabrica"
+            id="cod-fabrica"
+            placeholder="cod-fabrica"
+          />
+        </div>
+      </div>
+
+      <div class="descripcion">
+        <label class="" for="descripcion">Descripcion</label>
+        <input
+          class=""
+          type="text"
+          name="descripcion"
+          id="descripcion"
+          placeholder="descripcion"
+        />
+      </div>
+
+      <div class="marca">
+        <div class="">
+          <label class="" for="provedor">Provedor</label>
+          <input
+            class=""
+            type="text"
+            name="provedor"
+            id="provedor"
+            placeholder="provedor"
+          />
+        </div>
+
+        <div class="">
+          <label class="" for="marca">Marca</label>
+          <input
+            class=""
+            type="text"
+            name="marca"
+            id="marca"
+            placeholder="marca"
+          />
+        </div>
+      </div>
+
+      <div class="stock">
+        <label class="" for="stock">Stock</label>
+        <input
+          class=""
+          type="text"
+          name="stock"
+          id="stock"
+          placeholder="stock"
+        />
+      </div>
+
+      <div class="costos">
+        <div class="">
+          <label class="" for="tasaIva">Tasa IVA</label>
+          <select name="tasaIva" id="tasaIva">
+            <option value="normal">Normal</option>
+            <option value="reducido">Reducido</option>
+          </select>
+        </div>
+
+        <div class="">
+          <label class="" for="costoPesos">Costo $</label>
+          <input
+            class=""
+            type="text"
+            name="costoPesos"
+            id="costoPesos"
+            placeholder="costoPesos"
+          />
+        </div>
+
+        <div class="">
+          <label class="" for="costoDolares">Costo U$S</label>
+          <input
+            class=""
+            type="text"
+            name="costoDolares"
+            id="costoDolares"
+            placeholder="costoDolares"
+          />
+        </div>
+
+        <div class="">
+          <label class="" for="ivaImp">Iva + Imp</label>
+          <input
+            class=""
+            type="text"
+            name="ivaImp"
+            id="ivaImp"
+            placeholder="iva + Imp"
+          />
+        </div>
+
+        <div class="">
+          <label class="" for="costoTotal">Costo Total</label>
+          <input
+            class=""
+            type="text"
+            name="costoTotal"
+            id="costoTotal"
+            placeholder="costo Total"
+          />
+        </div>
+      </div>
+
+      <div class="observaciones">
+        <label for="">Oservaciones</label>
+        <input
+          type="text"
+          id="observaciones"
+          name="observaciones"
+          placeholder="Observaciones"
+        />
+      </div>
+
+      <div class="precioFinal">
+        <div class="">
+          <label class="" for="utilidad">Utilidad</label>
+          <input
+            class=""
+            type="text"
+            name="utilidad"
+            id="utilidad"
+            placeholder="Utilidad"
+          />
+        </div>
+
+        <div class="">
+          <label class="" for="precioVenta">Precio venta</label>
+          <input
+            class=""
+            type="text"
+            name="precioVenta"
+            id="precioVenta"
+            placeholder="precioVenta"
+          />
+        </div>
+      </div>
+    </form>
+
+    <div class="botones">
+      <button class="modificar">modificar</button>
+
+      <button class="salir">Salir</button>
+    </div>
+
+    <script src="./modificarProducto.js"></script>
+  </body>
+</html>

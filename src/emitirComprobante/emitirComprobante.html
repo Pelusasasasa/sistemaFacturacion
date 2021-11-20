@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Emitir Comprobante</title>
+    <link rel="stylesheet" href="../../build/css/app.css" />
+  </head>
+  <body class="emitir">
+    <div class="emitirComprobante">
+      <div class="contenedor formulario-verde">
+        <form class="formularioFactura">
+          <fieldset>
+            <div class="arriba">
+              <div class="formulario__campo">
+                <label class="" for="nombre">Nombre</label>
+                <input
+                  autofocus
+                  class=""
+                  type="text"
+                  name="nombre"
+                  id="nombre"
+                  placeholder="Nombre"
+                />
+              </div>
+
+              <div class="formulario__campo">
+                <label class="" for="saldo">Saldo</label>
+                <input
+                  disabled
+                  class=""
+                  type="text"
+                  name="saldo"
+                  id="saldo"
+                  placeholder="Saldo"
+                />
+              </div>
+
+              <div class="formulario__campo saldoNegro none">
+                <label class="" for="saldo_p">Saldo</label>
+                <input
+                  disabled
+                  class=""
+                  type="text"
+                  name="saldo_p"
+                  id="saldo_p"
+                  placeholder="Saldo_p"
+                />
+              </div>
+
+              <div class="formulario__campo">
+                <label class="" for="telefono">Telefono</label>
+                <input
+                  class=""
+                  type="tel"
+                  name="telefono"
+                  id="telefono"
+                  placeholder="Telefono"
+                />
+              </div>
+            </div>
+
+            <div class="medio">
+              <div class="formulario__campo">
+                <label class="" for="direccion">Direccion</label>
+                <input
+                  class=""
+                  type="text"
+                  name="direccion"
+                  id="direccion"
+                  placeholder="Direccion"
+                />
+              </div>
+
+              <div class="formulario__campo">
+                <label class="" for="localidad">Localidad</label>
+                <input
+                  class=""
+                  type="text"
+                  name="localidad"
+                  id="localidad"
+                  placeholder="Localidad"
+                />
+              </div>
+
+              <div class="formulario__campo">
+                <label class="" for="provincia">Provincia</label>
+                <input
+                  class=""
+                  type="text"
+                  name="provincia"
+                  id="provincia"
+                  placeholder="Provincia"
+                />
+              </div>
+            </div>
+
+            <div class="abajo">
+              <div class="formulario__campo">
+                <label class="" for="conIva">Cond IVA</label>
+                <select name="conIva" id="conIva">
+                  <option value="Consumidor Final">Consumidor Final</option>
+                  <option value="Monotributista">Monotributista</option>
+                  <option value="Inscripto">Inscripto</option>
+                  <option value="Exento">Exento</option>
+                </select>
+              </div>
+
+              <div class="formulario__campo">
+                <label class="" for="dnicuit">Dni o Cuit</label>
+                <input
+                  class=""
+                  type="text"
+                  name="dnicuit"
+                  id="dnicuit"
+                  placeholder="Dni o Cuit"
+                />
+              </div>
+
+              <div class="formulario__campo">
+                <label class="" for="observaciones">Observaciones</label>
+                <input
+                  class=""
+                  type="text"
+                  name="observaciones"
+                  id="observaciones"
+                  placeholder="Observaciones"
+                />
+              </div>
+            </div>
+          </fieldset>
+
+          <fieldset>
+            <legend>Producto</legend>
+            <input type="text" placeholder="codigo" id="codigo" name="codigo" />
+          </fieldset>
+        </form>
+      </div>
+
+      <div class="formulario__campo buscarAfip">
+        <button>Buscar AFIP</button>
+      </div>
+
+      <div class="contenedor listaProductos">
+        <table class="table">
+          <thead>
+            <tr>
+              <td>Codigo</td>
+              <td>Cantidad</td>
+              <td>Descripcion</td>
+              <td>Iva</td>
+              <td>Precio</td>
+              <td>Total</td>
+            </tr>
+          </thead>
+          <tbody id="resultado"></tbody>
+        </table>
+      </div>
+
+      <div class="contenedor total formulario-verde">
+        <div class="usuario"></div>
+
+        <div class="descuento">
+          <input type="Number" name="descuento%" id="descuento" />
+          <input disabled type="Number" name="descuentoN" id="descuentoN" />
+        </div>
+        <div class="total__input">
+          <input
+            type="text"
+            disabled
+            name="total"
+            id="total"
+            placeholder="Total"
+          />
+        </div>
+      </div>
+
+      <div class="contenedor tipoVenta formulario-verde">
+        <div class="form-check">
+          <input
+            class=""
+            type="radio"
+            name="tipoVenta"
+            id="presupuesto"
+            value="Presupuesto"
+          />
+          <label class="" for="presupuesto">Presupuesto</label>
+        </div>
+
+        <div class="form-check">
+          <input
+            class=""
+            type="radio"
+            name="tipoVenta"
+            id="contado"
+            value="Contado"
+          />
+          <label class="" for="contado">Contado</label>
+        </div>
+
+        <div class="form-check">
+          <input
+            class=""
+            type="radio"
+            name="tipoVenta"
+            id="cuentaCorriente"
+            value="Cuenta Corriente"
+          />
+          <label class="" for="cuentaCorriente">Cuenta Corriente</label>
+        </div>
+
+        <div class="form-check none ventaValorizado">
+          <input
+            class="valorizado"
+            type="radio"
+            name="valorizado"
+            id="valorizado"
+            value="valorizado"
+          />
+          <label class="" for="valorizado">Valorizado</label>
+        </div>
+      </div>
+
+      <div class="contenedor partefinal formulario-verde abajo">
+        <div class="numeroDeFactura">
+          <button>Ver Numero</button>
+          <input
+            type="text"
+            id="numeroFactura"
+            name="numeroFactura"
+            class="input-sm"
+            disabled
+          />
+        </div>
+
+        <div class="seccion-enviar">
+          <button
+            type="submit"
+            class="borrarProducto none seccion-enviar-boton"
+          >
+            <img src="../imagenes/remito.png" alt="" />
+            <p>Borrar Producto</p>
+          </button>
+
+          <a href="" class="cancelar">
+            <button class="seccion-enviar-boton">
+              <img src="../imagenes/file.png" alt="" />
+              <p>Cancelar</p>
+            </button>
+          </a>
+          <button type="submit" class="Remito seccion-enviar-boton">
+            <img src="../imagenes/remito.png" alt="" />
+            <p>Remito</p>
+          </button>
+          <button type="submit" class="ticketFactura seccion-enviar-boton">
+            <img src="../imagenes/factura.png" alt="" />
+            <p href="" class="">Ticket Factura</p>
+          </button>
+
+          <button
+            type="submit"
+            class="none ventaNegro presupuesto seccion-enviar-boton"
+          >
+            <img src="../imagenes/factura.png" alt="" />
+            <p href="" class="">Presupuesto</p>
+          </button>
+        </div>
+
+        <div class="cobrado">
+          <input
+            type="text"
+            name="cobrado"
+            id="cobrado"
+            placeholder="cobrado"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="divImprimir">
+      <iframe id="iframe" src="./imprimir.html"></iframe>
+    </div>
+
+    <script src="./emitirComprobante.js"></script>
+  </body>
+</html>

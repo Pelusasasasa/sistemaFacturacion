@@ -1,0 +1,51 @@
+.porComprobante {
+  display: flex;
+  flex-direction: column;
+
+  .buscador {
+    display: flex;
+    justify-content: space-around;
+  }
+  .elegir {
+    display: flex;
+    justify-content: space-around;
+
+    button {
+      margin: 1rem auto;
+      padding: 1rem;
+      border-radius: 7.5rem;
+      border: none;
+      &:hover {
+        transform: scale(1.2);
+        cursor: pointer;
+      }
+    }
+  }
+
+  .listar {
+    table {
+      caption {
+        font-weight: bold;
+        font-size: 2rem;
+        margin: 1.5rem auto;
+      }
+
+      thead {
+        tr {
+          border: 0.1rem solid black;
+        }
+      }
+      border-collapse: collapse;
+      width: 100%;
+      .tbody {
+        .total {
+          width: 100%;
+          .tdTotal {
+            text-align: end;
+            font-weight: bold;
+          }
+        }
+      }
+    }
+  }
+}

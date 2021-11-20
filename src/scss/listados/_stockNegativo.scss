@@ -1,0 +1,63 @@
+.stockNegativo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: lightgreen;
+
+  .listar {
+    background-color: white;
+    border: 0.1rem solid black;
+    width: 100%;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+
+      thead {
+        tr {
+          font-weight: bold;
+          font-size: 2rem;
+          td {
+            border: 0.3rem solid black;
+          }
+        }
+        margin-bottom: 2rem;
+      }
+      tbody {
+        .seleccionado {
+          background-color: lightgray;
+        }
+        tr {
+          padding: 1.5rem;
+          border-top: 0.1rem solid black;
+          &:hover {
+            background-color: lightgray;
+          }
+          td {
+            border: 0.1rem solid black;
+          }
+        }
+      }
+    }
+  }
+
+  .botones {
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    padding: 1rem 0;
+    button {
+      border: none;
+      border-radius: 7.5rem;
+      padding: 1.5rem;
+
+      &:hover {
+        cursor: pointer;
+        transform: scale(1.25);
+      }
+    }
+  }
+
+  .disable {
+    display: none;
+  }
+}

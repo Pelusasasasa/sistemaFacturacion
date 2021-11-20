@@ -1,0 +1,119 @@
+.hacerPedido {
+  h1 {
+    text-align: center;
+    margin: 0;
+  }
+  .formularioPedido {
+    margin-top: 2rem;
+    background-color: lightgreen;
+    padding-top: 3rem;
+    display: flex;
+    height: 50rem;
+    flex-direction: column;
+    .listaProductos {
+      background-color: white;
+    }
+    .cliente {
+      input {
+        padding: 1.5rem;
+      }
+      display: flex;
+      justify-content: space-around;
+    }
+  }
+
+  .tablaPedidos {
+    margin: 3rem 3rem;
+    overflow: scroll;
+    height: 60rem;
+    border: 0.1rem solid black;
+    background: white;
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+  }
+
+  .botonesPedidos {
+    padding-bottom: 2rem;
+    display: flex;
+    justify-content: space-around;
+    background-color: lightgreen;
+
+    .botonesPedidos-boton {
+      background-color: lightgray;
+      border: none;
+      border-radius: 7.5rem;
+      padding: 2rem;
+
+      &:hover {
+        cursor: pointer;
+        transform: scale(1.2);
+      }
+    }
+  }
+}
+
+//pagina de ver los pedidos
+.contenedor-verPedidos {
+  padding: 1rem;
+
+  h1 {
+    text-align: center;
+  }
+  .tablaPedidos {
+    height: 45rem;
+    overflow: scroll;
+    border: 0.1rem solid black;
+    .verPedido {
+      width: 100%;
+      border-collapse: collapse;
+
+      thead {
+        th {
+          background-color: lightgreen;
+          padding: 1.2rem;
+          border: 0.1rem solid black;
+        }
+      }
+      .tbody {
+        tr {
+          max-height: 2rem;
+
+          td {
+            border: 0.1rem solid black;
+            padding: 1rem;
+          }
+          &:hover {
+            cursor: pointer;
+            background-color: lightgray;
+          }
+        }
+      }
+    }
+  }
+
+  .botonesPedidos {
+    display: flex;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    justify-content: space-around;
+    background-color: lightgreen;
+
+    .boton-pedidos {
+      background-color: lightgrey;
+      border: none;
+      border-radius: 7.5rem;
+      padding: 2rem;
+
+      &:hover {
+        cursor: pointer;
+        transform: scale(1.2);
+      }
+    }
+  }
+
+  .seleccionado {
+    background-color: lightgray;
+  }
+}

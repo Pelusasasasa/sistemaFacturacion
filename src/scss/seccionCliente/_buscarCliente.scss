@@ -1,0 +1,97 @@
+.seccionCliente {
+  .arriba {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    font-size: 2.4rem;
+  }
+
+  .buscador {
+    width: 50%;
+    margin: 2rem;
+    background-color: lightgreen;
+    border: 0.1rem solid gray;
+
+    .buscarClientelabel {
+      padding: 1rem;
+      font-size: 2.4rem;
+    }
+
+    #buscarCliente {
+      width: 40rem;
+      padding: 1rem;
+      margin: 0.5rem;
+      background-color: white;
+    }
+  }
+
+  .m-0 {
+    margin: 0;
+    overflow: scroll;
+    height: 40rem;
+    border: 0.1rem solid black;
+  }
+
+  .tabla {
+    width: 100%;
+    border-collapse: collapse;
+    td,
+    th {
+      border: 0.2rem solid black;
+    }
+
+    thead {
+      background-color: lightgreen;
+      font-size: 2rem;
+      padding: 0;
+    }
+    #resultado {
+      font-size: 1.5rem;
+
+      tr:hover {
+        background-color: lightgrey;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .seleccionado {
+    background-color: lightgrey;
+    td,
+    th {
+      border-color: blue;
+    }
+  }
+  .titulo-modificar-cliente {
+    text-align: center;
+    font-size: 4rem;
+  }
+  .botones-modificar {
+    display: flex;
+    justify-content: space-around;
+
+    button:hover {
+      cursor: pointer;
+      transform: scale(1.2);
+    }
+  }
+  .botones-clientes {
+    background-color: burlywood;
+    display: flex;
+    justify-content: space-around;
+
+    button,
+    .botones-registrar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background-color: lightgray;
+      border-radius: 7.5rem;
+      padding: 1rem;
+
+      &:hover {
+        cursor: pointer;
+        transform: scale(1.2);
+      }
+    }
+  }
+}

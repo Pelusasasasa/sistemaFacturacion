@@ -1,0 +1,29 @@
+.listadoStock {
+  .buscador {
+    display: flex;
+    justify-content: space-evenly;
+  }
+  .botones {
+    margin: 2rem auto;
+    display: flex;
+    justify-content: space-around;
+  }
+
+  .listar {
+    margin-top: 1.4rem;
+    table {
+      border-collapse: collapse;
+      caption {
+        font-weight: bold;
+        font-size: 2.4rem;
+      }
+      width: 100%;
+
+      .tbody {
+        tr {
+          border-bottom: 0.1rem solid black;
+        }
+      }
+    }
+  }
+}

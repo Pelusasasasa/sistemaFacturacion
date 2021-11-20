@@ -1,0 +1,92 @@
+.Cliente {
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+
+  .buscador {
+    background-color: lightgreen;
+    padding: 2rem 0;
+    display: flex;
+    flex-direction: column;
+    label {
+      font-size: 2.4rem;
+    }
+
+    input {
+      padding: 1rem;
+      font-size: 4rem;
+      width: 35%;
+    }
+  }
+
+  .contenedor-tabla {
+    overflow: scroll;
+    border: 0.1rem solid black;
+    height: 45rem;
+
+    .tabla {
+      background-color: white;
+      width: 100%;
+      border-collapse: collapse;
+
+      thead {
+        background-color: lightgreen;
+
+        tr {
+          th {
+            border: 0.1rem solid black;
+            font-size: 2.4rem;
+            padding: 0.5rem 0;
+          }
+        }
+      }
+
+      tbody {
+        tr {
+          padding: 2rem;
+          th {
+            width: 200rem;
+          }
+          td {
+            font-size: 1.5rem;
+            text-align: center;
+            text-transform: uppercase;
+          }
+
+          td,
+          th {
+            font-size: 2.2rem;
+            border: 0.1rem solid black;
+            overflow: hidden;
+            white-space: nowrap;
+          }
+
+          &:hover,
+          .seleccionado {
+            background-color: lightgray;
+            cursor: pointer;
+          }
+        }
+      }
+    }
+  }
+
+  .botones-clientes {
+    display: flex;
+    justify-content: space-around;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+    background-color: lightgreen;
+
+    .boton-cliente {
+      background-color: lightgray;
+      border: none;
+      border-radius: 7.5rem;
+      padding: 1.5rem;
+      &:hover {
+        cursor: pointer;
+        transform: scale(1.2);
+      }
+    }
+  }
+}

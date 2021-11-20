@@ -1,0 +1,37 @@
+.contenedor-modificar {
+  display: flex;
+  flex-direction: column;
+  .formularioCliente {
+    padding: 2rem 1rem;
+    background-color: lightgreen;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+
+    .formulario__campo {
+      margin-bottom: 2rem;
+
+      .moroso {
+        display: flex;
+        align-items: center;
+      }
+    }
+  }
+
+  .botones-modificar {
+    display: flex;
+    padding: 2rem 0;
+    justify-content: space-around;
+    background-color: lightgreen;
+
+    .boton-modificar {
+      background-color: lightgray;
+      border: none;
+      border-radius: 7.5rem;
+      padding: 2rem;
+      &:hover {
+        cursor: pointer;
+        transform: scale(1.2);
+      }
+    }
+  }
+}

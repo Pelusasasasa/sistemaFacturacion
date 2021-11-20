@@ -1,0 +1,51 @@
+html {
+  box-sizing: border-box;
+  font-size: 62.5%;
+}
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+body {
+  font-size: 1.6rem;
+  padding: 0 2rem;
+}
+
+a {
+  text-decoration: none;
+  color: black;
+}
+.contenedor {
+  width: 95%;
+  max-width: 120rem;
+  margin: 0 auto;
+}
+
+.dark {
+  background-color: black;
+}
+
+.none {
+  display: none;
+}
+
+.m-10 {
+  margin: 1rem;
+}
+
+.input-sm {
+  width: 15rem;
+}
+
+img {
+  width: 3rem;
+}
+
+.desactivado {
+  display: none;
+}
+
+.seleccionado {
+  background-color: lightgrey;
+}

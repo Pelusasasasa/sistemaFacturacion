@@ -1,0 +1,100 @@
+.consultaCtaCte {
+  display: flex;
+
+  flex-direction: column;
+  .buscador {
+    display: flex;
+    justify-content: space-around;
+    background-color: lightgreen;
+    padding: 1rem;
+
+    label {
+      font-size: 2.4rem;
+      display: flex;
+      align-items: center;
+      font-weight: bold;
+    }
+
+    button {
+      border-radius: 7.5rem;
+      border: none;
+      padding: 1rem;
+
+      &:hover {
+        cursor: pointer;
+        transform: scale(1.25);
+      }
+    }
+  }
+
+  .listarventas {
+    margin-top: 2rem;
+    height: 25rem;
+    overflow: scroll;
+    border: 0.1rem solid black;
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      thead {
+        th {
+          border: 0.2rem solid black;
+          background-color: lightgreen;
+        }
+      }
+      tbody {
+        tr {
+          td {
+            border: 0.1rem solid black;
+          }
+        }
+        tr:hover {
+          cursor: pointer;
+          background-color: lightgray;
+        }
+      }
+    }
+  }
+
+  .listarDetalleVenta {
+    height: 30rem;
+    overflow: scroll;
+    border: 0.1rem solid black;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+
+      thead {
+        th {
+          border: 0.2rem solid black;
+          background-color: lightgreen;
+        }
+      }
+      tbody {
+        td {
+          border: 0.1rem solid black;
+          text-align: center;
+        }
+      }
+    }
+  }
+
+  .seleccionado {
+    background-color: lightgray;
+  }
+
+  .seccion_botones {
+    margin-top: 2rem;
+    .botones {
+      background-color: lightgray;
+      border-radius: 7.5rem;
+      border: none;
+      padding: 1.5rem;
+
+      &:hover {
+        cursor: pointer;
+        transform: scale(1.25);
+      }
+    }
+  }
+}

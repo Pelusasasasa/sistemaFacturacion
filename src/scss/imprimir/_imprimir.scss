@@ -1,0 +1,116 @@
+#iframe {
+  width: 210mm;
+  height: 131mm;
+  position: fixed;
+  top: 0px;
+  left: -2rem;
+  z-index: -1;
+}
+
+.bodyImprimir {
+  padding: 0;
+  height: 100%;
+}
+.imprimir {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+
+  .informacion {
+    width: 100%;
+    h3,
+    p {
+      margin: 0.2rem;
+    }
+
+    p {
+      font-weight: 300;
+      span {
+        font-weight: 700;
+      }
+    }
+
+    padding: 0rem 2rem;
+    border: 0.1rem solid black;
+    display: flex;
+    flex-direction: column;
+    .grid-3 {
+      grid-template-columns: 1.5fr 1fr 1fr;
+    }
+    div {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr;
+    }
+    .abajo {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr;
+    }
+  }
+
+  .informacionCliente {
+    border: 0.1rem solid black;
+    display: flex;
+    flex-direction: column;
+    padding: 0 2rem;
+    margin: 0;
+
+    h4,
+    p {
+      margin: 0;
+    }
+
+    .nombre {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+    }
+    .domicilio {
+      display: grid;
+      grid-template-columns: 1.5fr 1fr 1fr;
+    }
+  }
+  .tabla {
+    height: 30rem;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+
+      thead {
+        tr {
+          border: 0.1rem solid black;
+        }
+      }
+      tbody {
+        tr {
+          .descripcion {
+            text-align: start;
+          }
+          td {
+            text-align: center;
+          }
+        }
+      }
+    }
+  }
+
+  .total {
+    border: 0.1rem solid black;
+    display: flex;
+    justify-content: space-around;
+    .flex-center {
+      p {
+        margin: 0;
+      }
+      display: flex;
+      justify-content: center;
+    }
+    .flex-end {
+      p,
+      h3 {
+        margin: 0;
+      }
+      width: 75%;
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+}

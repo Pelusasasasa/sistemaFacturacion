@@ -1,0 +1,49 @@
+@import "base/globales";
+@import "base/normalize";
+@import "base/mixins";
+@import "layout/menuPrincipal";
+@import "layout/emitirComprobante.scss";
+
+@import "pedido/pedido";
+
+//Cliente
+@import "seccionCliente/clientes";
+@import "seccionCliente/agregarCliente";
+@import "seccionCliente/buscarCliente";
+@import "seccionCliente/modificarCliente";
+
+//numero
+@import "numeros/numeros";
+
+//usuarios
+@import "vendedores/venedores";
+
+//productos
+@import "productos/productos";
+@import "productos/agregarProductos";
+@import "productos/modificarProducto";
+@import "productos/listadoStock";
+@import "productos/cambioCodigo";
+
+//Consultar
+@import "consultar/consultarCTCTE";
+
+//emitirRecibo
+@import "emitirRecibo/emitirRecibo";
+
+//Movimiento de producto
+@import "movProdcutos/movProductos";
+@import "movProdcutos/infoMovProductos";
+
+//Imprimir
+@import "imprimir/imprimir";
+@import "listados/imprimirListado";
+
+//Listado
+@import "listados/porComprobante";
+@import "listados/presupuesto";
+@import "listados/stockNegativo";
+@import "listados/buscarVentas";
+
+//utilidad
+@import "utilidad/gerencial";

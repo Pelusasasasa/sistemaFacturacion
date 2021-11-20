@@ -1,0 +1,93 @@
+.productosEmitirComprobante {
+  background-color: lightgreen;
+  padding: 0;
+}
+
+.productos {
+  background-color: lightgreen;
+  display: flex;
+  flex-direction: column;
+
+  .buscador {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    .productos-codigo {
+      display: flex;
+      flex-direction: column;
+      select {
+        padding: 1rem;
+        font-size: 2rem;
+      }
+    }
+
+    .buscador-producto {
+      display: flex;
+      flex-direction: column;
+      margin-left: 5rem;
+      input {
+        padding: 2rem;
+        width: 100%;
+      }
+    }
+
+    .imagen {
+      margin-left: 25rem;
+
+      img {
+        width: 25rem;
+      }
+    }
+  }
+
+  .listar-productos {
+    margin-top: 2rem;
+    background-color: lightgreen;
+    padding: 1rem;
+    .m-0 {
+      background-color: white;
+      margin: 0;
+      overflow: scroll;
+      height: 45rem;
+      border: 0.1rem solid black;
+    }
+  }
+  .tabla-productos {
+    width: 100%;
+    border-collapse: collapse;
+
+    th,
+    td {
+      border: 0.1rem solid black;
+      font-size: 2.1rem;
+    }
+    .tbody {
+      tr:hover {
+        background-color: lightgray;
+        cursor: pointer;
+      }
+    }
+  }
+
+  .botones {
+    background-color: lightgreen;
+    display: flex;
+    justify-content: space-around;
+    padding: 2.5rem 0;
+    .boton-producto {
+      border-radius: 7.5rem;
+      background-color: lightgray;
+      padding: 2rem;
+
+      &:hover {
+        cursor: pointer;
+        transform: scale(1.2);
+      }
+    }
+  }
+}
+
+.observaciones {
+  display: flex;
+  justify-content: center;
+}

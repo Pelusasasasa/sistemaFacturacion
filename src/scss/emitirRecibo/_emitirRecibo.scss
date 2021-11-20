@@ -1,0 +1,119 @@
+.contenedorEmitirRecibo {
+  display: flex;
+  flex-direction: column;
+
+  .informacionCliente {
+    padding-top: 1rem;
+    background-color: lightgreen;
+    padding-bottom: 2rem;
+    .nombre {
+      display: flex;
+      justify-content: space-around;
+
+      #nombre {
+        width: 50rem;
+      }
+    }
+
+    .direccion {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .cuit {
+      margin-top: 1rem;
+      display: flex;
+      justify-content: space-around;
+    }
+  }
+
+  .tabla {
+    overflow: scroll;
+    border: 0.1rem solid black;
+    height: 25rem;
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+
+      thead {
+        tr {
+          th {
+            border: 0.1rem solid black;
+          }
+        }
+      }
+      tbody {
+        tr {
+          text-align: center;
+
+          td {
+            border: 0.1rem solid black;
+            input {
+              width: 100%;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .pagado {
+    padding-top: 1rem;
+    background-color: lightgreen;
+    display: flex;
+    justify-content: space-around;
+
+    .pagoCuenta {
+      display: flex;
+      h3 {
+        margin-top: 0;
+        margin-right: 1rem;
+      }
+      input {
+        height: 4rem;
+      }
+    }
+
+    .total {
+      padding-top: 0;
+      display: flex;
+      h3 {
+        margin-top: 0;
+        margin-right: 1rem;
+      }
+      input {
+        height: 4rem;
+      }
+    }
+  }
+
+  .botones {
+    background-color: lightgreen;
+    display: flex;
+    justify-content: space-around;
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+
+    a {
+      background-color: lightgrey;
+      padding: 2rem;
+      border-radius: 7.5rem;
+      &:hover {
+        cursor: pointer;
+        transform: scale(1.2);
+      }
+    }
+
+    .vendedor {
+      display: flex;
+      align-items: center;
+
+      h3 {
+        padding: 0.5rem;
+        border: 0.1rem solid black;
+      }
+    }
+  }
+}

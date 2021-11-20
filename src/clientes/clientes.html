@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Electro Avenida</title>
+    <link rel="stylesheet" href="../../build/css/app.css" />
+  </head>
+  <body class="Cliente">
+    <div class="buscador">
+      <label for="buscarCliente" class="buscarClientelabel"
+        >Buscar Cliente</label
+      >
+      <input autofocus type="search" name="buscarCliente" id="buscarCliente" />
+    </div>
+
+    <div class="contenedor-tabla">
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Localidad</th>
+            <th scope="col">Direccion</th>
+            <th scope="col">Telefono</th>
+            <th scope="col">CondIva</th>
+            <th scope="col">Dni o Cuit</th>
+            <th scope="col">Saldo</th>
+          </tr>
+        </thead>
+        <tbody id="resultado"></tbody>
+      </table>
+    </div>
+
+    <div class="botones-clientes">
+      <div class="agregar boton-cliente">
+        <a>Agregar Cliente</a>
+      </div>
+      <div class="modificar">
+        <button class="boton-cliente">Modificar</button>
+      </div>
+      <div class="boton-cliente">
+        <a href="../index.html">Volver</a>
+      </div>
+    </div>
+    <script src="./clientes.js"></script>
+  </body>
+</html>

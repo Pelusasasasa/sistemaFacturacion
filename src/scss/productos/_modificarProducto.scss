@@ -1,0 +1,61 @@
+.contenedor-modificarProducto {
+  background-color: lightgreen;
+  .formularioModificar {
+    div {
+      margin: 1rem auto;
+      input {
+        padding: 1rem;
+      }
+    }
+    .codigo {
+      display: flex;
+      justify-content: space-around;
+    }
+    .descripcion {
+      width: 100%;
+      input {
+        width: 75%;
+      }
+    }
+    .marca {
+      display: flex;
+      justify-content: space-around;
+    }
+
+    .stock {
+      display: flex;
+      justify-content: center;
+    }
+
+    .costos {
+      input {
+        padding: 0.5rem;
+      }
+      display: flex;
+      justify-content: space-around;
+    }
+    .observaciones {
+      display: flex;
+      justify-content: center;
+    }
+    .precioFinal {
+      display: flex;
+      justify-content: space-around;
+    }
+  }
+  .botones {
+    display: flex;
+    justify-content: space-around;
+
+    button {
+      padding: 2rem;
+      border-radius: 7.5rem;
+      border: none;
+
+      &:hover {
+        cursor: pointer;
+        transform: scale(1.25);
+      }
+    }
+  }
+}

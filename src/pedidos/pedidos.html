@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pedidos</title>
+    <link rel="stylesheet" href="../../build/css/app.css" />
+  </head>
+  <body class="hacerPedido">
+    <h1>Hacer un Pedido</h1>
+    <form action="" class="contenedor formularioPedido">
+      <div class="cliente">
+        <div>
+          <label for="nombre">Nombre</label>
+          <input type="text" id="nombre" name="nombre" autofocus value=" " />
+        </div>
+
+        <div>
+          <label for="telefono">Telefono</label>
+          <input type="tel" id="telefono" name="telefono" value=" " />
+        </div>
+      </div>
+
+      <fieldset class="contenedor">
+        <legend>Producto</legend>
+        <input type="text" placeholder="codigo" id="codigo" name="codigo" />
+      </fieldset>
+
+      <div class="contenedor tablaPedidos">
+        <table class="table">
+          <thead>
+            <tr>
+              <td>Codigo</td>
+              <td>Cantidad</td>
+              <td>Descripcion</td>
+              <td>Cliente</td>
+              <td>Telefono</td>
+            </tr>
+          </thead>
+          <tbody id="resultado"></tbody>
+        </table>
+      </div>
+    </form>
+
+    <div class="botonesPedidos">
+      <a class="botonesPedidos-boton" href="../index.html">Volver</a>
+      <button class="grabar botonesPedidos-boton">Grabar</button>
+    </div>
+  </body>
+  <script src="./pedidos.js"></script>
+</html>

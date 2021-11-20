@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Usuarios</title>
+    <link rel="stylesheet" href="../../build/css/app.css" />
+  </head>
+  <body>
+    <form class="contenedor agregarUsuario">
+      <div class="inputUsuario">
+        <label for="nombre">Nombre</label>
+        <input type="text" name="nombre" id="nombre" />
+      </div>
+
+      <div class="inputUsuario">
+        <label for="codigo">Codigo</label>
+        <input type="text" name="codigo" id="codigo" />
+      </div>
+    </form>
+
+    <div class="botonEnviar">
+      <button type="submit" id="enviar">Agregar Vendedor</button>
+    </div>
+
+    <ul class="listarUsuarios contenedor"></ul>
+  </body>
+  <script src="./usuarios.js"></script>
+</html>

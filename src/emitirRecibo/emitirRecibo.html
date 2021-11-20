@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="../../build/css/app.css" />
+    <title>Emitir recibo</title>
+  </head>
+  <body>
+    <div class="contenedorEmitirRecibo">
+      <div class="informacionCliente">
+        <div class="nombre">
+          <div>
+            <label for="">Cliente:</label>
+            <input autofocus type="text" id="codigo" name="codigo" />
+          </div>
+
+          <div>
+            <input type="text" disabled id="nombre" name="nombre" />
+          </div>
+
+          <div>
+            <input type="text" id="saldo" name="saldo" />
+          </div>
+        </div>
+        <div class="direccion">
+          <div>
+            <label for="direccion">Direccion</label>
+            <input type="text" disabled name="direccion" id="direccion" />
+          </div>
+
+          <div>
+            <label for="localidad">Localidad</label>
+            <input type="text" disabled name="localidad" id="localidad" />
+          </div>
+
+          <input type="date" id="fecha" name="fecha" />
+        </div>
+        <div class="cuit">
+          <div>
+            <label for="cond_iva">Cond iva:</label>
+            <input type="text" disabled name="cond_iva" id="cond_iva" />
+          </div>
+
+          <div>
+            <label for="cuit">Cuit:</label>
+            <input type="text" disabled name="cuit" id="cuit" />
+          </div>
+        </div>
+      </div>
+
+      <div class="tabla">
+        <table>
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Comprobante</th>
+              <th>Numero</th>
+              <th>Importe</th>
+              <th>Pagado</th>
+              <th>Pagado Actual</th>
+              <th>Saldo</th>
+              <th>Observaciones</th>
+            </tr>
+          </thead>
+          <tbody class="listar"></tbody>
+        </table>
+      </div>
+
+      <div class="pagado">
+        <div class="pagoCuenta">
+          <h3>Pago a cuenta</h3>
+          <input type="text" id="pagoCuenta" name="pagoCuenta" />
+        </div>
+
+        <div class="total">
+          <h3>Total</h3>
+          <input
+            type="number"
+            placeholder="0.00"
+            id="total"
+            name="total"
+            disabled
+          />
+        </div>
+      </div>
+
+      <div class="botones">
+        <a class="cancelar" href="../index.html">Cancelar</a>
+        <a class="imprimir">Imprimir</a>
+        <div class="vendedor"></div>
+      </div>
+    </div>
+  </body>
+  <script src="./emitirRecibo.js"></script>
+</html>
