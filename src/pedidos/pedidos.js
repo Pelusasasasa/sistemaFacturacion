@@ -21,6 +21,7 @@ const Pedido = {}
 let cliente = nombre.value
 nombre.addEventListener('change',e =>{
     cliente = nombre.value
+    Pedido.cliente = cliente
 })
 
 //al precionar enter le damos el foco a numero
@@ -41,6 +42,7 @@ numero.addEventListener('keypress',e=>{
 let telefono = numero.value
 numero.addEventListener('change',e =>{
     telefono = numero.value
+    Pedido.telefono = telefono
 })
 
 codigo.addEventListener('keypress', (e) => {
@@ -66,20 +68,18 @@ function mostrarVentas(objeto,cantidad) {
     `
 
     Pedido.codigo = objeto._id
-    Pedido.cliente = cliente
     Pedido.cantidad = cantidad
-    Pedido.telefono = telefono
     Pedido.stock = objeto.stock
     Pedido.producto = objeto.descripcion
-    Pedido.vendedor = vendedor
 
-    console.log(Pedido)
+
 
 }
 const body = document.querySelector('form')
 const grabar = document.querySelector(".grabar");
 grabar.addEventListener('click', e =>{
     //Mandar Pedido a La Base de Datos
+    Pedido.vendedor = vendedor
     ipcRenderer.send('Pedido',Pedido)
     window.location.href = '../index.html'
 })

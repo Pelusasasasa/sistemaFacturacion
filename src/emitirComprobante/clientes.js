@@ -15,6 +15,7 @@ body.addEventListener('keypress',e=>{
 
 
 ipcRenderer.on('get-clientes',(e,args) =>{
+    console.log(args)
     const clientes = JSON.parse(args);
     for(let cliente of clientes){
         let nombre = cliente.cliente.toLowerCase();

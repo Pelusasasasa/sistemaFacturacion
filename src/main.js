@@ -1,3 +1,5 @@
+const URL = "http://192.168.1.116:4000/api/";
+
 const axios = require("axios")
 const path = require('path');
 const { app, BrowserWindow, ipcMain, Menu } = require('electron');
@@ -58,7 +60,7 @@ ipcMain.on('nuevo-producto', async (e, args) => {
 //traemos los clientes
 ipcMain.on('get-clientes', async (e, args = "") => {
     let clientes
-    clientes = await axios.get(`http://192.168.0.112:4000/api/clientes/${args}`)
+    clientes = await axios.get(`${URL}clientes/${args}`)
     clientes = clientes.data
     e.reply('get-clientes', JSON.stringify(clientes))
 })
@@ -72,17 +74,17 @@ ipcMain.handle('get-cliente', async (e, args) => {
 //Creamos un cliente
 ipcMain.on('nuevo-cliente', async (e, args) => {
     const inicial = (args.cliente[0]).toUpperCase()
-    let numero = await axios.get(`http://192.168.0.112:4000/api/clientes/crearCliente/${inicial}`)
+    let numero = await axios.get(`${URL}clientes/crearCliente/${inicial}`)
     numero = parseInt(numero.data)
     args._id = `${inicial}${numero+1}`
-    const nuevoCliente = await axios.post(`http://192.168.0.112:4000/api/clientes`,args)
+    await axios.post(`${URL}clientes`,args)
 })
 
 //Abrir ventana para modificar un cliente
 ipcMain.on('abrir-ventana-modificar-cliente', (e, args) => {
     abrirVentana("modificar-cliente")
     nuevaVentana.on('ready-to-show',async ()=>{
-        let cliente = await axios.get(`http://192.168.0.112:4000/api/clientes/id/${args}`)
+        let cliente = await axios.get(`${URL}clientes/id/${args}`)
         cliente = cliente.data
         nuevaVentana.webContents.send('datos-clientes', JSON.stringify(cliente))
     })
@@ -92,12 +94,12 @@ ipcMain.on('abrir-ventana-modificar-cliente', (e, args) => {
 
 //Modificamos el cliente
 ipcMain.on('modificarCliente', async (e, args) => {
-    const clienteActualizado = await axios.put(`http://192.168.0.112:4000/api/clientes/${args._id}`,args)
+    await axios.put(`${URL}clientes/${args._id}`,args)
 })
 
 //elimanos un cliente
 ipcMain.on('eliminar-cliente', async (e, args) => {
-    await axios.delete(`http://192.168.0.112:4000/api/clientes/${args}`)
+    await axios.delete(`${URL}clientes/${args}`)
 })
 
 
@@ -145,14 +147,6 @@ ipcMain.on('cambio-codigo',async(e,args)=>{
    await Productos.remove({_id:args[0]})
    const guardarProducto = new Productos(nuevoProducto)
    guardarProducto.save()
-})
-//AbrirVentanaParaBuscarUnCliente
-ipcMain.on('abrir-ventana', (e, args) => {
-    if (args === "numeros") {
-      abrirVentana(args)
-    } else {
-       abrirVentana(args);
-    }
 })
 
 //mandamos el cliente a emitir comprobante
@@ -246,12 +240,6 @@ ipcMain.on('agregarUsuario', async (e, args) => {
 })
 
 
-
-ipcMain.on('traerTodosVendedores', async (e, args) => {
-    const usuario = await Usuario.find()
-    e.reply('traerTodosVendedores', JSON.stringify(usuario))
-})
-
 //descontamos el stock
 ipcMain.on('descontarStock', async (e, args) => {
     const producto = await Productos.find({ _id: args })
@@ -260,21 +248,32 @@ ipcMain.on('descontarStock', async (e, args) => {
 
 })
 
+//INICIO USUARIOS
+
+//Traer Todos los usuarios
 ipcMain.on('traerUsuarios', async (e, args) => {
-    const usuarios = await Usuario.find()
+    let usuarios = await axios.get(`${URL}usuarios`)
+    usuarios = usuarios.data
     e.reply("traerUsuarios", JSON.stringify(usuarios))
 })
 
 //traer un usuario
 ipcMain.handle('traerUsuario',async(e,id)=>{
-    const usuario = await Usuario.find({_id:id},{nombre:1,_id:0})
-    return JSON.stringify(usuario[0])
+    const usuario = await axios.get(`${URL}usuarios/${id}`)
+    console.log(usuario)
+    return JSON.stringify(usuario)
 })
+
+//FIN USUARIOS
+
+//INICIO PEDIDOs
 
 //Pedido
 ipcMain.on('Pedido', async (e, args) => {
-    const pedido = new Pedido(args)
-    await pedido.save()
+    // const pedido = new Pedido(args)
+    console.log(args)
+    const pedido = await axios.post(`${URL}pedidos`,args)
+    console.log(pedido.data)
 })
 
 //Mandar los pedidos a VerPedidos
@@ -641,6 +640,15 @@ const templateMenu = [
         ]
     }
 ]
+
+//AbrirVentanaParaBuscarUnCliente
+ipcMain.on('abrir-ventana', (e, args) => {
+    if (args === "numeros") {
+      abrirVentana(args)
+    } else {
+       abrirVentana(args);
+    }
+})
 
 
 //Para abrir todas las ventanas

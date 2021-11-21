@@ -3,8 +3,8 @@ const Dialogs = require("dialogs");
 const Driver = require("driver.js");
 const dialogs = Dialogs()
 let vendedores = []
-ipcRenderer.send('traerTodosVendedores')
-ipcRenderer.on('traerTodosVendedores',(e,args)=>{
+ipcRenderer.send('traerUsuarios')
+ipcRenderer.on('traerUsuarios',(e,args)=>{
     vendedores = JSON.parse(args)
 })
 
