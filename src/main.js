@@ -1,4 +1,4 @@
-const URL = "http://192.168.1.103:4000/api/";
+const URL = "http://192.168.1.116:4000/api/";
 
 const axios = require("axios")
 const path = require('path');
@@ -47,6 +47,23 @@ ipcMain.on('abrir-ventana-agregar-cliente',e=>{
 })
 
 
+//INICIO PRODUCTOS
+
+//obtener todos los productos
+ipcMain.on('get-productos', async (e, args=["","descripcion"]) => {
+    let productos
+    let texto
+    if(args[0] !== ""){ 
+        texto = args[0]
+        let condicion = args[1]
+        condicion === "codigo" && (condicion = "_id")
+        productos = await axios.get(`${URL}productos/${texto}/${condicion}`)
+    }else{
+        productos = await axios.get(`${URL}productos/textoVacio/descripcion`)
+    }
+    productos = productos.data
+    e.reply('get-productos', JSON.stringify(productos))
+})
 
 //Crear Producto
 ipcMain.on('nuevo-producto', async (e, args) => {
@@ -101,22 +118,6 @@ ipcMain.on('eliminar-cliente', async (e, args) => {
 })
 
 
-//obtener todos los productos
-ipcMain.on('get-productos', async (e, args=["","descripcion"]) => {
-    let productos
-    let texto
-    if(args[0] !== ""){ 
-        texto = args[0]
-        let condicion = args[1]
-        condicion === "codigo" && (condicion = "_id")
-        const re = new RegExp(`^${texto}`)
-        productos = await Productos.find({[condicion]: {$regex: re,$options:'i'}}).sort({descripcion: 1}).limit(50)
-    }else{
-        let condicion = args[1]
-        productos = await Productos.find().sort({descripcion: 1}).limit(50);
-    }
-    e.reply('get-productos', JSON.stringify(productos))
-})
 
 ipcMain.on('get-producto',async(e,args)=>{
     const producto = await Productos.find({_id:args})
@@ -315,7 +316,8 @@ ipcMain.on('abrir-ventana-modificar-producto',  (e, args) => {
 
     abrirVentana('abrir-ventana-modificar-producto')
     nuevaVentana.on('ready-to-show',async ()=>{
-        const Producto = await Productos.find({ _id: args })
+        console.log(args)
+        let Producto = await axios.get(`${URL}productos/${args}`)
     nuevaVentana.webContents.send('datos-productos', JSON.stringify(Producto))
     })
     nuevaVentana.on('close', ()=> {
