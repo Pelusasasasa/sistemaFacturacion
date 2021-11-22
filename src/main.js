@@ -1,4 +1,4 @@
-const URL = "http://192.168.1.116:4000/api/";
+const URL = "http://192.168.1.103:4000/api/";
 
 const axios = require("axios")
 const path = require('path');
@@ -45,13 +45,12 @@ function crearVentanaPrincipal() {
 ipcMain.on('abrir-ventana-agregar-cliente',e=>{
     abrirVentana('agregarCliente')
 })
-//Agregar
 
 
+
+//Crear Producto
 ipcMain.on('nuevo-producto', async (e, args) => {
-    const nuevoProducto = new Productos(args);
-    const productoGuardado = await nuevoProducto.save();
-    e.reply('Producto-guardado', JSON.stringify(productoGuardado))
+    await axios.post(`${URL}productos`,args)
 })
 
 
@@ -75,8 +74,7 @@ ipcMain.handle('get-cliente', async (e, args) => {
 ipcMain.on('nuevo-cliente', async (e, args) => {
     const inicial = (args.cliente[0]).toUpperCase()
     let numero = await axios.get(`${URL}clientes/crearCliente/${inicial}`)
-    numero = parseInt(numero.data)
-    args._id = `${inicial}${numero+1}`
+    args._id = numero.data
     await axios.post(`${URL}clientes`,args)
 })
 
@@ -227,17 +225,13 @@ ipcMain.on('modificar-nrocomp', async (e, args) => {
 })
 
 
-
 ipcMain.on('vernumero', async (e, args) => {
     const numero = await Numeros.find()
     e.reply('numeromandado', JSON.stringify(numero[0][args]))
 })
 
 
-ipcMain.on('agregarUsuario', async (e, args) => {
-    const nuevoUsuario = new Usuario(args)
-    await nuevoUsuario.save()
-})
+
 
 
 //descontamos el stock
@@ -257,6 +251,11 @@ ipcMain.on('traerUsuarios', async (e, args) => {
     e.reply("traerUsuarios", JSON.stringify(usuarios))
 })
 
+ipcMain.on('agregarUsuario', async (e, args) => {
+    const res = await axios.post(`${URL}usuarios`,args)
+    console.log(res.data)
+})
+
 //traer un usuario
 ipcMain.handle('traerUsuario',async(e,id)=>{
     const usuario = await axios.get(`${URL}usuarios/${id}`)
@@ -266,34 +265,31 @@ ipcMain.handle('traerUsuario',async(e,id)=>{
 
 //FIN USUARIOS
 
-//INICIO PEDIDOs
+//INICIO PEDIDOS
 
 //Pedido
 ipcMain.on('Pedido', async (e, args) => {
-    // const pedido = new Pedido(args)
-    console.log(args)
     const pedido = await axios.post(`${URL}pedidos`,args)
     console.log(pedido.data)
 })
 
-//Mandar los pedidos a VerPedidos
+//Traer los pedidos a VerPedidos
 ipcMain.on('traerpedidos', async (e, args) => {
-    const pedidos = await Pedido.find();
+    let pedidos = await axios.get(`${URL}pedidos`)
+    pedidos = pedidos.data;
     e.reply('traerPedidos', JSON.stringify(pedidos))
 })
 
 //modificar un pedido
 ipcMain.on('modificar-pedidos', async (e, args) => {
     for (let pedido of args) {
-        await Pedido.deleteOne({ _id: pedido._id })
-        const nuevoPedido = new Pedido(pedido)
-        await nuevoPedido.save()
+        await axios.put(`${URL}pedidos/${pedido._id}`,pedido)
     }
 })
 
 //Eliminar un pedido
-ipcMain.on('eliminarPedido', async (e, args) => {
-    await Pedido.deleteOne({ _id: args })
+ipcMain.on('eliminarPedido', async (e, id) => {
+    await axios.delete(`${URL}pedidos/${id}`)
 })
 
 
@@ -307,7 +303,7 @@ ipcMain.on('modificarSaldo',async (e,arreglo)=>{
     await Clientes.updateOne({_id:id},{$set: {[tipoSaldo]: nuevoSaldo}})
 })
 
-//llevar los dolares la crear un producto
+//llevar los dolares al crear un producto
 ipcMain.on('traerDolar',async e=>{
     const numeros = await Numeros.find()
     const dolar = numeros[0].dolar

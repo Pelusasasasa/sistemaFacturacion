@@ -27,6 +27,7 @@ ipcRenderer.on('get-clientes',(e,args) =>{
                 <td id="nombre">${cliente.localidad}</td>
                 <td>${cliente.direccion}</td>
                 <td>${cliente.telefono}</td>
+                <td>${cliente.cond_iva}</td>
                 <td>${cliente.cuit}</td>
                 <td>${cliente.saldo}</td>
             </tr>
