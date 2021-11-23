@@ -1,4 +1,4 @@
-const URL = "http://192.168.1.116:4000/api/";
+const URL = "http://192.168.0.121:4000/api/";
 
 const axios = require("axios")
 const path = require('path');
@@ -65,10 +65,36 @@ ipcMain.on('get-productos', async (e, args=["","descripcion"]) => {
     e.reply('get-productos', JSON.stringify(productos))
 })
 
+//Obtenemos un producto
+ipcMain.on('get-producto',async(e,args)=>{
+    let producto = await axios.get(`${URL}productos/${args}`)
+    producto = producto.data
+    e.reply('get-producto',JSON.stringify(producto))
+})
+
 //Crear Producto
 ipcMain.on('nuevo-producto', async (e, args) => {
     await axios.post(`${URL}productos`,args)
 })
+
+//modificamos el producto
+ipcMain.on('modificarProducto', async (e, args) => {
+    await axios.put(`${URL}productos/${args._id}`,args)
+})
+
+//Eliminamos un producto
+ipcMain.on('eliminar-producto', async (e, id) => {
+    await axios.delete(`${URL}productos/${id}`)
+})
+
+
+//productos con stock negativo
+ipcMain.on('stockNegativo',async (e)=>{
+    const productos = await Productos.find({stock:{$lt: 0}})
+    e.reply('stockNegativo',JSON.stringify(productos))
+})
+
+//FIN PRODUCTOS
 
 
 //CLIENTES
@@ -118,18 +144,6 @@ ipcMain.on('eliminar-cliente', async (e, args) => {
 })
 
 
-
-ipcMain.on('get-producto',async(e,args)=>{
-    const producto = await Productos.find({_id:args})
-    e.reply('get-producto',JSON.stringify(producto))
-})
-
-//productos con stock negativo
-ipcMain.on('stockNegativo',async (e)=>{
-    const productos = await Productos.find({stock:{$lt: 0}})
-    e.reply('stockNegativo',JSON.stringify(productos))
-})
-
 //Cambiar stock
 ipcMain.on('cambiarStock',async (e,arreglo)=>{
     const id = arreglo[0]
@@ -157,11 +171,14 @@ ipcMain.on('mando-el-cliente', async (e, args) => {
 
 //mandamos el producto a emitir comprobante
 ipcMain.on('mando-el-producto', async (e, args) => {
-    const producto = await Productos.find({ _id: args._id })
-    ventanaPrincipal.webContents.send('mando-el-producto', {
+    console.log(args)
+    let producto = await axios.get(`${URL}productos/${args._id}`);
+    producto = producto.data
+    console.log(producto)
+    ventanaPrincipal.webContents.send('mando-el-producto', JSON.stringify({
         producto: producto,
         cantidad: args.cantidad
-    })
+    }))
 })
 
 //mandamos el precio del producto
@@ -318,6 +335,8 @@ ipcMain.on('abrir-ventana-modificar-producto',  (e, args) => {
     nuevaVentana.on('ready-to-show',async ()=>{
         console.log(args)
         let Producto = await axios.get(`${URL}productos/${args}`)
+        Producto = Producto.data
+        console.log(Producto)
     nuevaVentana.webContents.send('datos-productos', JSON.stringify(Producto))
     })
     nuevaVentana.on('close', ()=> {
@@ -360,14 +379,6 @@ ipcMain.handle('traerTamanioMovProductos',async()=>{
     return (tamanio.length)
 })
 
-//modificamos el producto
-ipcMain.on('modificarProducto', async (e, args) => {
-    await Productos.deleteOne({ _id: args._id })
-    const productoModificado = new Productos(args)
-    await productoModificado.save()
-})
-
-
 //Modificamos el stock
 ipcMain.on('cambiar-stock',async (e,args)=>{
     await Productos.updateOne({_id: args[0]},{stock: args[1]})
@@ -378,10 +389,7 @@ ipcMain.on('movimiento-producto',async (e,args) => {
     const movimiento = new movProducto(args)
     await movimiento.save()
 })
-//Eliminamos un producto
-ipcMain.on('eliminar-producto', async (e, args) => {
-    await Productos.deleteOne({ _id: args })
-})
+
 
 
 //Traer los numeros

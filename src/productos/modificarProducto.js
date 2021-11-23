@@ -36,7 +36,7 @@ let producto = {}
 
 const promesaProductos = new Promise((resolve,reject)=>{
     ipcRenderer.on('datos-productos',(e,args)=>{
-        producto = JSON.parse(args)[0]
+        producto = JSON.parse(args)
         resolve()
     })
 })
