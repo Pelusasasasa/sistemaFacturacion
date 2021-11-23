@@ -16,7 +16,7 @@ codigo.addEventListener('keypress',e=>{
 })
 const promesaTraerProducto = new Promise((resolve,reject)=>{
     ipcRenderer.on('get-producto',(e,args)=>{
-        const producto = JSON.parse(args)[0]
+        const producto = JSON.parse(args)
         resolve(producto)
     })
     
@@ -49,12 +49,11 @@ nuevoCodigo.addEventListener('keypress',e=>{
 })
 
 
-aceptar.addEventListener('keypress',e=>{
-    if (e.key==="Enter") {
-        ipcRenderer.send('cambio-codigo',[codigo.value,nuevoCodigo.value])
-        location.reload()
-    }
+aceptar.addEventListener('click',e=>{
+    ipcRenderer.send('cambio-codigo',[codigo.value,nuevoCodigo.value])
+    location.reload()
 })
+
 
 cancelar.addEventListener('keypress',e=>{
     if (e.key === "Enter") {

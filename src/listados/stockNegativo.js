@@ -30,6 +30,7 @@ promesaStockNegativo.then((productos)=>{
 
 
 function listarProductos(lista) {
+    console.log(lista)
     lista.forEach(producto => {
         tbody.innerHTML += `
             <tr id="${producto._id}">

@@ -114,8 +114,9 @@ codigo.addEventListener('keypress',(e) => {
 })
 
 ipcRenderer.on('mando-el-producto',(e,args) => {
-    producto = args.producto[0]._doc;
-    mostrarVentas(producto,args.cantidad)
+    const {producto,cantidad} = JSON.parse(args);
+    console.log(producto)
+    mostrarVentas(producto,cantidad)
 })
 
 function mostrarVentas(objeto,cantidad) {

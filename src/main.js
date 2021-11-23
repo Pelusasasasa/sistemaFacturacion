@@ -1,4 +1,4 @@
-const URL = "http://192.168.0.121:4000/api/";
+const URL = "http://192.168.1.116:4000/api/";
 
 const axios = require("axios")
 const path = require('path');
@@ -12,12 +12,9 @@ const Clientes = require('./models/cliente')
 const Productos = require('./models/producto')
 const Ventas = require('./models/venta')
 const Numeros = require('./models/tipoVenta');
-const Usuario = require('./models/usuario');
 const Pedido = require('./models/pedido');
 const movProducto = require('./models/movProducto');
 const Cancelados = require('./models/cancelados')
-const { ipcRenderer } = require('electron/renderer');
-
 
 
 if (process.env.NODE_ENV !== 'production') {
@@ -87,10 +84,23 @@ ipcMain.on('eliminar-producto', async (e, id) => {
     await axios.delete(`${URL}productos/${id}`)
 })
 
+//Cambiamos el codigo de un producto
+ipcMain.on('cambio-codigo',async(e,args)=>{
+    const [idViejo,idNuevo] = args;
+    const productos = await axios.get(`${URL}productos/${idViejo}`)
+    const nuevoProducto=productos.data
+    nuevoProducto._id=idNuevo
+
+    await axios.post(`${URL}productos`,nuevoProducto)   
+    console.log(nuevoProducto)
+    await axios.delete(`${URL}productos/${idViejo}`)
+    console.log("A")
+ })
 
 //productos con stock negativo
 ipcMain.on('stockNegativo',async (e)=>{
-    const productos = await Productos.find({stock:{$lt: 0}})
+    let productos = await axios(`${URL}productos/stockNegativo`)
+    productos = productos.data
     e.reply('stockNegativo',JSON.stringify(productos))
 })
 
@@ -149,17 +159,6 @@ ipcMain.on('cambiarStock',async (e,arreglo)=>{
     const id = arreglo[0]
     const nuevoStock = arreglo[1]
     await Productos.updateOne({_id:id},{$set: {stock: nuevoStock}})
-})
-
-
-//Cambiamos el codigo de un producto
-ipcMain.on('cambio-codigo',async(e,args)=>{
-   const productos = await Productos.find({_id:args[0]})
-   const nuevoProducto=productos[0]
-   nuevoProducto._id=args[1]
-   await Productos.remove({_id:args[0]})
-   const guardarProducto = new Productos(nuevoProducto)
-   guardarProducto.save()
 })
 
 //mandamos el cliente a emitir comprobante

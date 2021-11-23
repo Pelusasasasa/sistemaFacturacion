@@ -22,8 +22,6 @@ body.addEventListener('keypress',e=>{
             dialogs.alert("Producto no seleccionado")
             document.querySelector('.ok').focus()
         } ;
-        console.log(e.key)
-        console.log(document.activeElement.tabIndex)
     }})
 
 //Lo que hacemos es cuando se hace click en la tabla se le agrega una clase que dice que el foco lo tiene la tabla o no
