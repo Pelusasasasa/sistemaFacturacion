@@ -115,7 +115,6 @@ codigo.addEventListener('keypress',(e) => {
 
 ipcRenderer.on('mando-el-producto',(e,args) => {
     const {producto,cantidad} = JSON.parse(args);
-    console.log(producto)
     mostrarVentas(producto,cantidad)
 })
 
@@ -257,22 +256,27 @@ function verQueVentaEs(tipo,cod_comp) {
 }
 
 //numero de comprobante de ticket factura
-function traerUltimoNroComprobante(tipoCom,codigoComprobante,tipo_pago) {
+async function traerUltimoNroComprobante(tipoCom,codigoComprobante,tipo_pago) {
 
         if (tipoCom==="Ticket Factura") {
             const numeroFactura = verQueVentaEs(tipoCom,codigoComprobante)
-            return `00003-${Numeros[numeroFactura]}`
+            const tipoVenta = await traerNumeroDeFactura(numeroFactura)
+            return tipoVenta
         }else if(tipoCom === "Presupuesto" & tipo_pago==="CD"){
-            const numeroFactura = verQueVentaEs("Contado")
-            return Numeros[numeroFactura]
+            const numeroFactura =  verQueVentaEs("Contado")
+            const tipoVenta =  await traerNumeroDeFactura(numeroFactura)
+            return tipoVenta
         }else if(tipoCom === "Presupuesto" & tipo_pago === "CC"){
             const numeroFactura = verQueVentaEs("Cuenta Corriente")
-            return Numeros[numeroFactura]
+            const tipoVenta = await traerNumeroDeFactura(numeroFactura)
+            return tipoVenta
         }else if(tipoCom === "Presupuesto" & tipo_pago === "PP"){
             const numeroFactura = verQueVentaEs("Presupuesto")
-            return Numeros[numeroFactura]
+            const tipoVenta = await traerNumeroDeFactura(numeroFactura)
+            return tipoVenta
         }
     }
+
     //propiedad comprobante
     function numeroComprobante(tipo){
         if (tipo === "Ticket Factura") {
@@ -360,15 +364,21 @@ function redondear(numero) {
 
 }
 
-function traerNumeroDeFactura(texto,mostrar) {
-    console.log(texto)
-    ipcRenderer.send('traerNumeros',texto)
-    ipcRenderer.on('traerNumeros',(a,args)=>{
-    mostrar.value = JSON.parse(args)
+ async function traerNumeroDeFactura(texto,mostrar) {
+    let retornar;
+     await ipcRenderer.invoke('traerNumeros',texto).then((args)=>{
+        console.log(JSON.parse(args))
+        mostrar && (mostrar.value = JSON.parse(args))
+        retornar = JSON.parse(args)
     })
+    console.log(retornar)
+    return retornar
 }
 
 function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
+    console.log(comprobante)
+    console.log(tipo_pago)
+    console.log(codigoComp)
     let [n1,n2] = comprobante.split('-')
     n2 = parseFloat(n2)+1
     n2 = n2.toString().padStart(8,0)
@@ -391,11 +401,7 @@ function sumarSaldoAlClienteEnNegro(precio,codigo){
 
 //Aca mandamos la venta en presupuesto
 const presupuesto = document.querySelector('.presupuesto')
-presupuesto.addEventListener('click',(e)=>{
-
-    ipcRenderer.send('traerNumeros')
-    ipcRenderer.on('traerNumeros',(a,args)=>{
-    [Numeros] = JSON.parse(args)
+presupuesto.addEventListener('click',async (e)=>{
 
     e.preventDefault() 
     tipoVenta="Presupuesto"
@@ -404,7 +410,7 @@ presupuesto.addEventListener('click',(e)=>{
     verElTipoDeVenta(tiposVentas) //vemos si es contado,cuenta corriente o presupuesto en el input[radio]
     venta.tipo_comp = tipoVenta
     venta.tipo_pago = tipopago(tipoPago)
-    venta.nro_comp = traerUltimoNroComprobante(tipoVenta,venta.Cod_comp,venta.tipo_pago);
+    venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.Cod_comp,venta.tipo_pago);
     venta._id=venta.nro_comp
     venta.pagado = verSiPagoONo(venta.tipo_pago);//Ejecutamos para ver si la venta se pago o no
     if (!valorizado.checked && venta.tipo_pago === "CC") {
@@ -417,11 +423,12 @@ presupuesto.addEventListener('click',(e)=>{
         movimientoProducto(producto.cantidad,producto.objeto)
     });
     }
+
+    
     actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
     ipcRenderer.send('nueva-venta',venta);
     printPage()
     location.reload()
-})
 })
 //Aca mandamos la venta con tikect Factura
 const ticketFactura = document.querySelector('.ticketFactura')

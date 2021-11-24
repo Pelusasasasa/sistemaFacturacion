@@ -1,4 +1,4 @@
-const URL = "http://192.168.1.116:4000/api/";
+const URL = "http://192.168.0.121:4000/api/";
 
 const axios = require("axios")
 const path = require('path');
@@ -11,7 +11,6 @@ const [pedidos, ventas] = require('./descargas/descargas')
 const Clientes = require('./models/cliente')
 const Productos = require('./models/producto')
 const Ventas = require('./models/venta')
-const Numeros = require('./models/tipoVenta');
 const movProducto = require('./models/movProducto');
 const Cancelados = require('./models/cancelados')
 
@@ -128,7 +127,7 @@ ipcMain.on('descontarStock', async (e, args) => {
     producto = producto.data
     const descontar = parseInt(producto.stock) - parseInt(cantidad)
     producto.stock = descontar.toFixed(2)
-    await axios.put(`${URL}pedidos/${id}`,producto)
+    await axios.put(`${URL}productos/${id}`,producto)
 })
 
 //FIN PRODUCTOS
@@ -236,10 +235,10 @@ ipcMain.on('mando-tipoCom', async (e, args) => {
 })
 
 //Traer los numeros
-ipcMain.on('traerNumeros', async (e,args) => {
+ipcMain.handle('traerNumeros', async (e,args) => {
     let numeros = await axios.get(`${URL}tipoVenta`);
     numeros=numeros.data;
-    e.reply('traerNumeros', JSON.stringify(numeros[args]));
+    return JSON.stringify(numeros[args])
 })
 
 //traemos los numeros actuales
@@ -261,12 +260,40 @@ ipcMain.on('enviar-numero', async (e, args) => {
     await axios.put(`${URL}tipoVenta`,args)
 })
 
-//FIN NUMEROS
-ipcMain.on('modificar-nrocomp', async (e, args) => {
-    const numeros = await Numeros.find();
-    numeros[0][args[1]] = args[0]
-    await numeros[0].save()
+//modificamos los numeros
+ipcMain.on('modificar-numeros',async(e,args)=>{
+    [numero,tipo] = args
+    let numeros = await axios.get(`${URL}tipoVenta`)
+    numeros = numeros.data;
+    numeros[tipo] = numero;
+    console.log(numeros)
+    await axios.put(`${URL}tipoventa`,numeros)
 })
+
+//llevar los dolares al crear un producto
+ipcMain.on('traerDolar',async e=>{
+    let numeros = await axios.get(`${URL}/tipoVenta`)
+    numeros = numeros.data
+    const dolar = numeros.dolar
+    e.reply('traerDolar',JSON.stringify(dolar))
+})
+
+//traemos un numero del Recibo En EMITIR RECIBO
+ipcMain.handle('traerUltimoNumero',async(e,args)=>{
+    let numero = await axios.get(`${URL}/tipoVenta`)
+    numero = numero.data["Ultimo Recibo"]
+    return JSON.stringify(numero[0])
+})
+
+// //se modifica un numero de comrpobante
+// ipcMain.on('modificar-nrocomp', async (e, args) => {
+//     const numeros = await Numeros.find();
+//     numeros[0][args[1]] = args[0]
+//     await numeros[0].save()
+// })
+
+
+//FIN NUMEROS
 
 //INICIO USUARIOS
 
@@ -330,12 +357,7 @@ ipcMain.on('modificarSaldo',async (e,arreglo)=>{
     await Clientes.updateOne({_id:id},{$set: {[tipoSaldo]: nuevoSaldo}})
 })
 
-//llevar los dolares al crear un producto
-ipcMain.on('traerDolar',async e=>{
-    const numeros = await Numeros.find()
-    const dolar = numeros[0].dolar
-    e.reply('traerDolar',JSON.stringify(dolar))
-})
+
 
 //Abrir ventana para modificar un producto
 ipcMain.on('abrir-ventana-modificar-producto',  (e, args) => {
@@ -417,20 +439,9 @@ ipcMain.on('buscar-cliente',async (e,args)=>{
     e.reply('buscar-cliente',JSON.stringify(cliente))
 })
 
-//modificamos los numeros
-ipcMain.on('modificar-numeros',async(e,args)=>{
-    [numero,tipo] = args
-    let numeros = await Numeros.find()
-    numeros[0][tipo]=numero
-    let nuevoNumero = new Numeros(numeros[0])
-    await nuevoNumero.save()
-})
 
-//traemos un numero
-ipcMain.handle('traerUltimoNumero',async(e,args)=>{
-    const numero = await Numeros.find({},{["Ultimo Recibo"]:1,_id:0})
-    return JSON.stringify(numero[0])
-})
+
+
 
 //Obtenemos la venta
 ipcMain.on('nueva-venta', async (e, args) => {
@@ -523,7 +534,9 @@ ipcMain.on('traerVentasEntreFechas',async(e,args)=>{
 //enviamos los productos entre un rango
 ipcMain.on('traerProductosPorRango',async (e,args)=>{
     const [desde,hasta] = args
-    const productos = await Productos.find({$and: [{_id:{$gte: desde}},{_id:{$lte: hasta}}]})
+    let productos = axios.get(`${URL}productos/productosEntreRangos/${desde}/${hasta}`)
+    productos = productos.data;
+    console.log(productos)
     e.reply('traerProductosPorRango',JSON.stringify(productos))
 })
 
