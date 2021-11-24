@@ -349,7 +349,7 @@ function verNumero(condicion) {
 const numeroDeFactura = document.querySelector('.numeroDeFactura')
 numeroDeFactura.addEventListener('click', () =>{
     const mostrar = document.querySelector('#numeroFactura')
-    texto = verNumero(cliente.cond_iva,mostrar)
+    texto = verNumero(cliente.cond_iva)
     traerNumeroDeFactura(texto,mostrar)
 })
 
@@ -361,10 +361,10 @@ function redondear(numero) {
 }
 
 function traerNumeroDeFactura(texto,mostrar) {
-    ipcRenderer.send('traerNumeros')
+    console.log(texto)
+    ipcRenderer.send('traerNumeros',texto)
     ipcRenderer.on('traerNumeros',(a,args)=>{
-    [Numeros] = JSON.parse(args)
-    mostrar.value =  [Numeros[texto]]
+    mostrar.value = JSON.parse(args)
     })
 }
 

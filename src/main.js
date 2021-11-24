@@ -146,7 +146,8 @@ ipcMain.on('get-clientes', async (e, args = "") => {
 
 //traemos un cliente
 ipcMain.handle('get-cliente', async (e, args) => {
-    const cliente = await Clientes.find({ _id: args })
+    let cliente = await axios.get(`${URL}clientes/${args}`)
+    cliente = cliente.data
     return JSON.stringify(cliente)
 })
 
@@ -182,10 +183,13 @@ ipcMain.on('eliminar-cliente', async (e, args) => {
 
 //mandamos el cliente a emitir comprobante
 ipcMain.on('mando-el-cliente', async (e, args) => {
-    const cliente = await Clientes.find({ _id: args })
-    ventanaPrincipal.webContents.send('mando-el-cliente', JSON.stringify(cliente[0]))
+    let cliente = await axios.get(`${URL}clientes/id/${args}`)
+    cliente = cliente.data
+    ventanaPrincipal.webContents.send('mando-el-cliente', JSON.stringify(cliente))
     ventanaPrincipal.focus()
 })
+
+//FIN CLIENTES
 
 //mandamos el producto a emitir comprobante
 ipcMain.on('mando-el-producto', async (e, args) => {
@@ -231,11 +235,25 @@ ipcMain.on('mando-tipoCom', async (e, args) => {
     e.reply('numeroComp', JSON.stringify(numeros[0][args]))
 })
 
+//Traer los numeros
+ipcMain.on('traerNumeros', async (e,args) => {
+    let numeros = await axios.get(`${URL}tipoVenta`);
+    numeros=numeros.data;
+    e.reply('traerNumeros', JSON.stringify(numeros[args]));
+})
+
 //traemos los numeros actuales
 ipcMain.on('recibir-numeros', async (e, args) => {
     let numeros = await axios.get(`${URL}tipoVenta`);
     numeros=numeros.data
     e.reply('numeros-enviados', JSON.stringify(numeros))
+})
+
+//Ver un numero en especials
+ipcMain.on('vernumero', async (e, args) => {
+    let numero = await axios.get(`${URL}tipoVenta`)
+    numero = numero.data;
+    e.reply('numeromandado', JSON.stringify(numero[args]))
 })
 
 //modificamos los numeros manualmente
@@ -244,27 +262,12 @@ ipcMain.on('enviar-numero', async (e, args) => {
 })
 
 //FIN NUMEROS
-
-//guardamos el saldo al cliente si se vende CC
-ipcMain.on('guardar-saldo', async (e, args) => {
-    let cliente = await Clientes.find({ _id: args[1] })
-    cliente = cliente[0]
-    const sumarSaldo = cliente.saldo + args[0]
-    await Clientes.updateOne({ _id: args[1] }, { saldo: sumarSaldo })
-
-})
-
 ipcMain.on('modificar-nrocomp', async (e, args) => {
     const numeros = await Numeros.find();
     numeros[0][args[1]] = args[0]
     await numeros[0].save()
 })
 
-
-ipcMain.on('vernumero', async (e, args) => {
-    const numero = await Numeros.find()
-    e.reply('numeromandado', JSON.stringify(numero[0][args]))
-})
 //INICIO USUARIOS
 
 //Traer Todos los usuarios
@@ -396,18 +399,16 @@ ipcMain.on('movimiento-producto',async (e,args) => {
 
 
 
-//Traer los numeros
-ipcMain.on('traerNumeros', async (e) => {
-    const numeros = await Numeros.find()
-    e.reply('traerNumeros', JSON.stringify(numeros))
-})
+
 
 //Mandamos el saldo CC a un cliente
 ipcMain.on('sumarSaldoNegro', async (e, args) => {
-    const [precio, codigo] = args
-    const cliente = await Clientes.find({ _id: codigo })
-    let saldo_p = (parseFloat(precio) + parseFloat(cliente[0].saldo_p)).toFixed(2)
-    await Clientes.updateOne({ _id: codigo }, { saldo_p: saldo_p })
+    const [precio, id] = args
+    let cliente = await axios.get(`${URL}clientes/id${id}`)
+    cliente = cliente.data;
+    let saldo_p = (parseFloat(precio) + parseFloat(cliente.saldo_p)).toFixed(2)
+    cliente.saldo_p = saldo_p
+    await axios.put(`${URL}cliente/${id}`)
 })
 
 //Buscar Cliente
