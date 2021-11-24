@@ -12,7 +12,6 @@ const Clientes = require('./models/cliente')
 const Productos = require('./models/producto')
 const Ventas = require('./models/venta')
 const Numeros = require('./models/tipoVenta');
-const Pedido = require('./models/pedido');
 const movProducto = require('./models/movProducto');
 const Cancelados = require('./models/cancelados')
 
@@ -104,6 +103,34 @@ ipcMain.on('stockNegativo',async (e)=>{
     e.reply('stockNegativo',JSON.stringify(productos))
 })
 
+//Cambiar stock de un producto
+ipcMain.on('cambiarStock',async (e,arreglo)=>{
+    const [id,nuevoStock] = arreglo;
+    let producto = await axios.get(`${URL}productos/${id}`)
+    producto = producto.data;
+    producto.stock = nuevoStock;
+    console.log(producto)
+    await axios.put(`${URL}productos/${id}`,producto)
+})
+
+//mandamos el precio del producto
+ipcMain.on('traerPrecio',async(e,id)=>{
+    let producto = await axios.get(`${URL}/productos/${id}`)
+    producto = producto.data
+    e.reply('traerPrecio', JSON.stringify(producto))
+})
+
+
+//descontamos el stock
+ipcMain.on('descontarStock', async (e, args) => {
+    const [ cantidad , id] = args;
+    let producto = await axios.get(`${URL}productos/${id}`)
+    producto = producto.data
+    const descontar = parseInt(producto.stock) - parseInt(cantidad)
+    producto.stock = descontar.toFixed(2)
+    await axios.put(`${URL}pedidos/${id}`,producto)
+})
+
 //FIN PRODUCTOS
 
 
@@ -153,14 +180,6 @@ ipcMain.on('eliminar-cliente', async (e, args) => {
     await axios.delete(`${URL}clientes/${args}`)
 })
 
-
-//Cambiar stock
-ipcMain.on('cambiarStock',async (e,arreglo)=>{
-    const id = arreglo[0]
-    const nuevoStock = arreglo[1]
-    await Productos.updateOne({_id:id},{$set: {stock: nuevoStock}})
-})
-
 //mandamos el cliente a emitir comprobante
 ipcMain.on('mando-el-cliente', async (e, args) => {
     const cliente = await Clientes.find({ _id: args })
@@ -178,12 +197,6 @@ ipcMain.on('mando-el-producto', async (e, args) => {
         producto: producto,
         cantidad: args.cantidad
     }))
-})
-
-//mandamos el precio del producto
-ipcMain.on('traerPrecio',async(e,args)=>{
-    const producto = await Productos.find({_id: args})
-    e.reply('traerPrecio', JSON.stringify(producto[0]))
 })
 
 //Mandamos la modificacion de la venta
@@ -207,11 +220,30 @@ ipcMain.on('ventaModificada',async (e,[args,id,saldo])=>{
 
 })
 
+
+//INICIO NUMEROS
+
 //mandamos el tipo de comprobante
 ipcMain.on('mando-tipoCom', async (e, args) => {
-    const numeros = await Numeros.find();
+    let numeros = await axios.get(`${URL}/tipoVenta`)
+    numeros=numeros.data
+    console.log(numeros)
     e.reply('numeroComp', JSON.stringify(numeros[0][args]))
 })
+
+//traemos los numeros actuales
+ipcMain.on('recibir-numeros', async (e, args) => {
+    let numeros = await axios.get(`${URL}tipoVenta`);
+    numeros=numeros.data
+    e.reply('numeros-enviados', JSON.stringify(numeros))
+})
+
+//modificamos los numeros manualmente
+ipcMain.on('enviar-numero', async (e, args) => {
+    await axios.put(`${URL}tipoVenta`,args)
+})
+
+//FIN NUMEROS
 
 //guardamos el saldo al cliente si se vende CC
 ipcMain.on('guardar-saldo', async (e, args) => {
@@ -220,19 +252,6 @@ ipcMain.on('guardar-saldo', async (e, args) => {
     const sumarSaldo = cliente.saldo + args[0]
     await Clientes.updateOne({ _id: args[1] }, { saldo: sumarSaldo })
 
-})
-
-//numeros
-ipcMain.on('enviar-numero', async (e, args) => {
-    const nuevoNumeros = await Numeros.find()
-    nuevoNumeros[0].remove()
-    const nuevo = new Numeros(args)
-    const numeroGuardado = await nuevo.save()
-})
-
-ipcMain.on('recibir-numeros', async (e, args) => {
-    const numeros = await Numeros.find()
-    e.reply('numeros-enviados', JSON.stringify(numeros[0]))
 })
 
 ipcMain.on('modificar-nrocomp', async (e, args) => {
@@ -246,19 +265,6 @@ ipcMain.on('vernumero', async (e, args) => {
     const numero = await Numeros.find()
     e.reply('numeromandado', JSON.stringify(numero[0][args]))
 })
-
-
-
-
-
-//descontamos el stock
-ipcMain.on('descontarStock', async (e, args) => {
-    const producto = await Productos.find({ _id: args })
-    const descontar = parseInt(producto[0].stock) - parseInt(args[0])
-    await Productos.updateOne({ _id: args[1] }, { stock: descontar })
-
-})
-
 //INICIO USUARIOS
 
 //Traer Todos los usuarios
@@ -275,10 +281,11 @@ ipcMain.on('agregarUsuario', async (e, args) => {
 
 //traer un usuario
 ipcMain.handle('traerUsuario',async(e,id)=>{
-    const usuario = await axios.get(`${URL}usuarios/${id}`)
-    console.log(usuario)
+    let usuario = await axios.get(`${URL}usuarios/${id}`)
+    usuario = usuario.data
     return JSON.stringify(usuario)
 })
+
 
 //FIN USUARIOS
 
@@ -349,7 +356,7 @@ ipcMain.on('abrir-ventana-info-movimiento-producto',async (e,args)=>{
     abrirVentana('info-movProducto')
 //informacion de movimiento de producto
     nuevaVentana.on('ready-to-show',async()=>{
-    const producto = await movProducto.find({codProd:args})
+    // const producto = axios.get(`${URL}productos/${}`)
     nuevaVentana.webContents.send('datos-movimiento-producto',JSON.stringify(producto))
 })
 
@@ -362,11 +369,12 @@ ipcMain.on('abrir-ventana-agregar-producto',async(e,args)=>{
 
 //Abrir ventana de movimiento de producto
 ipcMain.on('abrir-ventana-movimiento-producto',async (e,arreglo)=>{
-    const args = arreglo[0]
-    const vendedor = arreglo[1]
+    const [id,vendedor] = arreglo
+    console.log(arreglo)
     abrirVentana('movProducto')
     ipcMain.handle('movimiento-producto',async e =>{
-        const producto = await Productos.find({_id:args})
+        let producto = await axios.get(`${URL}productos/${id}`);
+        producto = producto.data
         return (JSON.stringify([producto,vendedor]))
     })
 
@@ -378,10 +386,7 @@ ipcMain.handle('traerTamanioMovProductos',async()=>{
     return (tamanio.length)
 })
 
-//Modificamos el stock
-ipcMain.on('cambiar-stock',async (e,args)=>{
-    await Productos.updateOne({_id: args[0]},{stock: args[1]})
-})
+
 
 //Movimiento producto
 ipcMain.on('movimiento-producto',async (e,args) => {
@@ -969,7 +974,7 @@ function abrirVentana(texto){
 }
 
 async function descargas() {
-    pedidos(JSON.stringify(await Pedido.find()))
+    pedidos(JSON.stringify(await axios.get(`${Url}/pedidos`)))
     ventas(JSON.stringify(await Ventas.find()))
 }
 

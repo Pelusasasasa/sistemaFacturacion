@@ -4,7 +4,8 @@
   "description": "Pomodoro - Gestor de tiempo",
   "main": "src/index.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "dev": "nodemon src/index.js"
   },
   "repository": {},
   "keywords": [],

@@ -95,9 +95,6 @@ actualizar.addEventListener('click',e=>{
                 total=sacarTotal(ventaAModificar.productos)
                 console.log(ventaAModificar.precioFinal)
                 ventaAModificar.precioFinal = total.toFixed(2)
-
-
-
         }
         
         ipcRenderer.send('ventaModificada',[ventaAModificar,ventaAModificar._id,saldoABorrar])

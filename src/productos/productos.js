@@ -124,8 +124,10 @@ agregarProducto.addEventListener('click',e=>{
     ipcRenderer.send('abrir-ventana-agregar-producto')
 })
 
+
 //Info Movimiento de producto
 const movimiento = document.querySelector('.movimiento')
+
 movimiento.addEventListener('click',()=>{
     if (seleccionado) {
         ipcRenderer.send('abrir-ventana-info-movimiento-producto',seleccionado.id)
@@ -140,12 +142,13 @@ const ingresarMov = document.querySelector('.ingresar')
 ingresarMov.addEventListener('click', e => {
    if (seleccionado) {
        dialogs.promptPassword("Contraseña",async valor=>{
+        let vendedor
         await ipcRenderer.invoke('traerUsuario',valor).then((args)=>{
-            const vendedor = JSON.parse(args).nombre
+            vendedor =  JSON.parse(args).nombre
+        })
+        console.log(vendedor)
             ipcRenderer.send('abrir-ventana-movimiento-producto',[seleccionado.id,vendedor])
         })
-       })
-    
    }else{
     dialogs.alert('Producto no seleccionado')
     document.querySelector('.ok').focus()

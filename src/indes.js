@@ -63,4 +63,3 @@ function validacionUsuario(texto) {
         location.reload()
        })
 }
-

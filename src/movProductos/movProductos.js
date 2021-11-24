@@ -9,14 +9,14 @@ const nuevoStock = document.querySelector('#nuevoStock')
 const aceptar = document.querySelector('.aceptar')
 const volver = document.querySelector('.volver')
 let movProducto = {}
+let vendedor
 
 ipcRenderer.invoke('movimiento-producto').then((args)=>{
-    vendedor = JSON.parse(args)[1]
-    producto = JSON.parse(args)[0][0]
+    console.log(JSON.parse(args))
+    const [producto,vendedor] = JSON.parse(args)
     codigo.value = producto._id
     descripcion.value = producto.descripcion
     stock.value = producto.stock
-
 })
 
 let operacion = "Compra"
@@ -37,6 +37,7 @@ cantidad.addEventListener('blur',e=>{
 })
 
 aceptar.addEventListener('click', (e) => {
+    console.log(vendedor)
     movProducto.codProd = codigo.value;
     movProducto.descripcion = descripcion.value;
 
@@ -51,7 +52,7 @@ aceptar.addEventListener('click', (e) => {
     movProducto.stock=nuevoStock.value
       movProducto.vendedor = vendedor
       ipcRenderer.send('movimiento-producto',movProducto);
-      ipcRenderer.send('cambiar-stock',[movProducto.codProd,movProducto.stock]);
+      ipcRenderer.send('cambiarStock',[movProducto.codProd,movProducto.stock]);
       location.reload()
 })
 
