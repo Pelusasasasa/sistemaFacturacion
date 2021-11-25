@@ -41,9 +41,10 @@
 
     .formulario__campo {
       margin-bottom: 0.5rem;
-
+      #nombre{
+        width: 120%;
+      }
       input {
-        padding: 0.5rem;
         width: 90%;
       }
     }
@@ -106,7 +107,7 @@
   }
 
   label {
-    font-size: 2rem;
+    font-size: 1.5rem;
   }
 
   .listaProductos {
@@ -117,7 +118,6 @@
   }
 
   #conIva {
-    padding: 1rem;
     margin-top: 1.5rem;
   }
 

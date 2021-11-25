@@ -38,21 +38,29 @@ let yaSeleccionado
 let tipoVenta
 nombre.focus()
 
-
-function metercantidad(texto){
-    dialogs.prompt(texto,valor=>{
-        return valor
-    })
-
-}
-
  document.addEventListener('keydown',(event) =>{
      arreglo.push(event.key);
      if(arreglo.includes("Alt") && arreglo.includes("F9")){
              mostrarNegro();
-
      }
  })
+
+ //Musetra las cosas en negro
+function mostrarNegro() {
+    const bodyNegro = document.querySelector('.emitirComprobante')
+    const saldoNegro = document.querySelector(".saldoNegro")
+    const saldo = document.querySelector(".saldo")
+    const ventaNegro = document.querySelector(".ventaNegro")
+    const ticketFactura = document.querySelector('.ticketFactura')
+
+        saldoNegro.classList.toggle('none')
+        saldo.classList.toggle('none')
+        bodyNegro.classList.toggle('mostrarNegro')
+        ventaNegro.classList.toggle('none')
+        ticketFactura.classList.toggle('none')
+        ventaValorizado.classList.toggle('none')
+        arreglo=[]
+}
 
 let cliente = {}
 let producto = {}
@@ -68,11 +76,6 @@ buscarCliente.addEventListener('keypress', (e) =>{
      }
 })
 
-observaciones.addEventListener('keypress',e=>{
-    if (e.key==='Enter') {
-        codigo.focus()
-    }
-})
 
 //recibimos el cliente
 ipcRenderer.on('mando-el-cliente',(e,args)=>{ 
@@ -82,6 +85,12 @@ ipcRenderer.on('mando-el-cliente',(e,args)=>{
         dialogs.alert(`${cliente.observacion}`)
     }
     observaciones.focus()
+})
+
+observaciones.addEventListener('keypress',e=>{
+    if (e.key==='Enter') {
+        codigo.focus()
+    }
 })
 
 
@@ -122,32 +131,28 @@ ipcRenderer.on('mando-el-producto',(e,args) => {
     const {producto,cantidad} = JSON.parse(args);
     mostrarVentas(producto,cantidad)
 })
-
+let id = 1 //id de la tabla de ventas
 function mostrarVentas(objeto,cantidad) {
-    console.log(objeto,cantidad)
     Preciofinal += (parseFloat(objeto.precio_venta)*cantidad);
     total.value = (parseFloat(Preciofinal)).toFixed(2)
     resultado.innerHTML += `
-        <tr id=${objeto._id}>
+        <tr id=${id}>
         <td>${objeto._id}</td>
         <td>${(parseFloat(cantidad)).toFixed(2)}</td>
         <td>${objeto.descripcion}</td>
         <td>${objeto.tasaIva === "normal" ? "10.50" : "21"}</td>
         <td>${parseFloat(objeto.precio_venta).toFixed(2)}</td>
         <td>${(parseFloat(objeto.precio_venta)*(cantidad)).toFixed(2)}</td>
-        
         </tr>
     `
+    objeto.identificadorTabla = `${id}`
+    id++
     listaProductos.push({objeto,cantidad});
     venta.productos = listaProductos
-
-
-   
 }
 
 resultado.addEventListener('click',e=>{
     inputseleccionado(e.path[1])
-
     if (yaSeleccionado) {
         borrarProducto.classList.remove('none')
     }
@@ -159,7 +164,9 @@ const inputseleccionado = (e) =>{
    yaSeleccionado = document.querySelector('.seleccionado')
 }
 
-//PARTE DE DESCUENTO
+//FIN TABLA PRODUCTOS
+
+//INICIO PARTE DE DESCUENTO
 
 
 //aplicamos el descuento
@@ -197,31 +204,13 @@ function inputCobrado(numero) {
     descuento.value = redondear(descuentoN.value*100/Total)
     total.value = numero;
 }
-//PARTE DE DESCUENTO
+//FIN PARTE DE DESCUENTO
 
 
-
-
-//Musetra las cosas en negro
-function mostrarNegro() {
-    const bodyNegro = document.querySelector('.emitirComprobante')
-    const saldoNegro = document.querySelector(".saldoNegro")
-    const ventaNegro = document.querySelector(".ventaNegro")
-    const ticketFactura = document.querySelector('.ticketFactura')
-
-        saldoNegro.classList.toggle('none')
-        bodyNegro.classList.toggle('mostrarNegro')
-        ventaNegro.classList.toggle('none')
-        ticketFactura.classList.toggle('none')
-        ventaValorizado.classList.toggle('none')
-        arreglo=[]
-}
 
 
 //Vemos el numero para saber de la ultima factura a o b
 let texto =""
-
-
 
 //Vemos si la venta es cc, contando, presupuesto
 let tipoPago
@@ -317,6 +306,8 @@ function sacarStock(cantidad,objeto) {
     ipcRenderer.send('descontarStock',[cantidad,objeto._id])
 }
 
+//INICIO MOVPRODUCTOS
+
 const traerTamanioDeMovProducto = async()=>{
     let retornar
     await ipcRenderer.invoke('traerTamanioMovProductos').then((id)=>{
@@ -341,9 +332,10 @@ async function movimientoProducto(cantidad,objeto){
     movProducto.precio_unitario=objeto.precio_venta
     movProducto.total=(parseFloat(movProducto.egreso)*parseFloat(movProducto.precio_unitario)).toFixed(2)
     movProducto.vendedor = venta.vendedor
-    console.log(movProducto)
     ipcRenderer.send('movimiento-producto',movProducto)
 }
+
+//FIN MOV PRODUCTOS
 
 function verNumero(condicion) {
     if (condicion === "Inscripto") {
@@ -371,11 +363,9 @@ function redondear(numero) {
  async function traerNumeroDeFactura(texto,mostrar) {
     let retornar;
      await ipcRenderer.invoke('traerNumeros',texto).then((args)=>{
-        console.log(JSON.parse(args))
         mostrar && (mostrar.value = JSON.parse(args))
         retornar = JSON.parse(args)
     })
-    console.log(retornar)
     return retornar
 }
 
@@ -395,15 +385,29 @@ function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
     ipcRenderer.send('modificar-numeros',[numero,tipoFactura])
 }
 
+//ponemos el atributo pagado
+function verSiPagoONo(texto) {
+    if (texto === "CD"){
+        return true
+    }else{
+        return false
+    }
+ }
+
+
 //pasamos el saldo en negro
 function sumarSaldoAlClienteEnNegro(precio,codigo){
     ipcRenderer.send('sumarSaldoNegro',[precio,codigo])
+}
+const sacarIdentificadorTabla = (arreglo)=>{
+    arreglo.forEach(producto=>{
+        delete producto.objeto.identificadorTabla  
+    })
 }
 
 //Aca mandamos la venta en presupuesto
 const presupuesto = document.querySelector('.presupuesto')
 presupuesto.addEventListener('click',async (e)=>{
-
     e.preventDefault() 
     tipoVenta="Presupuesto"
     venta.descuento = (descuentoN.value);
@@ -417,6 +421,7 @@ presupuesto.addEventListener('click',async (e)=>{
     if (!valorizado.checked && venta.tipo_pago === "CC") {
        venta.precioFinal = "0.1" 
     }
+    sacarIdentificadorTabla(venta.productos);
     if (venta.tipo_pago !== "PP") {
     venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
     (venta.productos).forEach(producto => {
@@ -424,13 +429,12 @@ presupuesto.addEventListener('click',async (e)=>{
         movimientoProducto(producto.cantidad,producto.objeto)
     });
     }
-
-    
     actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
     ipcRenderer.send('nueva-venta',venta);
     printPage()
     location.reload()
 })
+
 //Aca mandamos la venta con tikect Factura
 const ticketFactura = document.querySelector('.ticketFactura')
 ticketFactura.addEventListener('click',(e) =>{
@@ -445,37 +449,23 @@ ticketFactura.addEventListener('click',(e) =>{
      venta.Cod_comp = verCodComprobante(tipoVenta)
      venta.nro_comp = traerUltimoNroComprobante("Ticket Factura",venta.Cod_comp)
      venta.tipo_pago = tipopago(tipoPago)   
-     console.log(venta.tipo_pago)
      venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
      venta.comprob = traerNumeroDeFactura(texto)
-
-    venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal)
-    sacarStock(venta.productos[0])
-    ipcRenderer.send('nueva-venta',venta);
-    window.reload()
+        venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal)
+        sacarStock(venta.productos[0])
+        ipcRenderer.send('nueva-venta',venta);
+        location.reload()
  })
-
- function verSiPagoONo(texto) {
-    if (texto === "CD"){
-        return true
-    }else{
-        return false
-    }
- }
-
 
  const buscarAfip = document.querySelector('.buscarAfip')
  buscarAfip.addEventListener('click',  (e)=>{
  
     ipcRenderer.send('buscar-cliente',dnicuit.value)
     ipcRenderer.on('buscar-cliente',(e,args)=>{
-        console.log(dnicuit.value)
         cliente = JSON.parse(args)[0]   
-
         if (args.length !== 2) {
             ponerInputsClientes(cliente)
         }else{
-
                 if (dnicuit.value) {
                    if (dnicuit.value.length>8) {
                         buscarPersonaPorCuit(dnicuit.value)
@@ -485,7 +475,6 @@ ticketFactura.addEventListener('click',(e) =>{
                     Http.open("GET", url);
                     Http.send()
                     Http.onreadystatechange = (e) => {
-                        console.log(JSON.parse(Http.responseText).data[0])
                         buscarPersonaPorCuit(JSON.parse(Http.responseText).data[0])
                         }
                    }
@@ -541,18 +530,15 @@ ticketFactura.addEventListener('click',(e) =>{
     telefono.value = cliente.telefono;
     conIva.value = cliente.cond_iva;
     venta.cliente = cliente._id
-    
-    
  }
 
+ //lo usamos para borrar un producto de la tabla
 borrarProducto.addEventListener('click',e=>{
     if (yaSeleccionado) {
-        producto = venta.productos.find(e=>e.objeto._id===yaSeleccionado.id)
-
+        producto = venta.productos.find(e=>e.objeto.identificadorTabla === yaSeleccionado.id);
         total.value = (parseFloat(total.value)-(parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta))).toFixed(2)
         venta.productos.pop(producto)
         yaSeleccionado.innerHTML = ""
-        
     }
 })
 
@@ -564,7 +550,6 @@ cancelar.addEventListener('click',async e=>{
         if (cliente._id) {
             ventaCancelada.cliente = cliente._id
         }
-
         ventaCancelada.productos = listaProductos
         ventaCancelada._id = await tamanioCancelados()
         ventaCancelada.vendedor = vendedor
@@ -576,12 +561,11 @@ cancelar.addEventListener('click',async e=>{
 const tamanioCancelados = async() =>{
     let retornar
     await ipcRenderer.invoke('tamanioCancelado').then((tamanio)=>{
-        console.log(tamanio)
         retornar =  tamanio
     })
         return `${retornar + 1}`
 }
-
+//funcion para imprimir una hoja
      function printPage(){
         const div = document.querySelector('divImprimir')
         var iframe = document.getElementById("iframe");
@@ -607,8 +591,6 @@ const tamanioCancelados = async() =>{
         const hora = tomarFecha.getHours()
         const minuto = tomarFecha.getMinutes()
         const segundo = tomarFecha.getSeconds()
-
-        console.log(cliente)
         const lista = venta.productos
         numero.innerHTML=venta.nro_comp
         clientes.innerHTML = cliente.cliente
