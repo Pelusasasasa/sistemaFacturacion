@@ -36,6 +36,7 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
                         <td>${(venta.precioFinal).toFixed(2)}</td>
                         <td>${(parseFloat((venta.abonado))).toFixed(2)}</td>
                         <td>${(venta.precioFinal-venta.abonado).toFixed(2)}</td>
+                        <td>${venta.observaciones}</td>
                     </tr>
                 `
             }
@@ -83,22 +84,22 @@ actualizar.addEventListener('click',e=>{
         if (e._id === seleccionado.id) {
             ventaAModificar=e
             saldoABorrar = ventaAModificar.precioFinal
+            console.log(saldoABorrar)
         }
     })
     ventaAModificar.productos.forEach(producto=>{
          ipcRenderer.send('traerPrecio',producto.objeto._id)
          ipcRenderer.once('traerPrecio',(e,args) => {  
+             console.log(JSON.parse(args))
             const productoModificado = JSON.parse(args)
             if(producto.objeto._id === productoModificado._id){
                 producto.objeto.precio_venta = productoModificado.precio_venta
                 mostrarDetalles(ventaAModificar.productos)
                 total=sacarTotal(ventaAModificar.productos)
-                console.log(ventaAModificar.precioFinal)
                 ventaAModificar.precioFinal = total.toFixed(2)
         }
-        
         ipcRenderer.send('ventaModificada',[ventaAModificar,ventaAModificar._id,saldoABorrar])
-        location.reload()
+        // location.reload()
         })
     })
 
