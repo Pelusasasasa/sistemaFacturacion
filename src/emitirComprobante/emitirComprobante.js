@@ -87,10 +87,13 @@ ipcRenderer.on('mando-el-cliente',(e,args)=>{
 
 //Cuando buscamos un producto
 codigo.addEventListener('keypress',(e) => {
+    if(codigo.value.length===3 && e.key != "Backspace"){
+        codigo.value = codigo.value + "-"
+    }
     if (e.key === 'Enter') {
         if (e.target.value !== "") {
             ipcRenderer.send('get-producto',e.target.value)
-            ipcRenderer.once('get-producto',(a,args)=>{
+            ipcRenderer.on('get-producto',(a,args)=>{
                 if (JSON.parse(args).length === 0) {
                         dialogs.alert("No existe ese Producto").then(
                             document.querySelector('.ok').focus()
@@ -99,8 +102,10 @@ codigo.addEventListener('keypress',(e) => {
                         })
                 }else{
                     dialogs.prompt("Cantidad",async valor=>{
-                        await mostrarVentas(JSON.parse(args)[0],valor)
+                        await mostrarVentas(JSON.parse(args),valor)
                         e.target.value=""
+                        codigo.focus()
+                    }).then(()=>{
                         codigo.focus()
                     })
 
@@ -119,7 +124,7 @@ ipcRenderer.on('mando-el-producto',(e,args) => {
 })
 
 function mostrarVentas(objeto,cantidad) {
-
+    console.log(objeto,cantidad)
     Preciofinal += (parseFloat(objeto.precio_venta)*cantidad);
     total.value = (parseFloat(Preciofinal)).toFixed(2)
     resultado.innerHTML += `
@@ -317,7 +322,6 @@ const traerTamanioDeMovProducto = async()=>{
     await ipcRenderer.invoke('traerTamanioMovProductos').then((id)=>{
         retornar = id
     })
-
     return retornar
 }
 
@@ -325,7 +329,7 @@ const traerTamanioDeMovProducto = async()=>{
 async function movimientoProducto(cantidad,objeto){
     const id = traerTamanioDeMovProducto()
     let movProducto = {}
-    movProducto._id = (await traerTamanioDeMovProducto()) + 1
+    movProducto._id = ((await traerTamanioDeMovProducto()) + 1).toFixed(0)
     movProducto.codProd = objeto._id
     movProducto.descripcion = objeto.descripcion
     movProducto.cliente = cliente.cliente
@@ -337,7 +341,7 @@ async function movimientoProducto(cantidad,objeto){
     movProducto.precio_unitario=objeto.precio_venta
     movProducto.total=(parseFloat(movProducto.egreso)*parseFloat(movProducto.precio_unitario)).toFixed(2)
     movProducto.vendedor = venta.vendedor
-
+    console.log(movProducto)
     ipcRenderer.send('movimiento-producto',movProducto)
 }
 
@@ -376,9 +380,6 @@ function redondear(numero) {
 }
 
 function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
-    console.log(comprobante)
-    console.log(tipo_pago)
-    console.log(codigoComp)
     let [n1,n2] = comprobante.split('-')
     n2 = parseFloat(n2)+1
     n2 = n2.toString().padStart(8,0)
@@ -575,6 +576,7 @@ cancelar.addEventListener('click',async e=>{
 const tamanioCancelados = async() =>{
     let retornar
     await ipcRenderer.invoke('tamanioCancelado').then((tamanio)=>{
+        console.log(tamanio)
         retornar =  tamanio
     })
         return `${retornar + 1}`

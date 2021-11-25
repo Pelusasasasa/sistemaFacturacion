@@ -64,3 +64,10 @@ function listarVentas(lista) {
         <tr class="total"><td></td><td></td><td></td><td></td><td></td><td></td><td class=tdTotal>${venta.precioFinal}</td></tr>`
     });
 }
+
+
+document.addEventListener('keydown',e=>{
+    if (e.key === "Escape") {
+        window.close()
+    }
+})

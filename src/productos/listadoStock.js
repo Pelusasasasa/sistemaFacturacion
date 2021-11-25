@@ -77,3 +77,10 @@ const listadoStock = (listado)=>{
     XLSX.utils.book_append_sheet(wb,newWs,'Listado Stock')
     XLSX.writeFile(wb,"listadoStock.xlsx")
 }
+
+
+document.addEventListener('keydown',e=>{
+    if (e.key === "Escape") {
+        window.close()
+    }
+})

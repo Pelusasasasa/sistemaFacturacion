@@ -26,3 +26,9 @@ const tabla = document.querySelector('#tabla')
 descargar.addEventListener('click',e=>{
     tabla.save()
 })
+
+document.addEventListener('keydown',e=>{
+    if (e.key === "Escape") {
+        window.close()
+    }
+})

@@ -8,6 +8,9 @@ const segundoNumero =  document.querySelector('#segundoNumero')
 const nombre = document.querySelector('.nombre')
 const razon = document.querySelector('#razon')
 const tbody = document.querySelector('.tbody')
+
+const hoy = new Date()
+
 let dia = hoy.getDate()
 if (dia<10) {
     dia = `0${dia}`

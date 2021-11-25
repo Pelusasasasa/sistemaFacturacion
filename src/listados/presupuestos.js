@@ -1,5 +1,5 @@
 const { ipcRenderer } = require("electron");
-
+const hoy = new Date()
 let dia = hoy.getDate()
 if (dia<10) {
     dia = `0${dia}`

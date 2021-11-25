@@ -35,10 +35,12 @@ const listarVentasCanceladas = async (venta)=>{
     let hora = fecha.getHours()
     let minutos = fecha.getMinutes()
     let segundos = fecha.getSeconds()
-
+    console.log(venta.cliente)
     await ipcRenderer.invoke('get-cliente',venta.cliente).
         then((clienteTraido)=>{
-            cliente = JSON.parse(clienteTraido)[0].cliente})
+            console.log(clienteTraido)
+            cliente = JSON.parse(clienteTraido).cliente})
+           
         venta.productos.forEach(({cantidad,objeto}) => {
         tbody.innerHTML += `
             <tr>
