@@ -11,7 +11,7 @@ const dnicuit = document.querySelector('#dnicuit')
 const conIva = document.querySelector('#conIva')
 const limite = document.querySelector('#limite')
 const moroso = document.formularioCliente.moroso
-const condicionFacturacion = document.querySelector('#condicionFacturacion')
+const conFact = document.querySelector('#conFact   ')
 const observaciones = document.querySelector('#observaciones')
 let _id = ""
 let condicion
@@ -34,7 +34,7 @@ ipcRenderer.on('datos-clientes',(e,args)=>{
     cod_postal.value = cliente.cod_postal
     dnicuit.value = cliente.cuit
     moroso.value = condicion
-    condicionFacturacion.value = cliente.cond_fact
+    conFact.value = cliente.cond_fact
     observaciones.value = cliente.observacion
     conIva.value = cliente.cond_iva
 })
@@ -44,8 +44,10 @@ const modificar = document.querySelector('.modificar')
 modificar.addEventListener('click', (e)=>{
     e.preventDefault()
     const inputs = document.querySelectorAll('input')
-    const select = document.querySelector('select')
-    select.toggleAttribute('disabled')
+    const selects = document.querySelectorAll('select')
+    for(let select of selects){
+        select.toggleAttribute('disabled')
+    }
     for(let input of inputs){ 
         input.toggleAttribute('disabled')
 }

@@ -65,3 +65,9 @@ aceptar.addEventListener('click', (e) => {
 volver.addEventListener('click',e=>{
     window.close()
 })
+
+document.addEventListener('keydown',e=>{
+    if (e.key === "Escape") {
+        window.close()
+    }
+})

@@ -1,4 +1,5 @@
 .contenedor-modificar {
+  padding: 0 0;
   display: flex;
   flex-direction: column;
   .formularioCliente {
@@ -9,7 +10,12 @@
 
     .formulario__campo {
       margin-bottom: 2rem;
-
+      input{
+        padding: 1rem;
+      }
+      select{
+        padding: 1rem;
+      }
       .moroso {
         display: flex;
         align-items: center;

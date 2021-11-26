@@ -32,18 +32,34 @@ const codigo = document.querySelector('#codigo')
 const tiposVentas = document.querySelectorAll('input[name="tipoVenta"]')
 const borrarProducto = document.querySelector('.borrarProducto')
 
-let arreglo=[]//para teclas alt y F9
+let situacion = "blanco"//para teclas alt y F9
 let Numeros = []
 let yaSeleccionado
 let tipoVenta
 nombre.focus()
 
  document.addEventListener('keydown',(event) =>{
-     arreglo.push(event.key);
-     if(arreglo.includes("Alt") && arreglo.includes("F9")){
-             mostrarNegro();
-     }
+     if (event.key === "Alt") {
+        document.addEventListener('keydown',(e) =>{
+            if (e.key === "F9" && situacion === "blanco") {
+                mostrarNegro();
+                situacion = 'negro'
+            }
+        })
+    }
  })
+
+ document.addEventListener('keydown',(event) =>{
+    if (event.key === "Alt") {
+       document.addEventListener('keydown',(e) =>{
+           if (e.key === "F3" && situacion === "negro") {
+               ocultarNegro();
+               situacion = 'blanco'
+           }
+       })
+   }
+})
+
 
  //Musetra las cosas en negro
 function mostrarNegro() {
@@ -53,13 +69,27 @@ function mostrarNegro() {
     const ventaNegro = document.querySelector(".ventaNegro")
     const ticketFactura = document.querySelector('.ticketFactura')
 
-        saldoNegro.classList.toggle('none')
-        saldo.classList.toggle('none')
-        bodyNegro.classList.toggle('mostrarNegro')
-        ventaNegro.classList.toggle('none')
-        ticketFactura.classList.toggle('none')
-        ventaValorizado.classList.toggle('none')
-        arreglo=[]
+        saldoNegro.classList.add('none')
+        saldo.classList.remove('none')
+        bodyNegro.classList.add('mostrarNegro')
+        ventaNegro.classList.remove('none')
+        ticketFactura.classList.add('none')
+        ventaValorizado.classList.remove('none')
+}
+
+function ocultarNegro() {
+    const bodyNegro = document.querySelector('.emitirComprobante')
+    const saldoNegro = document.querySelector(".saldoNegro")
+    const saldo = document.querySelector(".saldo")
+    const ventaNegro = document.querySelector(".ventaNegro")
+    const ticketFactura = document.querySelector('.ticketFactura')
+
+        saldoNegro.classList.remove('none')
+        saldo.classList.add('none')
+        bodyNegro.classList.remove('mostrarNegro')
+        ventaNegro.classList.add('none')
+        ticketFactura.classList.remove('none')
+        ventaValorizado.classList.add('none')
 }
 
 let cliente = {}
@@ -81,9 +111,7 @@ buscarCliente.addEventListener('keypress', (e) =>{
 ipcRenderer.on('mando-el-cliente',(e,args)=>{ 
     cliente = JSON.parse(args)
     ponerInputsClientes(cliente);//ponemos en los inputs los valores del cliente
-    if (cliente.condicion==="M") {
-        dialogs.alert(`${cliente.observacion}`)
-    }
+
     observaciones.focus()
 })
 
@@ -493,16 +521,16 @@ ticketFactura.addEventListener('click',(e) =>{
     Https.onreadystatechange = (e) => {
         const persona = JSON.parse(Https.responseText)
         
-        const {nombre,domicilioFiscal,EsRI,EsMonotributo,EsExento,EsConsumidorFinal}= persona.Contribuyente
-        const cliente = {}
-        cliente.cliente=nombre
-        cliente.localidad = domicilioFiscal.localidad
-        cliente.direccion = domicilioFiscal.direccion
-        cliente.provincia = domicilioFiscal.nombreProvincia
-        buscarCliente.value = nombre
-        localidad.value=domicilioFiscal.localidad
-        direccion.value = domicilioFiscal.direccion
-        provincia.value = domicilioFiscal.nombreProvincia
+        const {nombre,domicilioFiscal,EsRI,EsMonotributo,EsExento,EsConsumidorFinal}= persona.Contribuyente;
+        const cliente = {};
+        cliente.cliente=nombre;
+        cliente.localidad = domicilioFiscal.localidad;
+        cliente.direccion = domicilioFiscal.direccion;
+        cliente.provincia = domicilioFiscal.nombreProvincia;
+        buscarCliente.value = nombre;
+        localidad.value=domicilioFiscal.localidad;
+        direccion.value = domicilioFiscal.direccion;
+        provincia.value = domicilioFiscal.nombreProvincia;
         if (EsRI) {
             cliente.cond_iva="Inscripto"
         }else if (EsExento) {
@@ -512,14 +540,15 @@ ticketFactura.addEventListener('click',(e) =>{
         } else if(EsConsumidorFinal) {
             cliente.cond_iva="Consumidor Final"
         }
-        cliente.cuit = dnicuit.value
-        ponerInputsClientes(cliente) 
+        cliente.cuit = dnicuit.value;
+        ponerInputsClientes(cliente) ;
     }
  }
 
  //Ponemos valores a los inputs
 
  function ponerInputsClientes(cliente) {
+    
     buscarCliente.value = cliente.cliente;
     saldo.value = cliente.saldo;
     saldo_p.value = cliente.saldo_p;
@@ -529,7 +558,15 @@ ticketFactura.addEventListener('click',(e) =>{
     dnicuit.value = cliente.cuit;
     telefono.value = cliente.telefono;
     conIva.value = cliente.cond_iva;
-    venta.cliente = cliente._id
+    venta.cliente = cliente._id;
+    console.log(cliente)
+    if (cliente.condicion==="M") {
+        dialogs.alert(`${cliente.observacion}`)
+    }
+
+    const cuentaC = document.querySelector('.cuentaC');
+
+    (cliente.cond_fact === "4") && cuentaC.classList.add('none');
  }
 
  //lo usamos para borrar un producto de la tabla

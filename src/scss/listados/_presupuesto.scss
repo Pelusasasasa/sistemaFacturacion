@@ -7,10 +7,16 @@
     display: flex;
     justify-content: space-around;
   }
-
+  h2{
+    text-align: center;
+  }
   .listar {
     margin-top: 1.5rem;
     width: 100%;
+    min-height: 50rem;
+    overflow: scroll;
+    border-top: none;
+    border: .1rem solid black;
     table {
       border-collapse: collapse;
       caption {
@@ -22,10 +28,14 @@
           border: 0.1rem solid black;
         }
       }
+      tbody{
+        text-align: center;
+      }
       .total {
         width: 100%;
-        text-align: end;
+        text-align: center;
         font-weight: bold;
+        font-size: 2rem
       }
       width: 100%;
     }

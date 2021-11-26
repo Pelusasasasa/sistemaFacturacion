@@ -7,43 +7,46 @@ const aceptar = document.querySelector('.aceptar')
 const cancelar = document.querySelector('.cancelar')
 const diescripcion = document.querySelector('#descripcion')
 
-codigo.addEventListener('keypress',e=>{
-    if(e.key === "Enter"){
+codigo.addEventListener('keydown',e=>{
+    if(e.key === "Enter" || e.key === "Tab"){  
+        console.log(e.key)
         ipcRenderer.send('get-producto',e.target.value)
         nuevoCodigo.focus()
+        console.log(nuevoCodigo.focus)
     }
 
 })
-const promesaTraerProducto = new Promise((resolve,reject)=>{
-    ipcRenderer.on('get-producto',(e,args)=>{
+
+ipcRenderer.on('get-producto',(e,args)=>{
         const producto = JSON.parse(args)
-        resolve(producto)
-    })
-    
-})
-promesaTraerProducto.then(({descripcion})=>{
-    diescripcion.value = descripcion
+        const {descripcion} = producto
+    if (descripcion) {
+        diescripcion.value = descripcion
+    }else{
+        alert("Producto no existe")
+        console.log(codigo.value)
+        codigo.focus()
+    }
 })
 
-nuevoCodigo.addEventListener('keypress',e=>{
+nuevoCodigo.addEventListener('keyup',e=>{
+    console.log(e.key)
     if (e.key === "Enter") {
-        ipcRenderer.send('get-producto',e.target.value)
+    // ipcRenderer.send('get-producto',e.target.value)
 
-    const promesaProductoExistente = new Promise((resolve,reject)=>{
-        ipcRenderer.on('get-producto',(e,args)=>{
-            const productoYaExistente = JSON.parse(args)
-            if (productoYaExistente.length!==0 ) {
-                resolve()
-            }
-        })
-    })
+    // const promesaProductoExistente = new Promise((resolve,reject)=>{
+    //     ipcRenderer.on('get-producto',(e,args)=>{
+    //         const productoYaExistente = JSON.parse(args)
+    //         if (productoYaExistente.length!==0 ) {
+    //             resolve()
+    //         }
+    //     })
+    // })
 
-    promesaProductoExistente.then(()=>{
-        dialogs.alert("codigo ya utilizado",ok=>{
-            location.reload()
-        })
-
-    })
+    // promesaProductoExistente.then(()=>{
+    //     alert("codigo ya utilizado")
+    //     location.reload()
+    // })
         aceptar.focus()
     }
 })
@@ -55,11 +58,11 @@ aceptar.addEventListener('click',e=>{
 })
 
 
-cancelar.addEventListener('keypress',e=>{
-    if (e.key === "Enter") {
-        window.close()
-    }
-})
+// cancelar.addEventListener('keyup',e=>{
+//     if (e.key === "Enter") {
+//         window.close()
+//     }
+// })
 
 cancelar.addEventListener('click',e=>{
         window.close()

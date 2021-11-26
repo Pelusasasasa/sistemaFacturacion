@@ -1,4 +1,4 @@
-const URL = "http://192.168.1.103:4000/api/";
+const URL = "http://192.168.0.121:4000/api/";
 
 const axios = require("axios")
 const path = require('path');
@@ -298,7 +298,7 @@ const probar = async (listau,fecha1,fecha2)=>{
 ipcMain.on('traerVentasEntreFechas',async(e,args)=>{
     const desde = new Date(args[0])
     let hasta = DateTime.fromISO(args[1]).endOf('day')
-    let ventas = axios.get(`${URL}ventas/${desde}/${hasta}`)
+    let ventas = await axios.get(`${URL}ventas/${desde}/${hasta}`)
     ventas = ventas.data
     e.reply('traerVentasEntreFechas',JSON.stringify(ventas))
 })
@@ -691,6 +691,11 @@ function abrirVentana(texto){
             protocol: 'file',
             slashes: true
         }));
+        nuevaVentana.setMenuBarVisibility(false)
+        nuevaVentana.on('close', function (event) {
+            ventanaPrincipal.reload()
+            nuevaVentana = null
+        })
     }else if(texto === "info-movProducto"){
         nuevaVentana = new BrowserWindow({
             parent:ventanaPrincipal,
