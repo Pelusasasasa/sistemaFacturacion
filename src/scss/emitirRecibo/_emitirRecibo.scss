@@ -1,3 +1,7 @@
+.mostrarNegro{
+  background-color: black;
+}
+
 .contenedorEmitirRecibo {
   display: flex;
   flex-direction: column;
@@ -29,6 +33,7 @@
   }
 
   .tabla {
+    background-color: white;
     overflow: scroll;
     border: 0.1rem solid black;
     height: 25rem;
@@ -96,10 +101,11 @@
     padding-top: 2rem;
     padding-bottom: 2rem;
 
-    a {
+    a,button {
       background-color: lightgrey;
       padding: 2rem;
       border-radius: 7.5rem;
+      border: none;
       &:hover {
         cursor: pointer;
         transform: scale(1.2);

@@ -15,21 +15,66 @@ const fechaDeHoy = (`${hoy.getFullYear()}-${hoy.getMonth() + 1}-${hoy.getDate()}
 const { ipcRenderer } = require("electron");
 
 
+
+let situacion = "blanco"
+
+document.addEventListener('keydown',(event) =>{
+    if (event.key === "Alt") {
+       document.addEventListener('keydown',(e) =>{
+           if (e.key === "F9" && situacion === "blanco") {
+               mostrarNegro();
+               situacion = 'negro'
+            listarLista(nuevaLista,situacion)
+           }
+       })
+   }
+})
+
+document.addEventListener('keydown',(event) =>{
+   if (event.key === "Alt") {
+      document.addEventListener('keydown',(e) =>{
+          if (e.key === "F3" && situacion === "negro") {
+              ocultarNegro();
+              situacion = 'blanco'
+            listarLista(nuevaLista,situacion)
+          }
+      })
+  }
+})
+
+const ocultarNegro = ()=>{
+    const body = document.querySelector('.contenedorEmitirRecibo')
+    saldo.classList.remove('none')
+    saldo_p.classList.add('none')
+    body.classList.remove('mostrarNegro')
+}
+
+const mostrarNegro = ()=>{
+    const saldo = document.querySelector('#saldo')
+    const saldo_p = document.querySelector('#saldo_p')
+    const body = document.querySelector('.contenedorEmitirRecibo')
+    saldo.classList.add('none')
+    saldo_p.classList.remove('none')
+    body.classList.add('mostrarNegro')
+}
+
+
 const codigo = document.querySelector('#codigo')
 const nombre = document.querySelector('#nombre')
 const saldo = document.querySelector('#saldo')
+const saldo_p = document.querySelector('#saldo_p')
 const direccion = document.querySelector('#direccion')
 const localidad = document.querySelector('#localidad');
 const fecha = document.querySelector('#fecha')
 fecha.value = fechaDeHoy
 const cond_iva = document.querySelector('#cond_iva')
 const cuit = document.querySelector('#cuit')
-const tbody = document.querySelector('.listar')
+const listar = document.querySelector('.listar')
 const imprimir = document.querySelector('.imprimir')
 const cancelar = document.querySelector('.cancelar')
 const vendedor = document.querySelector('.vendedor')
 const total = document.querySelector('#total')
-let inputSeleccionado  = tbody
+let inputSeleccionado  = listar
 let trSeleccionado
 total.value = 0.00
 let cliente = {}
@@ -55,7 +100,8 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
     cliente = JSON.parse(args)
     codigo.value = cliente._id;
     nombre.value = cliente.cliente;
-    saldo.value = cliente.saldo_p;
+    saldo.value = cliente.saldo;
+    saldo_p.value = cliente.saldo_p
     direccion.value = cliente.direccion;
     localidad.value = cliente.localidad;
     cond_iva.value = cliente.cond_iva;
@@ -63,6 +109,7 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
     fecha.value = mostrarFecha;
 
     await ipcRenderer.invoke('traerVentas',cliente.listaVentas).then((args)=>{
+        nuevaLista = []
         listaVentas = JSON.parse(args)
     })
     //Sacamos las ventas que ya estan pagadas
@@ -71,31 +118,43 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
         venta.pagado === false && nuevaLista.push(venta)
     });
 
-    nuevaLista.forEach(venta =>{
-        let saldo = parseFloat(venta.precioFinal) - parseFloat(venta.abonado)
-        let fecha = new Date(venta.fecha)
-        let dia = fecha.getDate()
-        let mes = fecha.getMonth()+1
-        let anio = fecha.getFullYear()
-        tbody.innerHTML += `
-            <tr id="${venta._id}">
-                <td>${dia}/${mes}/${anio}</td>
-                <td>${venta.tipo_comp}</td>
-                <td>${venta.nro_comp}</td>
-                <td>${(venta.precioFinal).toFixed(2)}</td>
-                <td>${parseFloat((venta.abonado)).toFixed(2)}</td>
-                <td><input type"text" id=${venta.nro_comp} name="pagadoActual"></td>
-                <td class="saldop">${saldo.toFixed(2)}</td>
-                <td>${venta.observaciones}</td>
-            </tr>
-        `
-
-    })
-    trSeleccionado = tbody.firstElementChild
+    listarLista(nuevaLista,situacion)
+    trSeleccionado = listar.firstElementChild
     inputSeleccionado = trSeleccionado.children[5].children[0]
 })
+
+const listarLista = (lista,situacion)=>{
+    let aux
+    (situacion === "negro") ? (aux = "Presupuesto") : (aux = "Ticket Factura")
+    listaGlobal = lista.filter(e=>e.tipo_comp === aux)
+    listar.innerHTML = " "
+    console.log(listaGlobal.length)
+    listaGlobal.forEach(venta => {
+        if (venta.length !== 0) {
+            let saldo = parseFloat(venta.precioFinal) - parseFloat(venta.abonado)
+            let fecha = new Date(venta.fecha) 
+            const dia = fecha.getDate()
+            const mes = fecha.getMonth();
+            const anio = fecha.getFullYear();   
+            listar.innerHTML += `
+                <tr id="${venta._id}">
+                <td> ${ dia } / ${ mes } / ${ anio } </td>
+                <td> ${ venta.tipo_comp } </td>
+                <td> ${ venta.nro_comp } </td>
+                <td> ${ ( venta.precioFinal ).toFixed ( 2 ) } </td>
+                <td> ${ parseFloat ( ( venta.abonado ) ).toFixed ( 2 ) } </td>
+                <td> <input type="text" id = ${ venta.nro_comp } name = "pagadoActual"> </td>
+                <td class = "saldop"> ${ saldo.toFixed( 2 ) } </td>
+                <td> ${ venta.observaciones } </td>
+                </tr>
+            `
+        }
+    });
+}
+
+
 let valorAnterior = ""
-    tbody.addEventListener('click',e=>{
+    listar.addEventListener('click',e=>{
         trSeleccionado = e.path[2]
         inputSeleccionado = e.path[0]
     })
@@ -130,17 +189,18 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
 imprimir.addEventListener('click',async e=>{
     const nrmComp = await traerUltimoNroRecibo()
     const recibo = {}
-    recibo._id = nrmComp
+    recibo._id = await traerTamanioVentas()
     recibo.nro_comp = nrmComp
     recibo.pagado = true
     recibo.cliente = cliente._id
     recibo.vendedor = Vendedor
-    recibo.precioFinal = parseFloat(total.value)
+    recibo.precioFinal = parseFloat(total.value).toFixed(2)
     recibo.tipo_comp = "Recibos"
-    console.log(recibo)
+    const aux = (situacion === "negro") ? "saldo_p" : "saldo"
 
     const saldoNuevo = parseFloat((parseFloat(cliente.saldo_p) - parseFloat(total.value)).toFixed(2))
-    ipcRenderer.send('modificarSaldo',[cliente._id,"saldo_p",saldoNuevo])
+    console.log(nuevaLista)
+    ipcRenderer.send('modificarSaldo',[cliente._id,aux,saldoNuevo])
     ipcRenderer.send('modificamosLasVentas',nuevaLista)
     ipcRenderer.send('nueva-venta',recibo)
     location.reload()
@@ -149,7 +209,15 @@ imprimir.addEventListener('click',async e=>{
 const traerUltimoNroRecibo =async ()=>{
     let retornar
     await ipcRenderer.invoke('traerUltimoNumero',"Ultimo Recibo").then((args)=>{
-        retornar = JSON.parse(args)["Ultimo Recibo"]
+        retornar = JSON.parse(args)
+    })
+    return retornar
+}
+
+const traerTamanioVentas = async()=>{
+    let retornar;
+    await ipcRenderer.invoke('tamanioVentas').then(args=>{
+        retornar = parseFloat(JSON.parse(args)) + 1;
     })
     return retornar
 }

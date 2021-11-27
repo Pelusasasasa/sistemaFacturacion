@@ -7,8 +7,8 @@
     <link rel="stylesheet" href="../../build/css/app.css" />
     <title>Emitir recibo</title>
   </head>
-  <body>
-    <div class="contenedorEmitirRecibo">
+  <body class="contenedorEmitirRecibo">
+
       <div class="informacionCliente">
         <div class="nombre">
           <div>
@@ -20,9 +20,12 @@
             <input type="text" disabled id="nombre" name="nombre" />
           </div>
 
-          <div>
-            <input type="text" id="saldo" name="saldo" />
-          </div>
+
+            <input type="text" id="saldo" name="saldo" placeholder="0" />
+
+
+            <input type="text" class="none" name="saldo_p" id="saldo_p" placeholder="0">
+
         </div>
         <div class="direccion">
           <div>
@@ -88,10 +91,10 @@
 
       <div class="botones">
         <a class="cancelar" href="../index.html">Cancelar</a>
-        <a class="imprimir">Imprimir</a>
+        <button class="imprimir">Imprimir</button>
         <div class="vendedor"></div>
       </div>
-    </div>
+
   </body>
   <script src="./emitirRecibo.js"></script>
 </html>

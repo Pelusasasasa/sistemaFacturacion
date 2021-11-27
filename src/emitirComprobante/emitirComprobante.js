@@ -427,10 +427,22 @@ function verSiPagoONo(texto) {
 function sumarSaldoAlClienteEnNegro(precio,codigo){
     ipcRenderer.send('sumarSaldoNegro',[precio,codigo])
 }
+
+function sumarSaldoAlCliente(precio,codigo) {
+    ipcRenderer.send('sumarSaldo',[percio,codigo])
+}
 const sacarIdentificadorTabla = (arreglo)=>{
     arreglo.forEach(producto=>{
         delete producto.objeto.identificadorTabla  
     })
+}
+
+const traerTamanioVentas = async()=>{
+    let retornar;
+    await ipcRenderer.invoke('tamanioVentas').then(args=>{
+        retornar = parseFloat(JSON.parse(args)) + 1;
+    })
+    return retornar
 }
 
 //Aca mandamos la venta en presupuesto
@@ -444,7 +456,7 @@ presupuesto.addEventListener('click',async (e)=>{
     venta.tipo_comp = tipoVenta
     venta.tipo_pago = tipopago(tipoPago)
     venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.Cod_comp,venta.tipo_pago);
-    venta._id=venta.nro_comp
+    venta._id=await traerTamanioVentas()
     venta.pagado = verSiPagoONo(venta.tipo_pago);//Ejecutamos para ver si la venta se pago o no
     if (!valorizado.checked && venta.tipo_pago === "CC") {
        venta.precioFinal = "0.1" 
@@ -479,7 +491,7 @@ ticketFactura.addEventListener('click',(e) =>{
      venta.tipo_pago = tipopago(tipoPago)   
      venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
      venta.comprob = traerNumeroDeFactura(texto)
-        venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal)
+        venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,cliente_id)
         sacarStock(venta.productos[0])
         ipcRenderer.send('nueva-venta',venta);
         location.reload()

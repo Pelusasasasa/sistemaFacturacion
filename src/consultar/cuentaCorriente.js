@@ -6,7 +6,51 @@ const saldo = document.querySelector('#saldo')
 const listar = document.querySelector('.listar')
 let nuevaLista=[]
 let lista=[]
+let listaGlobal=[]
 vendedor = ""
+let situacion = "blanco"
+
+document.addEventListener('keydown',(event) =>{
+    if (event.key === "Alt") {
+       document.addEventListener('keydown',(e) =>{
+           if (e.key === "F9" && situacion === "blanco") {
+               mostrarNegro();
+               situacion = 'negro'
+               listarLista(nuevaLista,situacion)
+           }
+       })
+   }
+})
+
+document.addEventListener('keydown',(event) =>{
+   if (event.key === "Alt") {
+      document.addEventListener('keydown',(e) =>{
+          if (e.key === "F3" && situacion === "negro") {
+              ocultarNegro();
+              situacion = 'blanco'
+              listarLista(nuevaLista,situacion)
+          }
+      })
+  }
+})
+
+const ocultarNegro = ()=>{
+    const saldo = document.querySelector('#saldo')
+    const saldo_p = document.querySelector('#saldo_p')
+    const body = document.querySelector('.consultaCtaCte')
+    saldo.classList.remove('none')
+    saldo_p.classList.add('none')
+    body.classList.remove('mostrarNegro')
+}
+
+const mostrarNegro = ()=>{
+    const saldo = document.querySelector('#saldo')
+    const saldo_p = document.querySelector('#saldo_p')
+    const body = document.querySelector('.consultaCtaCte')
+    saldo.classList.add('none')
+    saldo_p.classList.remove('none')
+    body.classList.add('mostrarNegro')
+}
 
 cliente.addEventListener('keypress',e =>{
     e.key === 'Enter' &&  ipcRenderer.send('abrir-ventana',"clientes")
@@ -15,7 +59,8 @@ cliente.addEventListener('keypress',e =>{
 ipcRenderer.on('mando-el-cliente',async(e,args)=>{
     let Cliente = JSON.parse(args)
     cliente.value = Cliente.cliente
-    saldo.value = Cliente.saldo_p
+    saldo.value = Cliente.saldo
+    saldo_p.value = Cliente.saldo_p
     listaVentas=Cliente.listaVentas
 
     await ipcRenderer.invoke('traerVentas',listaVentas).then((args)=>{
@@ -24,23 +69,8 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
         lista.forEach(venta =>{
             (venta.pagado === false) && nuevaLista.push(venta);
         })
-        nuevaLista.forEach(venta => {
-            vendedor = venta.vendedor
-            if (venta.length !== 0) {
-                let fecha = new Date(venta.fecha) 
-                listar.innerHTML += `
-                    <tr id="${venta._id}">
-                    <td>${fecha.getUTCDate()}/${fecha.getUTCMonth()+1}/${fecha.getUTCFullYear()}</td>
-                        <td>${venta.tipo_comp}</td>
-                        <td>${venta.nro_comp}</td>
-                        <td>${(venta.precioFinal).toFixed(2)}</td>
-                        <td>${(parseFloat((venta.abonado))).toFixed(2)}</td>
-                        <td>${(venta.precioFinal-venta.abonado).toFixed(2)}</td>
-                        <td>${venta.observaciones}</td>
-                    </tr>
-                `
-            }
-        });
+        listarLista(nuevaLista,situacion)
+        
 })
 
 
@@ -55,6 +85,30 @@ listar.addEventListener('click',e=>{
         })
     }
 })
+
+const listarLista = (lista,situacion)=>{
+    let aux
+    (situacion === "negro") ? (aux = "Presupuesto") : (aux = "Ticket Factura")
+    listaGlobal = lista.filter(e=>e.tipo_comp === aux)
+    listar.innerHTML = ''
+    listaGlobal.forEach(venta => {
+        vendedor = venta.vendedor
+        if (venta.length !== 0) {
+            let fecha = new Date(venta.fecha) 
+            listar.innerHTML += `
+                <tr id="${venta._id}">
+                <td>${fecha.getUTCDate()}/${fecha.getUTCMonth()+1}/${fecha.getUTCFullYear()}</td>
+                    <td>${venta.tipo_comp}</td>
+                    <td>${venta.nro_comp}</td>
+                    <td>${(venta.precioFinal).toFixed(2)}</td>
+                    <td>${(parseFloat((venta.abonado))).toFixed(2)}</td>
+                    <td>${(venta.precioFinal-venta.abonado).toFixed(2)}</td>
+                    <td>${venta.observaciones}</td>
+                </tr>
+            `
+        }
+    });
+}
 
 const detalle = document.querySelector('.detalle')
 function mostrarDetalles(lista) {
@@ -99,7 +153,7 @@ actualizar.addEventListener('click',e=>{
                 ventaAModificar.precioFinal = total.toFixed(2)
         }
         ipcRenderer.send('ventaModificada',[ventaAModificar,ventaAModificar._id,saldoABorrar])
-        // location.reload()
+        location.reload()
         })
     })
 
