@@ -43,14 +43,15 @@ ipcRenderer.on('traerDolar',(e,args)=>{
 
 tasaIva.addEventListener('blur  ', (e) =>{
     letraIva = devolverIva(e.target.value)
-     valorTasaIva = tasaIvas(e.target.value);
+    valorTasaIva = tasaIvas(e.target.value);
 })
+
 if (costoPesos.focus) {
 costoPesos.addEventListener('blur', (e) =>{
     costoT = resultado(parseFloat(costoPesos.value),valorTasaIva);
 })
-
 }
+
 costoDolares.addEventListener('blur', (e) =>{   
    costoDolares.value !== "" && (costoT = resultado(parseFloat(costoDolares.value),valorTasaIva,dolar))   ;
 })

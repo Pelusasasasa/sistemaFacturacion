@@ -19,6 +19,7 @@ const precioVenta = document.querySelector('#precioVenta');
 const unidad = document.querySelector('#unidad');
 let dolar = 100
 let costo = 0
+let valorTasaIva = 26
 
 //Traer el dolar
 ipcRenderer.send('traerDolar')
@@ -30,7 +31,6 @@ const promesa = new Promise((resolve,reject) =>{
     resolve()
 
 })
-
 
 let producto = {}
 
@@ -52,7 +52,7 @@ function asignarCampos() {
     provedor.value = producto.provedor
     marca.value = producto.marca
     stock.value = producto.stock
-    tasaIva.value=tasaIva.options[tasaiva(producto.iva)].value;
+    tasaIva.value=producto.iva;
     (producto.costo !== "") && (costoPesos.value = parseFloat(producto.costo).toFixed(2));
     (producto.costodolar !== "") && (costoDolares.value = parseFloat(producto.costodolar).toFixed(2));
 
@@ -69,9 +69,44 @@ function asignarCampos() {
     utilidad.value=(parseFloat(producto.utilidad)).toFixed(2)
     precioVenta.value = producto.precio_venta;
     unidad.value = producto.unidad
-
 }
 
+
+
+tasaIva.addEventListener('blur  ', (e) =>{
+    letraIva = devolverIva(e.target.value)
+    valorTasaIva = tasaIvas(e.target.value);
+})
+
+if (costoPesos.focus) {
+    costoPesos.addEventListener('blur', (e) =>{
+        costo = resultado(parseFloat(costoPesos.value),valorTasaIva);
+    })
+    }
+
+ivaImp.addEventListener('focus',(e)=>{
+    (costoPesos.value === "") ? (ivaImp.value = parseFloat((costoDolares.value * valorTasaIva / 100).toFixed(3))) : ivaImp.value = parseFloat(costo.toFixed(2))
+})
+
+costoTotal.addEventListener('focus',()=>{
+    costoT = parseFloat(ivaImp.value)
+    let costoP = 0
+
+    if (costoPesos === "") {
+        costoP = parseFloat(costoDolares.value)*dolar;
+        const sumar = parseFloat((costoP*valorTasaIva/100)).toFixed(2)
+        costoTotal.value = sumar+(parseFloat(costoDolares.value)*dolar)
+    }else{
+        costoP = parseFloat(costoPesos.value)
+        costoTotal.value = ((costo+costoP).toFixed(2))
+    }
+})
+
+
+
+precioVenta.addEventListener('focus',e=>{
+    precioVenta.value = parseFloat((parseFloat(utilidad.value)+parseFloat(costoTotal.value)).toFixed(2))
+})
 const modificar = document.querySelector('.modificar')
 modificar.addEventListener('click',e=>{
     producto._id = codigo.value
@@ -91,14 +126,6 @@ modificar.addEventListener('click',e=>{
     window.close()
 })
 
-function tasaiva(letra) {
-    if (letra === "N") {
-        return 0
-    }else{
-        return 1
-    }
-}
-
 const salir = document.querySelector('.salir')
 salir.addEventListener('click',e=>{
     window.close();
@@ -109,3 +136,7 @@ document.addEventListener('keydown',e=>{
         window.close()
     }
 })
+
+function resultado(numero1,numero2,dolar=1) {
+    return numero1*numero2*dolar/100;
+}

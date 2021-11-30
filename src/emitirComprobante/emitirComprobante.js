@@ -137,20 +137,21 @@ codigo.addEventListener('keypress',(e) => {
             ipcRenderer.send('get-producto',e.target.value)
             ipcRenderer.on('get-producto',(a,args)=>{
                 if (JSON.parse(args).length === 0) {
-                        dialogs.alert("No existe ese Producto").then(
-                            document.querySelector('.ok').focus()
-                        ).then(()=>{
-                            codigo.focus()
-                        })
+                        alert("No existe ese Producto")
+                        // codigo.value = "";
+                        console.log("a")
+                        // codigo.focus()
                 }else{
                     dialogs.prompt("Cantidad",async valor=>{
-                        await mostrarVentas(JSON.parse(args),valor)
-                        e.target.value=""
-                        codigo.focus()
-                    }).then(()=>{
-                        codigo.focus()
-                    })
-
+                        if (!Number.isInteger(valor) && JSON.parse(args).unidad === "U") {
+                                alert("La cantidad de este producto no puede ser en decimal")
+                            }else{
+                                await mostrarVentas(JSON.parse(args),valor)
+                                e.target.value=""
+                                codigo.focus()
+                                }
+                        })
+                       
                 }
             })
         }else{
