@@ -8,6 +8,7 @@ let nuevaLista=[]
 let lista=[]
 let listaGlobal=[]
 vendedor = ""
+let seleccionado
 let situacion = "blanco"
 
 document.addEventListener('keydown',(event) =>{
@@ -37,17 +38,21 @@ document.addEventListener('keydown',(event) =>{
 const ocultarNegro = ()=>{
     const saldo = document.querySelector('#saldo')
     const saldo_p = document.querySelector('#saldo_p')
+    const botonFacturar = document.querySelector('#botonFacturar')
     const body = document.querySelector('.consultaCtaCte')
     saldo.classList.remove('none')
     saldo_p.classList.add('none')
+    botonFacturar.classList.add('none')
     body.classList.remove('mostrarNegro')
 }
 
 const mostrarNegro = ()=>{
     const saldo = document.querySelector('#saldo')
     const saldo_p = document.querySelector('#saldo_p')
+    const botonFacturar = document.querySelector('#botonFacturar')
     const body = document.querySelector('.consultaCtaCte')
     saldo.classList.add('none')
+    botonFacturar.classList.remove('none')
     saldo_p.classList.remove('none')
     body.classList.add('mostrarNegro')
 }
@@ -133,34 +138,36 @@ let ventaAModificar
 let total = 0
 let saldoABorrar = 0
 const actualizar = document.querySelector('.actualizar')
-actualizar.addEventListener('click',e=>{
-    nuevaLista.find(e=>{
-        if (e._id === seleccionado.id) {
-            ventaAModificar=e
-            saldoABorrar = ventaAModificar.precioFinal
-            console.log(saldoABorrar)
-        }
-    })
-    ventaAModificar.productos.forEach(producto=>{
-         ipcRenderer.send('traerPrecio',producto.objeto._id)
-         ipcRenderer.once('traerPrecio',(e,args) => {  
-             console.log(JSON.parse(args))
-            const productoModificado = JSON.parse(args)
-            if(producto.objeto._id === productoModificado._id){
-                producto.objeto.precio_venta = productoModificado.precio_venta
-                mostrarDetalles(ventaAModificar.productos)
-                total=sacarTotal(ventaAModificar.productos)
-                ventaAModificar.precioFinal = total.toFixed(2)
-        }
-        ipcRenderer.send('ventaModificada',[ventaAModificar,ventaAModificar._id,saldoABorrar])
-        location.reload()
+
+    actualizar.addEventListener('click',e=>{
+        if (seleccionado) {
+        nuevaLista.find(e=>{
+            if (e._id === seleccionado.id) {
+                ventaAModificar=e
+                saldoABorrar = ventaAModificar.precioFinal
+                console.log(saldoABorrar)
+            }
         })
+        ventaAModificar.productos.forEach(producto=>{
+             ipcRenderer.send('traerPrecio',producto.objeto._id)
+             ipcRenderer.once('traerPrecio',(e,args) => {  
+                 console.log(JSON.parse(args))
+                const productoModificado = JSON.parse(args)
+                if(producto.objeto._id === productoModificado._id){
+                    producto.objeto.precio_venta = productoModificado.precio_venta
+                    mostrarDetalles(ventaAModificar.productos)
+                    total=sacarTotal(ventaAModificar.productos)
+                    ventaAModificar.precioFinal = total.toFixed(2)
+            }
+            ipcRenderer.send('ventaModificada',[ventaAModificar,ventaAModificar._id,saldoABorrar])
+            location.reload()
+            })
+        })
+        }else{
+            alert("Venta no seleccionada")
+        }
+
     })
-
-})
-
-
-
 function sacarTotal(arreglo){
     total = 0   
     arreglo.forEach((producto)=>{
@@ -170,6 +177,16 @@ function sacarTotal(arreglo){
     })
     return total
 }
+
+const botonFacturar = document.querySelector('#botonFacturar')
+botonFacturar.addEventListener('click',() =>{
+    if (seleccionado) {
+        console.log(seleccionado.id)
+        ipcRenderer.send('abrir-ventana-emitir-comprobante',seleccionado.id)
+    }else{
+        alert('Venta no seleccionada')
+    }
+})
 
 
 document.addEventListener('keydown',e=>{

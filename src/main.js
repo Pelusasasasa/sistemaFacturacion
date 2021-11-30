@@ -153,6 +153,7 @@ ipcMain.on('get-clientes', async (e, args = "") => {
 
 //traemos un cliente
 ipcMain.handle('get-cliente', async (e, args) => {
+    console.log(args)
     let cliente = await axios.get(`${URL}clientes/id/${args}`)
     cliente = cliente.data
     return JSON.stringify(cliente)
@@ -217,9 +218,10 @@ ipcMain.on('sumarSaldoNegro', async (e, args) => {
     const [precio, id] = args
     let cliente = await axios.get(`${URL}clientes/id/${id}`)
     cliente = cliente.data;
+    console.log(cliente)
     let saldo_p = (parseFloat(precio) + parseFloat(cliente.saldo_p)).toFixed(2)
     cliente.saldo_p = saldo_p
-    await axios.put(`${URL}clientes/${id}`)
+    await axios.put(`${URL}clientes/${id}`,cliente)
 })
 
 ipcMain.on('sumarSaldo',async (e,args)=>{
@@ -248,7 +250,6 @@ ipcMain.on('sumarSaldo',async (e,args)=>{
 ipcMain.handle('tamanioVentas',async(e,args)=>{
     let tamanio = await axios.get(`${URL}ventas`)
     tamanio = tamanio.data;
-    console.log(tamanio)
     return(JSON.stringify(tamanio))
 })
 
@@ -281,8 +282,10 @@ ipcMain.handle('traerVentas' ,async (e,args)=>{
 
 //traer una venta en especifico
 ipcMain.on('traerVenta',async (e,args)=>{
+    console.log(args)
     let venta = await axios.get(`${URL}ventas/${args}`)
     venta = venta.data
+
     e.reply('traerVenta',JSON.stringify(venta))
 })
 
@@ -291,14 +294,11 @@ ipcMain.on('modificamosLasVentas',async (e,arreglo)=>{
     for (let Venta of arreglo){
         const id = Venta._id
         const abonado = Venta.abonado
-        console.log(abonado)
         const pagado = Venta.pagado
         let venta = await axios.get(`${URL}ventas/${id}`)
-        console.log(venta)
         venta = venta.data[0];
         venta.abonado = abonado.toFixed(2)
         venta.pagado = pagado
-        console.log(venta)
         await axios.put(`${URL}ventas/${id}`,venta)
     }
 })
@@ -314,9 +314,10 @@ ipcMain.on('traerVentasIdYFechas', async(e,args)=>{
 
 const probar = async (listau,fecha1,fecha2)=>{
     const retornar = []
-    for await (const venta of listau){
-        let venta = axios.get(`${URL}ventas/${id}/${fecha1}/${fecha2}`)
-        venta = venta.data
+    for await (const Venta of listau){
+        let ventaARetornar = axios.get(`${URL}ventas/${Venta.nro_comp}/${fecha1}/${fecha2}`)
+        ventaARetornar = ventaARetornar.data
+        console.log(ventaARetornar)
         if(ventaARetornar[0] !== undefined){
             retornar.push(ventaARetornar[0])
     }
@@ -345,15 +346,21 @@ ipcMain.on('ventaModificada',async (e,[args,id,saldo])=>{
     cliente = cliente.data
     let total = 0
     total = args.precioFinal
-    console.log(total)
+   
     total = (parseFloat(total) - parseFloat(saldo) + parseFloat(cliente.saldo_p)).toFixed(2)
     cliente.saldo_p = total
-    console.log(saldo)
-    console.log(total)
-    console.log(cliente)
+
+
+
      await axios.put(`${URL}clientes/${args.cliente}`,cliente)
 })
 
+    ipcMain.on('abrir-ventana-emitir-comprobante',(e,numeroVenta)=>{
+        abrirVentana("emitirComrpobante")
+        nuevaVentana.on('ready-to-show',async ()=>{
+            nuevaVentana.webContents.send('venta',JSON.stringify(numeroVenta))
+        })
+    })
 //FIN VENTAS
 
 //INICIO NUMEROS
@@ -412,7 +419,6 @@ ipcMain.on('traerDolar',async e=>{
 ipcMain.handle('traerUltimoNumero',async(e,args)=>{
     let numero = await axios.get(`${URL}tipoVenta`)
     numero = numero.data["Ultimo Recibo"]
-    console.log(numero)
     return JSON.stringify(numero)
 })
 
@@ -700,7 +706,7 @@ ipcMain.on('abrir-ventana', (e, args) => {
 
 
 //Para abrir todas las ventanas
-function abrirVentana(texto){
+function abrirVentana(texto,numeroVenta){
     if(texto==="movProducto"){
         nuevaVentana = new BrowserWindow({
             width: 800,
@@ -994,7 +1000,8 @@ function abrirVentana(texto){
         }));
         nuevaVentana.setMenuBarVisibility(false)
         nuevaVentana.on('close',e=>{
-            nuevaVentana = null
+            nuevaVentana = null;    
+            ventanaPrincipal.reload()
         })  
     }else if(texto === "agregarProducto"){
         nuevaVentana = new BrowserWindow({
@@ -1011,7 +1018,26 @@ function abrirVentana(texto){
         }));
         nuevaVentana.setMenuBarVisibility(false)
         nuevaVentana.on('close',e=>{
-            nuevaVentana = null
+            nuevaVentana = null;
+            ventanaPrincipal.reload()
+        })  
+    }else if(texto === "emitirComrpobante"){
+        nuevaVentana = new BrowserWindow({
+            width: 1100,
+            height: 500,
+            webPreferences: {
+                nodeIntegration: true
+            }
+        })
+        nuevaVentana.loadURL(url.format({
+            pathname: path.join(__dirname, `emitirComprobante/emitirComprobante.html`),
+            protocol: 'file',
+            slashes: true
+        }));
+        nuevaVentana.setMenuBarVisibility(false)
+        nuevaVentana.on('close',e=>{
+            nuevaVentana = null;
+            ventanaPrincipal.reload()
         })  
     }
 }

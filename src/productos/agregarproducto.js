@@ -14,6 +14,7 @@ const observaciones = document.querySelector('#observaciones');
 const utilidad = document.querySelector('#utilidad');
 const precioVenta = document.querySelector('#precioVenta');
 const imagen = document.querySelector('#imagen')
+const unidad = document.querySelector('#unidad')
 
 const agregar = document.querySelector('.agregar')
 
@@ -98,7 +99,8 @@ agregar.addEventListener('click' , (e) =>{
         costodolar: costoDolares.value,
         impuestos: ivaImp.value,
         utilidad: utilidad.value,
-        precio_venta: precioVenta.value
+        precio_venta: precioVenta.value,
+        unidad: unidad.value
     }
     ipcRenderer.send('nuevo-producto',producto)
     formularioProducto.reset();

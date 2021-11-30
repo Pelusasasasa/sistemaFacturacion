@@ -70,7 +70,7 @@ function filtrar(){
 }
 
 ipcRenderer.on('get-productos', (e,args) =>{
-    const productos = JSON.parse(args);
+    productos = JSON.parse(args);
     for(let producto of productos){
             resultado.innerHTML += `
                 <tr id="${producto._id}">
@@ -105,7 +105,6 @@ const inputseleccionado = (e) =>{
     e.classList.toggle('seleccionado')
 }
 
-
 seleccionarTBody.addEventListener('dblclick',(e) =>{
     console.log(seleccionado);
     seleccionado ? cantidad(seleccionado) : dialogs.alert("Producto no seleccionado");
@@ -116,8 +115,12 @@ filtrar();
 
 async function cantidad(e) {
     await dialogs.prompt("cantidad",(valor) =>{
-        if(valor){
-         ipcRenderer.send('mando-el-producto',{
+        const pro = productos.find(e=>e._id === seleccionado.id)
+        console.log(Number.isInteger(parseFloat(valor)))
+        if(!Number.isInteger(parseFloat(valor)) && pro.unidad==="U"){
+         alert("El producto no se puede escribir con decimal")
+     }else{
+        ipcRenderer.send('mando-el-producto',{
             _id: e.id
              ,cantidad: valor
          })

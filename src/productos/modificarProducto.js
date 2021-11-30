@@ -1,6 +1,5 @@
 const { ipcRenderer } = require("electron");
 const electron = require('electron')
-const remote = electron.remote
 
 const formularioProducto = document.querySelector('#formularioProducto');
 const codigo = document.querySelector('#codigo');
@@ -17,6 +16,7 @@ const costoTotal = document.querySelector('#costoTotal');
 const observaciones = document.querySelector('#observaciones');
 const utilidad = document.querySelector('#utilidad');
 const precioVenta = document.querySelector('#precioVenta');
+const unidad = document.querySelector('#unidad');
 let dolar = 100
 let costo = 0
 
@@ -52,9 +52,9 @@ function asignarCampos() {
     provedor.value = producto.provedor
     marca.value = producto.marca
     stock.value = producto.stock
-    tasaIva.value=tasaIva.options[tasaiva(producto.iva)].value
-    costoPesos.value = producto.costo
-    costoDolares.value = producto.costodolar
+    tasaIva.value=tasaIva.options[tasaiva(producto.iva)].value;
+    (producto.costo !== "") && (costoPesos.value = parseFloat(producto.costo).toFixed(2));
+    (producto.costodolar !== "") && (costoDolares.value = parseFloat(producto.costodolar).toFixed(2));
 
     if (costoPesos.value === "0") {
         ivaImp.value = parseFloat(producto.impuestos)*dolar
@@ -66,11 +66,11 @@ function asignarCampos() {
         costoTotal.value = ((costo+parseFloat(producto.impuestos))).toFixed(3)
     }
     observaciones.value = producto.observacion
-    utilidad.value=producto.utilidad
-    precioVenta.value = producto.precio_venta
+    utilidad.value=(parseFloat(producto.utilidad)).toFixed(2)
+    precioVenta.value = producto.precio_venta;
+    unidad.value = producto.unidad
 
 }
-
 
 const modificar = document.querySelector('.modificar')
 modificar.addEventListener('click',e=>{
@@ -86,7 +86,7 @@ modificar.addEventListener('click',e=>{
     producto.observacion = observaciones.value
     producto.utilidad = utilidad.value
     producto.precio_venta = precioVenta.value
-    console.log(producto)
+    producto.unidad = unidad.value
     ipcRenderer.send('modificarProducto',producto)
     window.close()
 })

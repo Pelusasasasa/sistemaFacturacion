@@ -1,6 +1,0 @@
-
-use('electroAvenida');
-
-
-// Insert a few documents into the sales collection.
-db.ventas.delete({ '_id': "0001-00000005"})

@@ -120,7 +120,10 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
 
     listarLista(nuevaLista,situacion)
     trSeleccionado = listar.firstElementChild
-    inputSeleccionado = trSeleccionado.children[5].children[0]
+    if (trSeleccionado) {
+        inputSeleccionado = trSeleccionado.children[5].children[0]  
+    }
+
 })
 
 const listarLista = (lista,situacion)=>{
@@ -128,7 +131,6 @@ const listarLista = (lista,situacion)=>{
     (situacion === "negro") ? (aux = "Presupuesto") : (aux = "Ticket Factura")
     listaGlobal = lista.filter(e=>e.tipo_comp === aux)
     listar.innerHTML = " "
-    console.log(listaGlobal.length)
     listaGlobal.forEach(venta => {
         if (venta.length !== 0) {
             let saldo = parseFloat(venta.precioFinal) - parseFloat(venta.abonado)
@@ -152,7 +154,6 @@ const listarLista = (lista,situacion)=>{
     });
 }
 
-
 let valorAnterior = ""
     listar.addEventListener('click',e=>{
         trSeleccionado = e.path[2]
@@ -175,8 +176,6 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
             }else{
                 total.value = (parseFloat(inputSeleccionado.value) + parseFloat(total.value)).toFixed(2)
             }
-
-
             if(trSeleccionado.nextElementSibling){
                 trSeleccionado = trSeleccionado.nextElementSibling
             inputSeleccionado = trSeleccionado.children[5].children[0] 
@@ -189,17 +188,15 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
 imprimir.addEventListener('click',async e=>{
     const nrmComp = await traerUltimoNroRecibo()
     const recibo = {}
-    recibo._id = await traerTamanioVentas()
     recibo.nro_comp = nrmComp
+    recibo._id = nrmComp
     recibo.pagado = true
     recibo.cliente = cliente._id
     recibo.vendedor = Vendedor
     recibo.precioFinal = parseFloat(total.value).toFixed(2)
     recibo.tipo_comp = "Recibos"
     const aux = (situacion === "negro") ? "saldo_p" : "saldo"
-
     const saldoNuevo = parseFloat((parseFloat(cliente.saldo_p) - parseFloat(total.value)).toFixed(2))
-    console.log(nuevaLista)
     ipcRenderer.send('modificarSaldo',[cliente._id,aux,saldoNuevo])
     ipcRenderer.send('modificamosLasVentas',nuevaLista)
     ipcRenderer.send('nueva-venta',recibo)

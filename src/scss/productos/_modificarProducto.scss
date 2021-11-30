@@ -4,17 +4,30 @@
     div {
       margin: 1rem auto;
       input {
-        padding: 1rem;
+        text-align: center;
+        padding: 0rem;
+      }
+    }
+    .formulario__campo{
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+
+      label{
+        font-size: 1.5rem;
       }
     }
     .codigo {
       display: flex;
       justify-content: space-around;
     }
-    .descripcion {
-      width: 100%;
-      input {
-        width: 75%;
+    .d-g {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      .unidad{
+        select{
+          width: 250%;
+        }
       }
     }
     .marca {
@@ -28,7 +41,9 @@
     }
 
     .costos {
+      border: .1rem solid black;
       input {
+        width: 50%;
         padding: 0.5rem;
       }
       display: flex;

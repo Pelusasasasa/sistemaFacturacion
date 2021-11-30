@@ -5,10 +5,13 @@ function getParameterByName(name) {
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
+
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
 const vendedor = getParameterByName('vendedor')
 const { ipcRenderer } = require("electron");
+
+
 
 const usuario = document.querySelector(".usuario")
 const textoUsuario = document.createElement("P")
@@ -37,6 +40,8 @@ let Numeros = []
 let yaSeleccionado
 let tipoVenta
 nombre.focus()
+
+
 
  document.addEventListener('keydown',(event) =>{
      if (event.key === "Alt") {
@@ -161,6 +166,8 @@ ipcRenderer.on('mando-el-producto',(e,args) => {
 })
 let id = 1 //id de la tabla de ventas
 function mostrarVentas(objeto,cantidad) {
+    console.log(objeto);
+    console.log(cantidad)
     Preciofinal += (parseFloat(objeto.precio_venta)*cantidad);
     total.value = (parseFloat(Preciofinal)).toFixed(2)
     resultado.innerHTML += `
@@ -456,7 +463,7 @@ presupuesto.addEventListener('click',async (e)=>{
     venta.tipo_comp = tipoVenta
     venta.tipo_pago = tipopago(tipoPago)
     venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.Cod_comp,venta.tipo_pago);
-    venta._id=await traerTamanioVentas()
+    venta._id=venta.nro_comp
     venta.pagado = verSiPagoONo(venta.tipo_pago);//Ejecutamos para ver si la venta se pago o no
     if (!valorizado.checked && venta.tipo_pago === "CC") {
        venta.precioFinal = "0.1" 
@@ -465,14 +472,15 @@ presupuesto.addEventListener('click',async (e)=>{
     if (venta.tipo_pago !== "PP") {
     venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
     (venta.productos).forEach(producto => {
-        sacarStock(producto.cantidad,producto.objeto)
-        movimientoProducto(producto.cantidad,producto.objeto)
+       // sacarStock(producto.cantidad,producto.objeto)
+        ////movimientoProducto(producto.cantidad,producto.objeto)
     });
     }
-    actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-    ipcRenderer.send('nueva-venta',venta);
-    printPage()
-    location.reload()
+    //actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+    //ipcRenderer.send('nueva-venta',venta);
+    //printPage()
+    //location.reload()
+    console.log(venta)
 })
 
 //Aca mandamos la venta con tikect Factura
@@ -556,31 +564,6 @@ ticketFactura.addEventListener('click',(e) =>{
         ponerInputsClientes(cliente) ;
     }
  }
-
- //Ponemos valores a los inputs
-
- function ponerInputsClientes(cliente) {
-    
-    buscarCliente.value = cliente.cliente;
-    saldo.value = cliente.saldo;
-    saldo_p.value = cliente.saldo_p;
-    localidad.value = cliente.localidad;
-    direccion.value = cliente.direccion;
-    provincia.value = cliente.provincia;
-    dnicuit.value = cliente.cuit;
-    telefono.value = cliente.telefono;
-    conIva.value = cliente.cond_iva;
-    venta.cliente = cliente._id;
-    console.log(cliente)
-    if (cliente.condicion==="M") {
-        dialogs.alert(`${cliente.observacion}`)
-    }
-
-    const cuentaC = document.querySelector('.cuentaC');
-
-    (cliente.cond_fact === "4") && cuentaC.classList.add('none');
- }
-
  //lo usamos para borrar un producto de la tabla
 borrarProducto.addEventListener('click',e=>{
     if (yaSeleccionado) {
@@ -697,3 +680,40 @@ const tamanioCancelados = async() =>{
             window.history.go(-1)
         }
     })
+
+ //Ponemos valores a los inputs
+function ponerInputsClientes(cliente) {
+    
+    buscarCliente.value = cliente.cliente;
+    saldo.value = cliente.saldo;
+    saldo_p.value = cliente.saldo_p;
+    localidad.value = cliente.localidad;
+    direccion.value = cliente.direccion;
+    provincia.value = cliente.provincia;
+    dnicuit.value = cliente.cuit;
+    telefono.value = cliente.telefono;
+    conIva.value = cliente.cond_iva;
+    venta.cliente = cliente._id;
+    console.log(cliente)
+    if (cliente.condicion==="M") {
+        dialogs.alert(`${cliente.observacion}`)
+    }
+
+    const cuentaC = document.querySelector('.cuentaC');
+
+    (cliente.cond_fact === "4") && cuentaC.classList.add('none');
+
+}
+ ipcRenderer.once('venta',(e,numero)=>{
+
+    ipcRenderer.send('traerVenta',JSON.parse(numero));
+    ipcRenderer.on('traerVenta',async (e,args)=>{
+        const venta = JSON.parse(args)[0]
+        const cliente = JSON.parse(await ipcRenderer.invoke('get-cliente',venta.cliente))
+        ponerInputsClientes(cliente)
+        venta.productos.forEach(producto =>{
+            const {objeto,cantidad} = producto;
+            mostrarVentas(objeto,cantidad)
+        })
+    })
+})

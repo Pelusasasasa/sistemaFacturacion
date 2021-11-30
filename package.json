@@ -14,7 +14,8 @@
   "bugs": {},
   "devDependencies": {
     "electron": "^11.4.10",
-    "electron-builder": "^22.11.7"
+    "electron-builder": "^22.11.7",
+    "electron-packager": "^15.4.0"
   },
   "dependencies": {
     "@afipsdk/afip.js": "^0.7.1",
