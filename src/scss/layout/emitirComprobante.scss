@@ -48,6 +48,11 @@
         width: 90%;
       }
     }
+
+    .select{
+      display: flex;
+      flex-direction: column  ;
+    }
   }
   .table {
     background-color: white;
@@ -115,10 +120,6 @@
     overflow: scroll;
     height: 30rem;
     border: 0.1rem solid black;
-  }
-
-  #conIva {
-    margin-top: 1.5rem;
   }
 
   .partefinal {

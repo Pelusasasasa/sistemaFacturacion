@@ -74,8 +74,8 @@ function mostrarNegro() {
     const ventaNegro = document.querySelector(".ventaNegro")
     const ticketFactura = document.querySelector('.ticketFactura')
 
-        saldoNegro.classList.add('none')
-        saldo.classList.remove('none')
+        saldoNegro.classList.remove('none')
+        saldo.classList.add('none')
         bodyNegro.classList.add('mostrarNegro')
         ventaNegro.classList.remove('none')
         ticketFactura.classList.add('none')
@@ -89,8 +89,8 @@ function ocultarNegro() {
     const ventaNegro = document.querySelector(".ventaNegro")
     const ticketFactura = document.querySelector('.ticketFactura')
 
-        saldoNegro.classList.remove('none')
-        saldo.classList.add('none')
+        saldoNegro.classList.add('none')
+        saldo.classList.remove('none')
         bodyNegro.classList.remove('mostrarNegro')
         ventaNegro.classList.add('none')
         ticketFactura.classList.remove('none')
@@ -135,15 +135,14 @@ codigo.addEventListener('keypress',(e) => {
     if (e.key === 'Enter') {
         if (e.target.value !== "") {
             ipcRenderer.send('get-producto',e.target.value)
-            ipcRenderer.on('get-producto',(a,args)=>{
+            ipcRenderer.once('get-producto',(a,args)=>{
                 if (JSON.parse(args).length === 0) {
                         alert("No existe ese Producto")
-                        // codigo.value = "";
-                        console.log("a")
-                        // codigo.focus()
+                        codigo.value = "";
+                        codigo.focus()
                 }else{
                     dialogs.prompt("Cantidad",async valor=>{
-                        if (!Number.isInteger(valor) && JSON.parse(args).unidad === "U") {
+                        if (!Number.isInteger(parseFloat(valor)) && JSON.parse(args).unidad === "U") {
                                 alert("La cantidad de este producto no puede ser en decimal")
                             }else{
                                 await mostrarVentas(JSON.parse(args),valor)
@@ -361,7 +360,7 @@ async function movimientoProducto(cantidad,objeto){
     movProducto.descripcion = objeto.descripcion
     movProducto.cliente = cliente.cliente
     movProducto.comprobante = tipoVenta
-    movProducto.comprobante = "C"
+    movProducto.tipo_comp = "C"
     movProducto.nro_comp=venta.nro_comp
     movProducto.egreso = cantidad
     movProducto.stock = objeto.stock
@@ -372,7 +371,6 @@ async function movimientoProducto(cantidad,objeto){
 }
 
 //FIN MOV PRODUCTOS
-
 function verNumero(condicion) {
     if (condicion === "Inscripto") {
         return  "Ultima Factura A"
@@ -473,14 +471,14 @@ presupuesto.addEventListener('click',async (e)=>{
     if (venta.tipo_pago !== "PP") {
     venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
     (venta.productos).forEach(producto => {
-       // sacarStock(producto.cantidad,producto.objeto)
-        ////movimientoProducto(producto.cantidad,producto.objeto)
+        sacarStock(producto.cantidad,producto.objeto)
+        movimientoProducto(producto.cantidad,producto.objeto)
     });
     }
-    //actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-    //ipcRenderer.send('nueva-venta',venta);
-    //printPage()
-    //location.reload()
+    actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+    ipcRenderer.send('nueva-venta',venta);
+    printPage()
+    location.reload()
     console.log(venta)
 })
 
@@ -697,7 +695,7 @@ function ponerInputsClientes(cliente) {
     venta.cliente = cliente._id;
     console.log(cliente)
     if (cliente.condicion==="M") {
-        dialogs.alert(`${cliente.observacion}`)
+        alert(`${cliente.observacion}`)
     }
 
     const cuentaC = document.querySelector('.cuentaC');

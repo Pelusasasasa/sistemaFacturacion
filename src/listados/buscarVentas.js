@@ -111,6 +111,7 @@ const desde = document.querySelector('#desde')
 const hasta = document.querySelector('#hasta')
 let ventas = []
 function traerTodasLasVentas(lista) {
+    console.log(lista)
     lista.forEach(cliente=>{
         ventas = ventas.concat(cliente.listaVentas)
     })
