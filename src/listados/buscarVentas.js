@@ -59,19 +59,19 @@ buscar.addEventListener('click',e=>{
 
 let cliente
 
-ipcRenderer.once('get-clientes',(e,args)=>{
+ipcRenderer.on('get-clientes',(e,args)=>{
     traerTodasLasVentas(JSON.parse(args))
 })
-ipcRenderer.once('traerVenta',async (e,args)=>{
-    buscarCliente(JSON.parse(args)[0].cliente).then(console.log)
-    cliente = buscarCliente(JSON.parse(args)[0].cliente)
+ipcRenderer.on('traerVenta',async (e,args)=>{
+    cliente = await buscarCliente(JSON.parse(args)[0].cliente)
+    console.log(cliente)
     tbody.innerHTML = ``
     listarVentas(JSON.parse(args)[0])
 })
 
 
 function listarVentas(venta) {
-        tbody.innerHTML += `<h2>${cliente}</h2>`
+        tbody.innerHTML += `<tr class="titulo"><td>${cliente.cliente}</td></tr>`
         venta.productos.forEach(({objeto,cantidad})=>{
             const fecha = mostrarFecha(venta.fecha)
             tbody.innerHTML += `
@@ -111,7 +111,7 @@ const desde = document.querySelector('#desde')
 const hasta = document.querySelector('#hasta')
 let ventas = []
 function traerTodasLasVentas(lista) {
-    console.log(lista)
+    ventas = []
     lista.forEach(cliente=>{
         ventas = ventas.concat(cliente.listaVentas)
     })
@@ -120,7 +120,10 @@ function traerTodasLasVentas(lista) {
 
 ipcRenderer.on('traerVentasIdYFechas',(e,args)=>{
     const lista = JSON.parse(args)
-    tbody.innerHTML = ``
+    tbody.innerHTML = ``;
+    if(lista.length === 0){
+        alert("No hay ventas, fijarse nombre y fechas")
+    }
     lista.forEach(async venta=>{
         cliente = await buscarCliente(venta.cliente)
         listarVentas(venta)

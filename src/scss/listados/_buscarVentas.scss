@@ -11,6 +11,18 @@
     margin: 1rem auto;
     display: flex;
     justify-content: space-around;
+
+    button{
+      border: none;
+      border-radius: 7.5rem;
+      padding: 1.5rem;
+      font-weight: bold;
+
+      &:hover{
+        cursor: pointer;
+        transform: scale(1.2);
+      }
+    }
   }
 
   .numeros {
@@ -29,6 +41,15 @@
 
   .listar {
     table {
+      .titulo{
+        font-weight: bold;
+      }
+      tr{
+        th{
+          text-align: start;
+          width: 5%;
+        }
+      }
       caption {
         font-size: 2.4rem;
         font-weight: bold;

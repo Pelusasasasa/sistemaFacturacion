@@ -16,7 +16,6 @@ const cteCorriente = document.querySelector('.cteCorriente');
 const desde =  document.querySelector('#desde')
 const hasta =  document.querySelector('#hasta')
 desde.value = fechaDeHoy
-console.log(desde.value)
 hasta.value = fechaDeHoy
 const tbody =  document.querySelector('.tbody')
 
@@ -47,10 +46,14 @@ function listarVentas(lista) {
     tbody.innerHTML = ""
     lista.forEach(venta => {
         venta.productos.forEach(({objeto,cantidad})=>{
+            const fecha = new Date(venta.fecha);
+            const hoy = fecha.getDate();
+            const mes = fecha.getMonth();
+            const anio = fecha.getFullYear();
             tbody.innerHTML += `
             <tr>
                 <td>${venta.nro_comp}</td>
-                <td>${venta.fecha}</td>
+                <td>${dia}/${mes}/${anio}</td>
                 <td>${venta.cliente}</td>
                 <td>${objeto._id}</td>
                 <td>${objeto.descripcion}</td>

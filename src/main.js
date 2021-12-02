@@ -153,7 +153,6 @@ ipcMain.on('get-clientes', async (e, args = "") => {
 
 //traemos un cliente
 ipcMain.handle('get-cliente', async (e, args) => {
-    console.log(args)
     let cliente = await axios.get(`${URL}clientes/id/${args}`)
     cliente = cliente.data
     return JSON.stringify(cliente)
@@ -218,7 +217,6 @@ ipcMain.on('sumarSaldoNegro', async (e, args) => {
     const [precio, id] = args
     let cliente = await axios.get(`${URL}clientes/id/${id}`)
     cliente = cliente.data;
-    console.log(cliente)
     let saldo_p = (parseFloat(precio) + parseFloat(cliente.saldo_p)).toFixed(2)
     cliente.saldo_p = saldo_p
     await axios.put(`${URL}clientes/${id}`,cliente)
@@ -282,7 +280,6 @@ ipcMain.handle('traerVentas' ,async (e,args)=>{
 
 //traer una venta en especifico
 ipcMain.on('traerVenta',async (e,args)=>{
-    console.log(args)
     let venta = await axios.get(`${URL}ventas/${args}`)
     venta = venta.data
 
@@ -309,18 +306,14 @@ ipcMain.on('traerVentasIdYFechas', async(e,args)=>{
     const desde = args[1]
     const hasta = DateTime.fromISO(args[2]).endOf('day')
     const lista = await probar(ventas,desde,hasta)
-    console.log(lista)
     e.reply('traerVentasIdYFechas',JSON.stringify(lista))
 })
 
 const probar = async (listau,fecha1,fecha2)=>{
     const retornar = []
     for await (const Venta of listau){
-        console.log(Venta)
         let ventaARetornar = await axios.get(`${URL}ventas/${Venta}/${fecha1}/${fecha2}`)
-        console.log(ventaARetornar)
         ventaARetornar = ventaARetornar.data
-        console.log(ventaARetornar)
         if(ventaARetornar[0] !== undefined){
             retornar.push(ventaARetornar[0])
     }

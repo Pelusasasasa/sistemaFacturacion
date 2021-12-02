@@ -33,6 +33,9 @@
       thead {
         tr {
           border: 0.1rem solid black;
+          th{
+            text-align: start;
+          }
         }
       }
       border-collapse: collapse;
