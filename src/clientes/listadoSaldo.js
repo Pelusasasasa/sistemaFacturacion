@@ -3,7 +3,7 @@ const tbody = document.querySelector('.tbody')
 
 ipcRenderer.send('traerSaldo')
 ipcRenderer.on('traerSaldo',(e,args)=>{
-
+    console.log(args)
     clientes = JSON.parse(args)
     console.log(clientes)
     clientes.forEach(cliente => {

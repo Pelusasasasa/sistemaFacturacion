@@ -9,45 +9,37 @@ const diescripcion = document.querySelector('#descripcion')
 
 codigo.addEventListener('keydown',e=>{
     if(e.key === "Enter" || e.key === "Tab"){  
-        console.log(e.key)
         ipcRenderer.send('get-producto',e.target.value)
-        nuevoCodigo.focus()
-        console.log(nuevoCodigo.focus)
     }
 
 })
 
 ipcRenderer.on('get-producto',(e,args)=>{
-        const producto = JSON.parse(args)
-        const {descripcion} = producto
-    if (descripcion) {
-        diescripcion.value = descripcion
-    }else{
-        alert("Producto no existe")
-        console.log(codigo.value)
-        codigo.focus()
-    }
+        if(document.activeElement.name === "codigo"){
+            const producto = JSON.parse(args)
+            const {descripcion} = producto
+        if (descripcion) {
+            diescripcion.value = descripcion
+            nuevoCodigo.focus()
+        }else{
+            alert("Producto no existe")
+            codigo.focus()
+        }
+        }
 })
 
-nuevoCodigo.addEventListener('keyup',e=>{
-    console.log(e.key)
+nuevoCodigo.addEventListener('keydown',e=>{
     if (e.key === "Enter") {
-    // ipcRenderer.send('get-producto',e.target.value)
-
-    // const promesaProductoExistente = new Promise((resolve,reject)=>{
-    //     ipcRenderer.on('get-producto',(e,args)=>{
-    //         const productoYaExistente = JSON.parse(args)
-    //         if (productoYaExistente.length!==0 ) {
-    //             resolve()
-    //         }
-    //     })
-    // })
-
-    // promesaProductoExistente.then(()=>{
-    //     alert("codigo ya utilizado")
-    //     location.reload()
-    // })
-        aceptar.focus()
+            ipcRenderer.send('get-producto',e.target.value)
+            ipcRenderer.on('get-producto',(e,args)=>{
+                const productoYaExistente = JSON.parse(args)
+                if (productoYaExistente.length!==0 ) {
+                    console.log(productoYaExistente)
+                    alert("codigo ya utilizado")
+                }else{
+                    aceptar.focus()
+                }
+            })
     }
 })
 
@@ -58,11 +50,11 @@ aceptar.addEventListener('click',e=>{
 })
 
 
-// cancelar.addEventListener('keyup',e=>{
-//     if (e.key === "Enter") {
-//         window.close()
-//     }
-// })
+cancelar.addEventListener('keyup',e=>{
+    if (e.key === "Enter") {
+        window.close()
+    }
+})
 
 cancelar.addEventListener('click',e=>{
         window.close()

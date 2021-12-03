@@ -8,16 +8,9 @@ const hasta = document.querySelector('#hasta')
 const listar = document.querySelector('.listar')
 let productos =[]
 buscar.addEventListener('click',e=>{
-    ipcRenderer.send('traerProductosPorRango',[desde.value,hasta.value])
-
-    const promesa = new Promise((resolve,reject)=>{
+        ipcRenderer.send('traerProductosPorRango',[desde.value,hasta.value])
         ipcRenderer.on('traerProductosPorRango',(e,args)=>{
             productos = JSON.parse(args)
-            resolve()
-        })
-        })
-
-        promesa.then(()=>{
             listarProductos()
         })
 })
@@ -39,14 +32,11 @@ buscar.addEventListener('click',e=>{
 
 const imprimir = document.querySelector('.imprimir')
 imprimir.addEventListener('click',e=>{
-     let printContents = document.querySelector('.listar').innerHTML
-     let originalContents = document.body.innerHTML;
-
-     document.body.innerHTML = printContents;
-
-     window.print();
-
-     document.body.innerHTML = originalContents;
+    let printContents = document.querySelector('.listar')
+    let originalContents = document.body.innerHTML;
+    document.body.innerHTML = printContents.innerHTML;
+    window.print();
+    document.body.innerHTML = originalContents;
 })
 
 const excel = document.querySelector('.excel')
@@ -65,13 +55,11 @@ excel.addEventListener('click',e=>{
 
 const listadoStock = (listado)=>{
     let wb = XLSX.utils.book_new();
-
     wb.props = {
         Title: "Listado Stock",
         subject: "Test",
         Author: "Electro Avenida"
     }
-    // console.log((listado))
     let newWs = XLSX.utils.json_to_sheet(listado)
     
     XLSX.utils.book_append_sheet(wb,newWs,'Listado Stock')

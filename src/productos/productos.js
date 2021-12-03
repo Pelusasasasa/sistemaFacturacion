@@ -69,7 +69,7 @@ ipcRenderer.on('get-productos', (e,args) =>{
             resultado.innerHTML += `
                 <tr id="${producto._id}">
                     <th scope="row">${producto._id}</th>
-                    <td>${producto.descripcion}</td>
+                    <td class="descripcion">${producto.descripcion}</td>
                     <td>${producto.precio_venta}</td>
                     <td>${producto.marca}</td>
                     <td>${producto.stock}</td>
