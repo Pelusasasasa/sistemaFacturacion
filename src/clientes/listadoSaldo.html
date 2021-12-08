@@ -4,29 +4,31 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- 
-    <script src="html2pdf.bundle.min.js"></script> -->
     <title>Listado de saldo</title>
+    <link rel="stylesheet" href="../../build/css/app.css">
   </head>
-  <body>
-    <h1>listado de Saldo</h1>
+  <body class="listadoSaldo">
+    <h1>Listado de Saldos</h1>
     <hr />
 
-    <button class="descargar">Descargar Listado</button>
-    <table id="tabla">
-      <thead>
-        <tr>
-          <td>Codigo</td>
-          <td>Cliente</td>
-          <td>Direccion</td>
-          <td>Cond IVA</td>
-          <td>Telefono</td>
-          <td>Saldo</td>
-          <td>Saldo P</td>
-        </tr>
-      </thead>
-      <tbody class="tbody"></tbody>
-    </table>
+    <div class="botones"><button class="descargar">Descargar Listado</button></div>
+
+    <div class="seccionTabla">
+      <table id="tabla">
+        <thead>
+          <tr>
+            <th>Codigo</th>
+            <th>Cliente</th>
+            <th>Direccion</th>
+            <th>Cond IVA</th>
+            <th>Telefono</th>
+            <th>Saldo</th>
+            <th>Saldo P</th>
+          </tr>
+        </thead>
+        <tbody class="tbody"></tbody>
+      </table>
+    </div>
   </body>
   <script src="listadoSaldo.js"></script>
 </html>

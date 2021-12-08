@@ -3,9 +3,7 @@ const tbody = document.querySelector('.tbody')
 
 ipcRenderer.send('traerSaldo')
 ipcRenderer.on('traerSaldo',(e,args)=>{
-    console.log(args)
     clientes = JSON.parse(args)
-    console.log(clientes)
     clientes.forEach(cliente => {
         tbody.innerHTML += `
             <tr>
@@ -13,7 +11,7 @@ ipcRenderer.on('traerSaldo',(e,args)=>{
                 <td>${cliente.cliente}</td>
                 <td>${cliente.direccion}</td>
                 <td>${cliente.cond_iva}</td>
-                <td>${cliente.localidad}</td>
+                <td>${cliente.telefono}</td>
                 <td>${cliente.saldo}</td>
                 <td>${cliente.saldo_p}</td>
             </tr>
@@ -27,7 +25,7 @@ descargar.addEventListener('click',e=>{
     tabla.save()
 })
 
-document.addEventListener('keydown',e=>{
+document.addEventListener('keyup',e=>{
     if (e.key === "Escape") {
         window.close()
     }

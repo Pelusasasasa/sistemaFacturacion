@@ -1,0 +1,38 @@
+.listadoSaldo{
+    display: grid;
+    text-align: center ;
+    width: 100%;
+
+    .botones{
+        margin-bottom: 2rem;
+        button{
+            border: none;
+            border-radius: 7.5rem;
+            padding: 1.5rem;
+
+            &:hover{
+                cursor: pointer;
+                transform: scale(1.2);
+            }
+        }
+    }
+
+    .seccionTabla{
+
+        #tabla{
+            border-collapse: collapse;
+            width: 100%;
+            .tbody{
+                tr{
+                    td{
+                            width: 10rem;
+                            white-space: nowrap;
+                            overflow: hidden;
+                            text-overflow: clip;
+                            border: .1rem solid black
+                    }
+                }
+            }
+        }
+    }
+}

@@ -1,4 +1,6 @@
 const { ipcRenderer } = require("electron")
+const Dialogs = require("dialogs");
+const dialogs = Dialogs()
 
 
 const cliente = document.querySelector('#buscador')
@@ -70,6 +72,7 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
 
     await ipcRenderer.invoke('traerVentas',listaVentas).then((args)=>{
         lista = JSON.parse(args)
+        console.log(listaVentas)
     })
         lista.forEach(venta =>{
             (venta.pagado === false) && nuevaLista.push(venta);
@@ -181,8 +184,14 @@ function sacarTotal(arreglo){
 const botonFacturar = document.querySelector('#botonFacturar')
 botonFacturar.addEventListener('click',() =>{
     if (seleccionado) {
-        console.log(seleccionado.id)
-        ipcRenderer.send('abrir-ventana-emitir-comprobante',seleccionado.id)
+        dialogs.promptPassword("Contraseña").then(value=>{
+        ipcRenderer.invoke('traerUsuario',value).then((args)=>{
+            if (args) {
+                ipcRenderer.send('abrir-ventana-emitir-comprobante',[JSON.parse(args).nombre,seleccionado.id])   
+            }
+        })
+        })
+
     }else{
         alert('Venta no seleccionada')
     }

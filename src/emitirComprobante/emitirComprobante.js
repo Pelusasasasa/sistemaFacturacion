@@ -1,3 +1,25 @@
+const Afip = require('@afipsdk/afip.js');
+const afip = new Afip({ CUIT: 27165767433 });
+
+async function main(cuit) {
+    const fs = require('fs')
+    const qrcode = require('qrcode')
+    const url = "https://www.afip.gob.ar/fe/qr/?p=eyJ2ZXIiOjEsImZlY2hhIjoiMjAyMC0xMC0xMyIsImN1aXQiOjMwMDAwMDAwMDA3LCJwdG9WdGEiOjEwLCJ0aXBvQ21wIjoxLCJucm9DbXAiOjk0LCJpbXBvcnRlIjoxMjEwMCwibW9uZWRhIjoiRE9MIiwiY3R6Ijo2NSwidGlwb0RvY1JlYyI6ODAsIm5yb0RvY1JlYyI6MjAwMDAwMDAwMDEsInRpcG9Db2RBdXQiOiJFIiwiY29kQXV0Ijo3MDQxNzA1NDM2NzQ3Nn0=";
+    const run = async()=>{
+        const QR = await qrcode.toDataURL(url)
+        const htmlContent = `
+            <div style="display: flex;justify-content:center;align-items:center;">
+            <h2>QR Prueba</h2>
+            <img src="${QR}">
+            </div>
+        `;
+        fs.writeFileSync('./index2.html',`${htmlContent}`)
+    }
+    run()
+}
+
+//  main(27165767433)
+
 function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -8,8 +30,8 @@ function getParameterByName(name) {
 
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
-const vendedor = getParameterByName('vendedor')
-const { ipcRenderer } = require("electron");
+let vendedor = getParameterByName('vendedor')
+const { ipcRenderer, Main } = require("electron");
 
 
 
@@ -166,8 +188,6 @@ ipcRenderer.on('mando-el-producto',(e,args) => {
 })
 let id = 1 //id de la tabla de ventas
 function mostrarVentas(objeto,cantidad) {
-    console.log(objeto);
-    console.log(cantidad)
     Preciofinal += (parseFloat(objeto.precio_venta)*cantidad);
     total.value = (parseFloat(Preciofinal)).toFixed(2)
     resultado.innerHTML += `
@@ -261,9 +281,9 @@ function verElTipoDeVenta(tipo) {
 function verCodComprobante(tipo){
     if (tipo === "Ticket Factura") {
     if (conIva.value === "Inscripto") {
-        return 81
+        return 1
     } else {
-        return 82
+        return 6
     }
     }else{
         return " "
@@ -273,9 +293,9 @@ function verCodComprobante(tipo){
 function verQueVentaEs(tipo,cod_comp) {
     if (tipo === "Presupuesto") {
         return "Ultimo Presupuesto"
-    }else if(tipo === "Ticket Factura" && cod_comp === 81){
+    }else if(tipo === "Ticket Factura" && cod_comp === 1){
         return "Ultima Factura A"
-    }else if(tipo ===  "Ticket Factura" && cod_comp === 82){
+    }else if(tipo ===  "Ticket Factura" && cod_comp === 6){
         return "Ultima Factura B"
     }else if(tipo === "Cuenta Corriente"){
         return "Ultimo Remito Cta Cte"
@@ -309,9 +329,9 @@ async function traerUltimoNroComprobante(tipoCom,codigoComprobante,tipo_pago) {
     //propiedad comprobante
     function numeroComprobante(tipo){
         if (tipo === "Ticket Factura") {
-            venta.cod_doc = codDoc(cliente.dnicuit)
-            venta.dnicuit = cliente.dnicuit
-            venta.condIva = cliente.conIva
+            venta.cod_doc = codDoc(dnicuit.value)
+            venta.dnicuit = dnicuit.value
+            venta.condIva = conIva.value
         }
 
     }
@@ -404,17 +424,25 @@ function redondear(numero) {
 }
 
 function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
+    let numero
+    let tipoFactura
     let [n1,n2] = comprobante.split('-')
+    if (comprobante.split('-').length === 2) {
     n2 = parseFloat(n2)+1
     n2 = n2.toString().padStart(8,0)
-    let numero = n1+'-'+n2
-    let tipoFactura
+    numero = n1+'-'+n2
+
     if (tipo_pago==="CD") {
         tipoFactura = verQueVentaEs("Contado",codigoComp)
     }else if(tipo_pago==="CC"){
         tipoFactura = verQueVentaEs("Cuenta Corriente",codigoComp)
     }else{
         tipoFactura = verQueVentaEs("Presupuesto",codigoComp)
+    }
+    }else{
+        numero = parseFloat(n1)+1
+        numero = numero.toString().padStart(8,0)
+        tipoFactura = verQueVentaEs("Ticket Factura",codigoComp)
     }
     ipcRenderer.send('modificar-numeros',[numero,tipoFactura])
 }
@@ -471,20 +499,20 @@ presupuesto.addEventListener('click',async (e)=>{
     if (venta.tipo_pago !== "PP") {
     venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
     (venta.productos).forEach(producto => {
-        sacarStock(producto.cantidad,producto.objeto)
-        movimientoProducto(producto.cantidad,producto.objeto)
+        //sacarStock(producto.cantidad,producto.objeto)
+        //movimientoProducto(producto.cantidad,producto.objeto)
     });
     }
-    actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-    ipcRenderer.send('nueva-venta',venta);
-    printPage()
-    location.reload()
+    //actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+    //ipcRenderer.send('nueva-venta',venta);
+    //printPage()
+    //location.reload()
     console.log(venta)
 })
 
 //Aca mandamos la venta con tikect Factura
 const ticketFactura = document.querySelector('.ticketFactura')
-ticketFactura.addEventListener('click',(e) =>{
+ticketFactura.addEventListener('click',async(e) =>{
     e.preventDefault()
      tipoVenta = "Ticket Factura"
      venta.observacion = observaciones.value
@@ -493,16 +521,65 @@ ticketFactura.addEventListener('click',(e) =>{
      venta.precioFinal = redondear(total.value);
      venta.tipo_comp = tipoVenta;
      numeroComprobante(tipoVenta);
-     venta.Cod_comp = verCodComprobante(tipoVenta)
-     venta.nro_comp = traerUltimoNroComprobante("Ticket Factura",venta.Cod_comp)
+     venta.cod_comp = verCodComprobante(tipoVenta)
+     venta.nro_comp = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp)
+     venta._id=venta.nro_comp;
+     venta.pagado = verSiPagoONo(venta.tipo_pago)
      venta.tipo_pago = tipopago(tipoPago)   
      venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
-     venta.comprob = traerNumeroDeFactura(texto)
-        venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,cliente_id)
-        sacarStock(venta.productos[0])
-        ipcRenderer.send('nueva-venta',venta);
-        location.reload()
+     venta.comprob = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp);
+    //venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,cliente_id);
+    (venta.productos).forEach(producto => {
+        //sacarStock(producto.cantidad,producto.objeto)
+        //movimientoProducto(producto.cantidad,producto.objeto)
+    });
+    //actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+    subirAAfip(venta)
+    //ipcRenderer.send('nueva-venta',venta);
+    //   location.reload()
  })
+
+
+const subirAAfip = async(venta)=>{
+    const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+    const ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
+    console.log(venta)
+    let totalIva = 0
+    venta.productos.forEach(({objeto,cantidad}) =>{
+        if (objeto.iva === "N") {
+            totalIva += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.21)
+        }else{
+            totalIva += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.105)
+        }
+    })
+    let data = {
+        'CantReg': 1,
+        'PtoVta': 5,
+        'CbteTipo': venta.cod_comp,
+        'Concepto': 1,
+        'DocTipo': venta.cod_doc,
+        'DocNro': venta.dnicuit,
+        'CbteDesde': 1,
+        'CbteHasta': ultimoElectronica,
+        'CbteFch': parseInt(fecha.replace(/-/g, '')),
+        'ImpTotal': venta.precioFinal,
+        'ImpTotConc': 0,
+        'ImpNeto': 0,
+        'ImpOpEx': 0,
+        'ImpIVA': totalIva.toFixed(2), //Importe total de IVA
+        'ImpTrib': 0,
+        'MonId': 'PES',
+        'MonCotiz' 	: 1,
+
+        }
+
+    console.log(data)
+}
+
+
+
+
+
 
  const buscarAfip = document.querySelector('.buscarAfip')
  buscarAfip.addEventListener('click',  (e)=>{
@@ -693,19 +770,18 @@ function ponerInputsClientes(cliente) {
     telefono.value = cliente.telefono;
     conIva.value = cliente.cond_iva;
     venta.cliente = cliente._id;
-    console.log(cliente)
     if (cliente.condicion==="M") {
         alert(`${cliente.observacion}`)
     }
-
     const cuentaC = document.querySelector('.cuentaC');
-
     (cliente.cond_fact === "4") && cuentaC.classList.add('none');
 
 }
- ipcRenderer.once('venta',(e,numero)=>{
-
-    ipcRenderer.send('traerVenta',JSON.parse(numero));
+ ipcRenderer.once('venta',(e,args)=>{
+    const [usuario,numero] = JSON.parse(args)
+    textoUsuario.innerHTML = usuario
+    venta.vendedor = usuario
+    ipcRenderer.send('traerVenta',numero);
     ipcRenderer.on('traerVenta',async (e,args)=>{
         const venta = JSON.parse(args)[0]
         const cliente = JSON.parse(await ipcRenderer.invoke('get-cliente',venta.cliente))

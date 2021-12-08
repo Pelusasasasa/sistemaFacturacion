@@ -232,14 +232,12 @@ ipcMain.on('sumarSaldo',async (e,args)=>{
     await axios.put(`${URL}clientes/${id}`)
 })
 
-// //enviamos los clientes que tienen saldo
-// ipcMain.on('traerSaldo',async (e,args)=>{
-//     const clientes = await Clientes.find({saldo: {$not: {$lte: 0.1}}}).limit(50)
-//      console.log(await Clientes.find({saldo: {$ne: "0"}}))
-//     // console.log(await Clientes.find({"saldo": {$ne: 0.0}}))
-//     console.log(clientes[0].saldo==="0")
-//     e.reply('traerSaldo',JSON.stringify(clientes))
-// })
+//enviamos los clientes que tienen saldo
+ipcMain.on('traerSaldo',async (e,args)=>{
+     let clientes = await axios.get(`${URL}clientes`)
+     clientes = clientes.data
+     e.reply('traerSaldo',JSON.stringify(clientes))
+})
 
 //FIN CLIENTES
 
@@ -260,8 +258,9 @@ ipcMain.on('nueva-venta', async (e, args) => {
     let cliente = await axios.get(`${URL}clientes/id/${_id}`)
     cliente = cliente.data
     let listaVentas = cliente.listaVentas
-     listaVentas.push(nuevaVenta._id)
-     cliente.listaVentas = listaVentas;
+    listaVentas[0] === "" ? (listaVentas[0] = nuevaVenta._id) : (listaVentas.push(nuevaVenta._id))
+    console.log(listaVentas)
+    cliente.listaVentas = listaVentas;
     await axios.put(`${URL}clientes/${_id}`,cliente)
 })
 
@@ -352,10 +351,11 @@ ipcMain.on('ventaModificada',async (e,[args,id,saldo])=>{
      await axios.put(`${URL}clientes/${args.cliente}`,cliente)
 })
 
-    ipcMain.on('abrir-ventana-emitir-comprobante',(e,numeroVenta)=>{
+    ipcMain.on('abrir-ventana-emitir-comprobante',(e,args)=>{
+        const[vendedor,numeroVenta] = args
         abrirVentana("emitirComrpobante")
         nuevaVentana.on('ready-to-show',async ()=>{
-            nuevaVentana.webContents.send('venta',JSON.stringify(numeroVenta))
+            nuevaVentana.webContents.send('venta',JSON.stringify([vendedor,numeroVenta]))
         })
     })
 //FIN VENTAS

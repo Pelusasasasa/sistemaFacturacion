@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@afipsdk/afip.js": "^0.7.1",
+    "afip-apis": "^0.4.0",
     "axios": "^0.24.0",
     "cssnano": "^5.0.7",
     "dialogs": "^2.0.1",
@@ -32,12 +33,14 @@
     "electron-osx-prompt": "^1.4.1",
     "electron-prompt": "^1.7.0",
     "electron-reload": "^1.5.0",
+    "facturajs": "^0.2.0",
     "luxon": "^2.0.2",
     "mongoose": "^5.13.9",
     "multer": "^1.4.3",
     "node-notifier": "^9.0.0",
     "pdf-parse": "^1.1.1",
     "postcss": "^8.3.6",
+    "qrcode": "^1.5.0",
     "xlsx": "^0.17.1"
   }
 }
