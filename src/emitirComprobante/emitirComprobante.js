@@ -1,24 +1,6 @@
 const Afip = require('@afipsdk/afip.js');
 const afip = new Afip({ CUIT: 27165767433 });
 
-async function main(cuit) {
-    const fs = require('fs')
-    const qrcode = require('qrcode')
-    const url = "https://www.afip.gob.ar/fe/qr/?p=eyJ2ZXIiOjEsImZlY2hhIjoiMjAyMC0xMC0xMyIsImN1aXQiOjMwMDAwMDAwMDA3LCJwdG9WdGEiOjEwLCJ0aXBvQ21wIjoxLCJucm9DbXAiOjk0LCJpbXBvcnRlIjoxMjEwMCwibW9uZWRhIjoiRE9MIiwiY3R6Ijo2NSwidGlwb0RvY1JlYyI6ODAsIm5yb0RvY1JlYyI6MjAwMDAwMDAwMDEsInRpcG9Db2RBdXQiOiJFIiwiY29kQXV0Ijo3MDQxNzA1NDM2NzQ3Nn0=";
-    const run = async()=>{
-        const QR = await qrcode.toDataURL(url)
-        const htmlContent = `
-            <div style="display: flex;justify-content:center;align-items:center;">
-            <h2>QR Prueba</h2>
-            <img src="${QR}">
-            </div>
-        `;
-        fs.writeFileSync('./index2.html',`${htmlContent}`)
-    }
-    run()
-}
-
-//  main(27165767433)
 
 function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -32,6 +14,7 @@ const Dialogs = require("dialogs");
 const dialogs = Dialogs()
 let vendedor = getParameterByName('vendedor')
 const { ipcRenderer, Main } = require("electron");
+const { CLIENT_RENEG_LIMIT } = require('tls');
 
 
 
@@ -338,7 +321,11 @@ async function traerUltimoNroComprobante(tipoCom,codigoComprobante,tipo_pago) {
 
 //propiedad cod_doc vemos si es dni o cuit para retornar el codDoc
 function codDoc(dniocuit) {
-    if (dniocuit.strlen > 8) {
+    console.log(dniocuit.length)
+
+
+
+    if (dniocuit.length > 8) {
         return 80
     } else {
         return 96
@@ -499,15 +486,14 @@ presupuesto.addEventListener('click',async (e)=>{
     if (venta.tipo_pago !== "PP") {
     venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
     (venta.productos).forEach(producto => {
-        //sacarStock(producto.cantidad,producto.objeto)
-        //movimientoProducto(producto.cantidad,producto.objeto)
+        sacarStock(producto.cantidad,producto.objeto)
+        movimientoProducto(producto.cantidad,producto.objeto)
     });
     }
-    //actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-    //ipcRenderer.send('nueva-venta',venta);
-    //printPage()
-    //location.reload()
-    console.log(venta)
+    actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+    ipcRenderer.send('nueva-venta',venta);
+    printPage("presupuesto")
+    location.reload()
 })
 
 //Aca mandamos la venta con tikect Factura
@@ -530,28 +516,34 @@ ticketFactura.addEventListener('click',async(e) =>{
      venta.comprob = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp);
     //venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,cliente_id);
     (venta.productos).forEach(producto => {
-        //sacarStock(producto.cantidad,producto.objeto)
-        //movimientoProducto(producto.cantidad,producto.objeto)
+        sacarStock(producto.cantidad,producto.objeto)
+        movimientoProducto(producto.cantidad,producto.objeto)
     });
-    //actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+    actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
     subirAAfip(venta)
-    //ipcRenderer.send('nueva-venta',venta);
-    //   location.reload()
+    ipcRenderer.send('nueva-venta',venta);
+    //location.reload()
  })
 
 
 const subirAAfip = async(venta)=>{
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-    const ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
-    console.log(venta)
-    let totalIva = 0
+    let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
+    (ultimoElectronica === 0) && (ultimoElectronica=1); 
+    let totalIva105 = 0
+    let totalIva21=0
+    let totalNeto21 = 0 
+    let totalNeto105 = 0 
     venta.productos.forEach(({objeto,cantidad}) =>{
         if (objeto.iva === "N") {
-            totalIva += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.21)
+            totalNeto21 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta/1.21))
+            totalIva21 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.21)
         }else{
-            totalIva += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.105)
+            totalNeto105 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta/1.105))
+            totalIva105 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.105)
         }
     })
+    console.log(venta.cod_comp)
     let data = {
         'CantReg': 1,
         'PtoVta': 5,
@@ -560,25 +552,61 @@ const subirAAfip = async(venta)=>{
         'DocTipo': venta.cod_doc,
         'DocNro': venta.dnicuit,
         'CbteDesde': 1,
-        'CbteHasta': ultimoElectronica,
+        'CbteHasta': ultimoElectronica+1,
         'CbteFch': parseInt(fecha.replace(/-/g, '')),
         'ImpTotal': venta.precioFinal,
         'ImpTotConc': 0,
-        'ImpNeto': 0,
+        'ImpNeto': (totalNeto105+totalNeto21).toFixed(2),
         'ImpOpEx': 0,
-        'ImpIVA': totalIva.toFixed(2), //Importe total de IVA
+        'ImpIVA': (totalIva21+totalIva105).toFixed(2), //Importe total de IVA
         'ImpTrib': 0,
         'MonId': 'PES',
         'MonCotiz' 	: 1,
-
+        'Iva' 		: [ // (Opcional) Alícuotas asociadas al comprobante
+            {
+                'Id' 		: 5, // Id del tipo de IVA (4 para 10.5%)
+                'BaseImp' 	: totalNeto21.toFixed(2), // Base imponible
+                'Importe' 	: totalIva21.toFixed(2) // Importe 
+            }
+        ],
+        }
+        if (totalNeto105 !=0 ) {
+            data.Iva.push({
+                    'Id' 		: 4, // Id del tipo de IVA (4 para 10.5%)
+                    'BaseImp' 	: totalNeto105.toFixed(2), // Base imponible
+                    'Importe' 	: totalIva105.toFixed(2) // Importe 
+            })
         }
 
-    console.log(data)
+
+        const res = await afip.ElectronicBilling.createNextVoucher(data); //creamos la factura electronica
+        const qr = {
+            ver: 1,
+            fecha: data.CbteFch,
+            cuit: data.DocNro,
+            ptoVta: data.PtoVta,
+            tipoCmp: venta.cod_comp,
+            nroCmp: ultimoElectronica,
+            importe: data.ImpTotal,
+            moneda: "PES",
+            ctz: 1,
+            tipoDocRec: data.DocTipo,
+            nroDocRec: data.DocNro,
+            tipoCodAut: "E",
+            codAut: res.CAE
+        }
+        const textoQR = btoa(unescape(encodeURIComponent(qr)));//codificamos lo que va en el QR
+        const QR = await generarQR(textoQR,res.CAE,res.CAEFchVto)
+        printPage("ticket factura",QR,res.CAE,res.CAEFchVto,ultimoElectronica,venta.cod_comp);
 }
-
-
-
-
+//Generamos el qr
+async function generarQR(texto) {
+    const fs = require('fs')
+    const qrcode = require('qrcode')
+    const url = `https://www.afip.gob.ar/fe/qr/?p=${texto}`;
+    let retornar = await qrcode.toDataURL(url)
+    return retornar
+}
 
 
  const buscarAfip = document.querySelector('.buscarAfip')
@@ -674,7 +702,7 @@ const tamanioCancelados = async() =>{
         return `${retornar + 1}`
 }
 //funcion para imprimir una hoja
-     function printPage(){
+     function printPage(factura,qr,cae,fechaCAE,numeroVoucher,cod_comp){
         const div = document.querySelector('divImprimir')
         var iframe = document.getElementById("iframe");
         var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
@@ -692,6 +720,8 @@ const tamanioCancelados = async() =>{
         const precioFinal = innerDoc.querySelector('.precioFinal')
         const tipoPago = innerDoc.querySelector('.tipoPago')
         const tbody = innerDoc.querySelector('.tbody')
+        const seccionQR = innerDoc.querySelector('.seccionQR')
+        const tipoFactura = innerDoc.querySelector('.tipoFactura')
         const tomarFecha = new Date()
         const dia = tomarFecha.getDate() 
         const mes = tomarFecha.getMonth() + 1
@@ -712,6 +742,12 @@ const tamanioCancelados = async() =>{
         subtotal.innerHTML=parseFloat(venta.precioFinal)+parseFloat(venta.descuento)
         precioFinal.innerHTML=venta.precioFinal
         tipoPago.innerHTML= venta.tipo_pago
+        console.log(cod_comp)
+        if(cod_comp === 1){
+            tipoFactura.innerHTML = "A"
+        }else if (cod_comp === 6) {
+            tipoFactura.innerHTML = "B"
+        }
 
         if (venta.tipo_pago === "CC") {
             precioFinal.innerHTML = ""
@@ -746,6 +782,22 @@ const tamanioCancelados = async() =>{
                 </tr>
                 `
             }
+
+            if (factura === "ticket factura") {
+                console.log(numero )
+                numero.innerHTML =`0005-${(numeroVoucher.toString()).padStart(8,0)}`
+                console.log(numero)
+                const insertar= `
+                <div>
+                    <img src=${qr}>
+                </div>
+                <div>
+                    <h3>CAE: ${cae}</h3>
+                    <h4>Fecha Vto. Cae: ${fechaCAE}</h4>
+                </div>
+                `
+                seccionQR.innerHTML = insertar
+            }
          });
 
          window.print()
@@ -776,7 +828,12 @@ function ponerInputsClientes(cliente) {
     const cuentaC = document.querySelector('.cuentaC');
     (cliente.cond_fact === "4") && cuentaC.classList.add('none');
 
+
 }
+
+
+
+
  ipcRenderer.once('venta',(e,args)=>{
     const [usuario,numero] = JSON.parse(args)
     textoUsuario.innerHTML = usuario

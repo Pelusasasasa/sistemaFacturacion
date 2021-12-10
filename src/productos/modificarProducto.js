@@ -52,7 +52,9 @@ function asignarCampos() {
     provedor.value = producto.provedor
     marca.value = producto.marca
     stock.value = producto.stock
+    console.log(producto.iva)
     tasaIva.value=producto.iva;
+    console.log(tasaIva.value);
     (producto.costo !== "") && (costoPesos.value = parseFloat(producto.costo).toFixed(2));
     (producto.costodolar !== "") && (costoDolares.value = parseFloat(producto.costodolar).toFixed(2));
 
