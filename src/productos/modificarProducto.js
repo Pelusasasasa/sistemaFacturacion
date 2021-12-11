@@ -31,7 +31,7 @@ const promesa = new Promise((resolve,reject) =>{
     resolve()
 
 })
-
+console.log(dolar)
 let producto = {}
 
 const promesaProductos = new Promise((resolve,reject)=>{
@@ -52,13 +52,12 @@ function asignarCampos() {
     provedor.value = producto.provedor
     marca.value = producto.marca
     stock.value = producto.stock
-    console.log(producto.iva)
     tasaIva.value=producto.iva;
-    console.log(tasaIva.value);
     (producto.costo !== "") && (costoPesos.value = parseFloat(producto.costo).toFixed(2));
-    (producto.costodolar !== "") && (costoDolares.value = parseFloat(producto.costodolar).toFixed(2));
+    (producto.costodolar !== "") && (costoDolares.value = parseFloat(producto.costo*dolar).toFixed(2));
 
     if (costoPesos.value === "0") {
+        console.log(dolar)
         ivaImp.value = parseFloat(producto.impuestos)*dolar
         costo = parseFloat(costoDolares.value)
         costoTotal.value = ((costo+parseFloat(producto.impuestos))*dolar).toFixed(3)

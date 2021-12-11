@@ -1,4 +1,4 @@
-const URL = "http://192.168.1.107:4000/api/";
+const URL = "http://192.168.0.121:4000/api/";
 
 const axios = require("axios")
 const path = require('path');
@@ -125,7 +125,6 @@ ipcMain.on('traerProductosPorRango',async (e,args)=>{
     const [desde,hasta] = args
     let productos = await axios.get(`${URL}productos/productosEntreRangos/${desde}/${hasta}`)
     productos = productos.data;
-    console.log(productos)
     e.reply('traerProductosPorRango',JSON.stringify(productos))
 })
 
@@ -259,7 +258,6 @@ ipcMain.on('nueva-venta', async (e, args) => {
     cliente = cliente.data
     let listaVentas = cliente.listaVentas
     listaVentas[0] === "" ? (listaVentas[0] = nuevaVenta._id) : (listaVentas.push(nuevaVenta._id))
-    console.log(listaVentas)
     cliente.listaVentas = listaVentas;
     await axios.put(`${URL}clientes/${_id}`,cliente)
 })

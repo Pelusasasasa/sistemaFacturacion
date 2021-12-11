@@ -321,10 +321,6 @@ async function traerUltimoNroComprobante(tipoCom,codigoComprobante,tipo_pago) {
 
 //propiedad cod_doc vemos si es dni o cuit para retornar el codDoc
 function codDoc(dniocuit) {
-    console.log(dniocuit.length)
-
-
-
     if (dniocuit.length > 8) {
         return 80
     } else {
@@ -546,8 +542,8 @@ const subirAAfip = async(venta)=>{
     console.log(venta.cod_comp)
     let data = {
         'CantReg': 1,
-        'PtoVta': 5,
         'CbteTipo': venta.cod_comp,
+
         'Concepto': 1,
         'DocTipo': venta.cod_doc,
         'DocNro': venta.dnicuit,
@@ -561,15 +557,11 @@ const subirAAfip = async(venta)=>{
         'ImpIVA': (totalIva21+totalIva105).toFixed(2), //Importe total de IVA
         'ImpTrib': 0,
         'MonId': 'PES',
+        'PtoVta': 5,
         'MonCotiz' 	: 1,
-        'Iva' 		: [ // (Opcional) Alícuotas asociadas al comprobante
-            {
-                'Id' 		: 5, // Id del tipo de IVA (4 para 10.5%)
-                'BaseImp' 	: totalNeto21.toFixed(2), // Base imponible
-                'Importe' 	: totalIva21.toFixed(2) // Importe 
-            }
-        ],
+        'Iva' 		: [],
         }
+        
         if (totalNeto105 !=0 ) {
             data.Iva.push({
                     'Id' 		: 4, // Id del tipo de IVA (4 para 10.5%)
@@ -577,23 +569,29 @@ const subirAAfip = async(venta)=>{
                     'Importe' 	: totalIva105.toFixed(2) // Importe 
             })
         }
-
-
+        if (totalNeto21 !=0 ) {
+            data.Iva.push({
+                    'Id' 		: 4, // Id del tipo de IVA (4 para 10.5%)
+                    'BaseImp' 	: totalNeto21.toFixed(2), // Base imponible
+                    'Importe' 	: totalIva21.toFixed(2) // Importe 
+            })
+        }
         const res = await afip.ElectronicBilling.createNextVoucher(data); //creamos la factura electronica
+
         const qr = {
             ver: 1,
             fecha: data.CbteFch,
-            cuit: data.DocNro,
-            ptoVta: data.PtoVta,
+            cuit: 27165767433,
+            ptoVta: 5 ,
             tipoCmp: venta.cod_comp,
             nroCmp: ultimoElectronica,
             importe: data.ImpTotal,
             moneda: "PES",
             ctz: 1,
             tipoDocRec: data.DocTipo,
-            nroDocRec: data.DocNro,
+            nroDocRec: parseInt(data.DocNro),
             tipoCodAut: "E",
-            codAut: res.CAE
+            codAut: parseFloat(res.CAE)
         }
         const textoQR = btoa(unescape(encodeURIComponent(qr)));//codificamos lo que va en el QR
         const QR = await generarQR(textoQR,res.CAE,res.CAEFchVto)
@@ -608,7 +606,7 @@ async function generarQR(texto) {
     return retornar
 }
 
-
+//funcion que busca en la afip a una persona
  const buscarAfip = document.querySelector('.buscarAfip')
  buscarAfip.addEventListener('click',  (e)=>{
  
@@ -701,8 +699,10 @@ const tamanioCancelados = async() =>{
     })
         return `${retornar + 1}`
 }
+
+const fs = require('fs');
 //funcion para imprimir una hoja
-     function printPage(factura,qr,cae,fechaCAE,numeroVoucher,cod_comp){
+    async function printPage(factura,qr,cae,fechaCAE,numeroVoucher,cod_comp){
         const div = document.querySelector('divImprimir')
         var iframe = document.getElementById("iframe");
         var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
@@ -747,6 +747,8 @@ const tamanioCancelados = async() =>{
             tipoFactura.innerHTML = "A"
         }else if (cod_comp === 6) {
             tipoFactura.innerHTML = "B"
+        }else{
+            tipoFactura.innerHTML = "R"
         }
 
         if (venta.tipo_pago === "CC") {
@@ -761,7 +763,7 @@ const tamanioCancelados = async() =>{
             cond_iva.innerHTML = "Consumidor Final"
         }
         tbody.innerHTML=""
-         lista.forEach(({cantidad,objeto}) => {
+         for await (let {objeto,cantidad} of lista) {
              if (venta.tipo_pago !== "CC") {
                     
                 tbody.innerHTML += `
@@ -784,9 +786,7 @@ const tamanioCancelados = async() =>{
             }
 
             if (factura === "ticket factura") {
-                console.log(numero )
                 numero.innerHTML =`0005-${(numeroVoucher.toString()).padStart(8,0)}`
-                console.log(numero)
                 const insertar= `
                 <div>
                     <img src=${qr}>
@@ -798,8 +798,8 @@ const tamanioCancelados = async() =>{
                 `
                 seccionQR.innerHTML = insertar
             }
-         });
-
+         };
+        //fs.writeFileSync(`./${numero.innerHTML}.pdf`,window)
          window.print()
 
      } 
@@ -811,7 +811,6 @@ const tamanioCancelados = async() =>{
 
  //Ponemos valores a los inputs
 function ponerInputsClientes(cliente) {
-    
     buscarCliente.value = cliente.cliente;
     saldo.value = cliente.saldo;
     saldo_p.value = cliente.saldo_p;
@@ -827,13 +826,7 @@ function ponerInputsClientes(cliente) {
     }
     const cuentaC = document.querySelector('.cuentaC');
     (cliente.cond_fact === "4") && cuentaC.classList.add('none');
-
-
 }
-
-
-
-
  ipcRenderer.once('venta',(e,args)=>{
     const [usuario,numero] = JSON.parse(args)
     textoUsuario.innerHTML = usuario

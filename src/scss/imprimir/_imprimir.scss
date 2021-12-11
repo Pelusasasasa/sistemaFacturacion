@@ -1,6 +1,6 @@
 #iframe {
   width: 210mm;
-  height: 131mm;
+  height: 165mm;
   //position: fixed;
   top: 0px;
   left: -2rem;
@@ -38,7 +38,11 @@
       grid-template-columns: 1.5fr 1fr 1fr;
     }
     .tipoFactura{
+      width: 5rem;
       border: .1rem solid black;
+      text-align: center;
+      font-weight: bold;
+      font-size: 4rem;
     }
     div {
       display: grid;
