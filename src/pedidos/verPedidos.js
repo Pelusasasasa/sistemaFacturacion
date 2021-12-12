@@ -53,6 +53,7 @@ tbody.addEventListener("click" , e =>{
     estado.focus()
 
     //hacemos que se seleccione todo el input
+    console.log(estado)
     selecciona_value(estado.id)
 
     //se ejecuta cuando escribimos en el input

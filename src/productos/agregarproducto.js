@@ -137,3 +137,146 @@ doc.addEventListener('keydown',e=>{
         window.close()
     }
 })
+
+
+
+function selecciona_value(idInput) {
+    valor_input = document.getElementById(idInput).value;
+    longitud = valor_input.length;
+    var selectionEnd = 0 + 1;
+    if (document.getElementById(idInput).setSelectionRange) {
+    document.getElementById(idInput).focus();
+    document.getElementById(idInput).setSelectionRange (0, longitud);
+    }
+    else if (input.createTextRange) {
+    var range = document.getElementById(idInput).createTextRange() ;
+    range.collapse(true);
+    range.moveEnd('character', 0);
+    range.moveStart('character', longitud);
+    range.select();
+    }
+    }
+
+codigo.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        codFabrica.focus()
+    }
+})
+codFabrica.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        descripcion.focus()
+    }
+})
+descripcion.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        unidad.focus()
+    }
+})
+
+stock.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        provedor.focus()
+    }
+})
+
+provedor.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        marca.focus()
+    }
+})
+
+marca.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        tasaIva.focus()
+    }
+})
+
+costoPesos.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        costoDolares.focus()
+    }
+})
+
+costoDolares.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        ivaImp.focus()
+    }
+})
+
+ivaImp.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        costoTotal.focus()
+    }
+})
+
+costoTotal.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        observaciones.focus()
+    }
+})
+
+observaciones.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        utilidad.focus()
+    }
+})
+
+utilidad.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        precioVenta.focus()
+    }
+})
+
+precioVenta.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        modificar.focus()
+    }
+}) 
+
+utilidad.addEventListener('focus',e=>{
+    selecciona_value(utilidad.id)
+})
+
+costoPesos.addEventListener('focus',e=>{
+    selecciona_value(costoPesos.id)
+})
+
+costoDolares.addEventListener('focus',e=>{
+    selecciona_value(costoDolares.id)
+})
+
+marca.addEventListener('focus',e=>{
+    selecciona_value(marca.id)
+})
+
+stock.addEventListener('focus',e=>{
+    selecciona_value(stock.id)
+})
+
+provedor.addEventListener('focus',e=>{
+    selecciona_value(provedor.id)
+})
+
+descripcion.addEventListener('focus',e=>{
+    selecciona_value(descripcion.id)
+})
+
+codigo.addEventListener('focus',e=>{
+    selecciona_value(codigo.id)
+})
+
+codFabrica.addEventListener('focus',e=>{
+    selecciona_value(codFabrica.id)
+})
+
+ivaImp.addEventListener('focus',e=>{
+    selecciona_value(ivaImp.id)
+})
+
+costoTotal.addEventListener('focus',e=>{
+    selecciona_value(costoTotal.id)
+})
+
+observaciones.addEventListener('focus',e=>{
+    selecciona_value(observaciones.id)
+})

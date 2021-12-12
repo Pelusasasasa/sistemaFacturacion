@@ -1,4 +1,4 @@
-const URL = "http://192.168.0.121:4000/api/";
+const URL = "http://192.168.1.107:4000/api/";
 
 const axios = require("axios")
 const path = require('path');
@@ -146,6 +146,7 @@ ipcMain.on('mando-el-producto', async (e, args) => {
 //traemos los clientes
 ipcMain.on('get-clientes', async (e, args = "") => {
     let clientes
+    args === "" && (args = "A Consumidor Final")
     clientes = await axios.get(`${URL}clientes/${args}`)
     clientes = clientes.data
     e.reply('get-clientes', JSON.stringify(clientes))

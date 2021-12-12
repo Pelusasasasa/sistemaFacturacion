@@ -8,8 +8,7 @@
     <link rel="stylesheet" href="../../build/css/app.css" />
   </head>
   <body class="contenedor-modificar">
-    <form name="formularioCliente" class="formularioCliente">
-      <div class="formulario__campo">
+      <div class="formulario__campo nombre">
         <label class="" for="nombre">Nombre</label>
         <input
           disabled
@@ -17,131 +16,125 @@
           type="text"
           name="nombre"
           id="nombre"
-          placeholder="Nombre"
         />
       </div>
-
-      <div class="formulario__campo">
-        <label class="" for="localidad">Localidad</label>
-        <input
-          disabled
-          class=""
-          type="text"
-          name="localidad"
-          id="localidad"
-          placeholder="Localidad"
-        />
-      </div>
-
-      <div class="formulario__campo">
-        <label class="" for="provincia">Provincia</label>
-        <input
-          disabled
-          class=""
-          type="text"
-          name="provincia"
-          id="provincia"
-          placeholder="Provincia"
-        />
-      </div>
-      <div class="formulario__campo">
-        <label class="" for="cod_postal">Codigo Postal</label>
-        <input
-          disabled
-          class=""
-          type="text"
-          name="cod_postal"
-          id="cod_postal"
-          placeholder="Codigo Postal"
-        />
-      </div>
-
-      <div class="formulario__campo">
-        <label class="" for="direccion">Direccion</label>
-        <input
-          disabled
-          class=""
-          type="text"
-          name="direccion"
-          id="direccion"
-          placeholder="Direccion"
-        />
-      </div>
-
-      <div class="formulario__campo">
-        <label class="" for="dnicuit">Dni o Cuit</label>
-        <input
-          disabled
-          class=""
-          type="text"
-          name="dnicuit"
-          id="dnicuit"
-          placeholder="Dni o Cuit"
-        />
-      </div>
-
-      <div class="formulario__campo">
-        <label class="" for="email">Email</label>
-        <input disabled class="" type="mail" name="email" id="email" />
-      </div>
-
-      <div class="formulario__campo">
-        <label class="" for="telefono">Telefono</label>
-        <input class="" type="tel" disabled name="telefono" id="telefono" />
-      </div>
-
-      <div class="formulario__campo">
-        <label for="limite">Limite de compra</label>
-        <input type="Number" disabled name="limite" id="limite" />
-      </div>
-
-      <div class="formulario__campo">
-        <label for="conFact">Condicion de Factura</label>
-        <select name="conFact" disabled id="conFact">
-          <option value="1">1- Ctu. Cte. Normal</option>
-          <option value="4">4- Contado</option>
-        </select>
-      </div>
-
-      <div class="formulario__campo">
-        <label class="" for="conIva">Cond IVA</label>
-        <select name="conIva" disabled id="conIva">
-          <option value="Consumidor Final">Consumidor Final</option>
-          <option value="Monotributista">Monotributista</option>
-          <option value="Inscripto">Inscripto</option>
-          <option value="Exento">Exento</option>
-        </select>
-      </div>
-
-      <div class="formulario__campo">
-        <div class="moroso">
-          <label for="normal">Normal</label>
+      <div class="g-3">
+        <div class="formulario__campo">
+          <label class="" for="localidad">Localidad</label>
           <input
             disabled
-            type="radio"
-            name="moroso"
-            id="moroso/normal"
-            value="N"
+            class=""
+            type="text"
+            name="localidad"
+            id="localidad"
           />
         </div>
 
-        <div class="moroso">
-          <label for="moroso">Moroso</label>
+        <div class="formulario__campo">
+          <label class="" for="provincia">Provincia</label>
           <input
             disabled
-            type="radio"
-            name="moroso"
-            id="moroso/normal"
-            value="M"
+            class=""
+            type="text"
+            name="provincia"
+            id="provincia"
           />
         </div>
-      </div>
+        <div class="formulario__campo">
+          <label class="" for="cod_postal">Codigo Postal</label>
+          <input
+            disabled
+            class=""
+            type="text"
+            name="cod_postal"
+            id="cod_postal"
+          />
+        </div>
 
-      <div class="formulario__campo">
-        <label for="observaciones">Observaciones</label>
-        <input type="text" name="observaciones" id="observaciones" disabled />
-      </div>
-    </form>
+        <div class="formulario__campo">
+          <label class="" for="direccion">Direccion</label>
+          <input
+            disabled
+            class=""
+            type="text"
+            name="direccion"
+            id="direccion"
+          />
+        </div>
+
+        <div class="formulario__campo">
+          <label class="" for="dnicuit">Dni o Cuit</label>
+          <input
+            disabled
+            class=""
+            type="text"
+            name="dnicuit"
+            id="dnicuit"
+          />
+        </div>
+
+        <div class="formulario__campo">
+          <label class="" for="email">Email</label>
+          <input disabled class="" type="mail" name="email" id="email" />
+        </div>
+
+        <div class="formulario__campo">
+          <label class="" for="telefono">Telefono</label>
+          <input class="" type="tel" disabled name="telefono" id="telefono" />
+        </div>
+
+        <div class="formulario__campo">
+          <label for="limite">Limite de compra</label>
+          <input type="Number" disabled name="limite" id="limite" />
+        </div>
+
+        <div class="formulario__campo">
+          <label for="conFact">Condicion de Factura</label>
+          <select name="conFact" disabled id="conFact">
+            <option value="1">1- Ctu. Cte. Normal</option>
+            <option value="4">4- Contado</option>
+          </select>
+        </div>
+
+        <div class="formulario__campo">
+          <label class="" for="conIva">Cond IVA</label>
+          <select name="conIva" disabled id="conIva">
+            <option value="Consumidor Final">Consumidor Final</option>
+            <option value="Monotributista">Monotributista</option>
+            <option value="Inscripto">Inscripto</option>
+            <option value="Exento">Exento</option>
+          </select>
+        </div>
+
+        <div class="formulario__campo">
+          <div class="moroso">
+            <label for="normal">Normal</label>
+            <input
+              disabled
+              type="radio"
+              name="moroso"
+              id="moroso/normal"
+              value="N"
+            />
+          </div>
+
+          <div class="moroso">
+            <label for="moroso">Moroso</label>
+            <input
+              disabled
+              type="radio"
+              name="moroso"
+              id="moroso/normal"
+              value="M"
+            />
+          </div>
+        </div>
+
+        <div class="formulario__campo">
+          <label for="observaciones">Observaciones</label>
+          <input type="text" name="observaciones" id="observaciones" disabled />
+        </div>
+    </div>
 
     <div class="botones-modificar">
       <button class="boton-modificar modificar">Modificar</button>

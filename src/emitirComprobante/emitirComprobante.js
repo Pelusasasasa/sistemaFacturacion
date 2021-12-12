@@ -111,11 +111,21 @@ venta.vendedor = vendedor
 
 //abrimos una ventana para buscar el cliente
 buscarCliente.addEventListener('keypress', (e) =>{
-    if (e.key === 'Enter') {
-        ipcRenderer.send('abrir-ventana',"clientes")
+    if (e.key === 'Enter' ) {
+        if ( buscarCliente.value!=="") {
+            ipcRenderer.invoke('get-cliente',buscarCliente.value).then((args)=>{
+                ponerInputsClientes(JSON.parse(args))
+                observaciones.focus()
+            })
+        }else{
+            ipcRenderer.send('abrir-ventana',"clientes")
+        }
      }
 })
 
+buscarCliente.addEventListener('focus',e=>{
+    buscarCliente.value=""
+})
 
 //recibimos el cliente
 ipcRenderer.on('mando-el-cliente',(e,args)=>{ 
@@ -571,7 +581,7 @@ const subirAAfip = async(venta)=>{
         }
         if (totalNeto21 !=0 ) {
             data.Iva.push({
-                    'Id' 		: 4, // Id del tipo de IVA (4 para 10.5%)
+                    'Id' 		: 5, // Id del tipo de IVA (5 para 21%)
                     'BaseImp' 	: totalNeto21.toFixed(2), // Base imponible
                     'Importe' 	: totalIva21.toFixed(2) // Importe 
             })
@@ -701,6 +711,7 @@ const tamanioCancelados = async() =>{
 }
 
 const fs = require('fs');
+const PdfParse = require('pdf-parse');
 //funcion para imprimir una hoja
     async function printPage(factura,qr,cae,fechaCAE,numeroVoucher,cod_comp){
         const div = document.querySelector('divImprimir')
@@ -799,7 +810,7 @@ const fs = require('fs');
                 seccionQR.innerHTML = insertar
             }
          };
-        //fs.writeFileSync(`./${numero.innerHTML}.pdf`,window)
+
          window.print()
 
      } 

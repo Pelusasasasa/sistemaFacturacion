@@ -12,7 +12,9 @@ const dnicuit = document.querySelector('#dnicuit')
 const conIva = document.querySelector('#conIva')
 const condicionFacturacion = document.querySelector('#conFac')
 const limite = document.querySelector('#limite')
-const moroso = document.formularioCliente.moroso
+
+const moroso = document.querySelectorAll('input[name="moroso"]')
+console.log(moroso)
 const observaciones = document.querySelector('#observaciones')
 const salir = document.querySelector('.salir')
 const saldo = "0"
@@ -21,6 +23,63 @@ const listaVenta = []
 const {ipcRenderer} = require('electron')
 nombre.focus()
 let condicion = ""
+
+nombre.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        localidad.focus()
+    }
+})
+localidad.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        provincia.focus()
+    }
+})
+provincia.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        cod_postal.focus()
+    }
+})
+cod_postal.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        direccion.focus()
+    }
+})
+
+direccion.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        dnicuit.focus()
+    }
+})
+dnicuit.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        email.focus()
+    }
+})
+
+email.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        telefono.focus()
+    }
+})
+
+observaciones.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        botonEnviar.focus()
+    }
+})
+
+
+telefono.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        limite.focus()
+    }
+})
+
+limite.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        condicionFacturacion.focus()
+    }
+})
 
 
 botonEnviar.addEventListener('click',async e =>{

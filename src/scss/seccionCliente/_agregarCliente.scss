@@ -3,12 +3,15 @@
     text-align: center;
     font-size: 3rem;
   }
-  #formularioCliente {
     padding: 2rem 1rem;
     background-color: lightgreen;
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-
+    .g-3{
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+    }
+    // .nombre{
+    //   width: 100%;
+    // }
     .formulario__campo {
       display: flex;
       flex-direction: column;
@@ -46,5 +49,4 @@
         transform: scale(1.2);
       }
     }
-  }
 }

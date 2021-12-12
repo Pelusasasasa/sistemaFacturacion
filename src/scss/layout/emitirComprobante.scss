@@ -21,6 +21,9 @@
     #codigo {
       padding: 1rem;
     }
+    #codigoC{
+      width: 5rem;
+    }
     .arriba {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -42,7 +45,7 @@
     .formulario__campo {
       margin-bottom: 0.5rem;
       #nombre{
-        width: 120%;
+        width: 40rem;
       }
       input {
         width: 90%;

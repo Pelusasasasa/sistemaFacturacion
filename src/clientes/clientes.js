@@ -9,6 +9,7 @@ const resultado = document.querySelector('#resultado')
 
 ipcRenderer.on('get-clientes',(e,args) =>{
     const clientes = JSON.parse(args);
+    console.log(clientes)
     clientes.sort((a,b)=>{
         if(a.cliente<b.cliente){
             return -1
@@ -21,10 +22,11 @@ ipcRenderer.on('get-clientes',(e,args) =>{
     for(let cliente of clientes){
         let nombre = cliente.cliente.toLowerCase();
         if(nombre.indexOf(texto) !== -1){
+
            resultado.innerHTML += `
            <tr id="${cliente._id}">
-                <th scope= "row">${cliente.cliente}</th>
-                <td id="nombre">${cliente.localidad}</td>
+                <th id="nombre">${cliente.cliente}</th>
+                <td >${cliente.localidad}</td>
                 <td>${cliente.direccion}</td>
                 <td>${cliente.telefono}</td>
                 <td>${cliente.cond_iva}</td>
