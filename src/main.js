@@ -1,4 +1,4 @@
-const URL = "http://192.168.1.107:4000/api/";
+const URL = "http://192.168.0.121:4000/api/";
 
 const axios = require("axios")
 const path = require('path');
@@ -17,7 +17,7 @@ global.nuevaVentana = null;
 global.nuevaVentana2 = null;
 global.ventanaPrincipal = null
 function crearVentanaPrincipal() {
-    ventanaPrincipal = new BrowserWindow({
+    ventanaPrincipal = new BrowserWindow({  
         width: 7000,
         height: 7000,
         fullscreen: false,
@@ -219,6 +219,7 @@ ipcMain.on('sumarSaldoNegro', async (e, args) => {
     let cliente = await axios.get(`${URL}clientes/id/${id}`)
     cliente = cliente.data;
     let saldo_p = (parseFloat(precio) + parseFloat(cliente.saldo_p)).toFixed(2)
+    console.log(saldo_p)
     cliente.saldo_p = saldo_p
     await axios.put(`${URL}clientes/${id}`,cliente)
 })
@@ -230,6 +231,18 @@ ipcMain.on('sumarSaldo',async (e,args)=>{
     let saldo = (parseFloat(precio)+parseFloat(cliente.saldo_p)).toFixed(2)
     cliente.saldo = saldo;
     await axios.put(`${URL}clientes/${id}`)
+})
+
+ipcMain.on('borrarVentaACliente',async (e,args)=>{
+    const [id,numero] = args;
+    let cliente = await axios.get(`${URL}clientes/id/${id}`)
+    cliente = cliente.data;
+    let venta = await axios.get(`${URL}ventas/${numero}`)
+    venta = venta.data[0]
+    cliente.saldo_p = (parseFloat(cliente.saldo_p)-venta.precioFinal).toFixed(2);
+    cliente.listaVentas = cliente.listaVentas.filter(num=>(numero!== num))
+    await axios.put(`${URL}clientes/${id}`,cliente)
+    await axios.delete(`${URL}ventas/${numero}`)
 })
 
 //enviamos los clientes que tienen saldo

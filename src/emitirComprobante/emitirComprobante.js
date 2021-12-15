@@ -9,15 +9,11 @@ function getParameterByName(name) {
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
 let vendedor = getParameterByName('vendedor')
 const { ipcRenderer, Main } = require("electron");
 const { CLIENT_RENEG_LIMIT } = require('tls');
-
-
-
 const usuario = document.querySelector(".usuario")
 const textoUsuario = document.createElement("P")
 textoUsuario.innerHTML = vendedor
@@ -41,9 +37,11 @@ const tiposVentas = document.querySelectorAll('input[name="tipoVenta"]')
 const borrarProducto = document.querySelector('.borrarProducto')
 
 let situacion = "blanco"//para teclas alt y F9
-let Numeros = []
-let yaSeleccionado
-let tipoVenta
+let Numeros = [];
+let yaSeleccionado;
+let tipoVenta;
+let borraNegro = false;
+let ventaDeCtaCte = "";
 nombre.focus()
 
 
@@ -452,6 +450,7 @@ function verSiPagoONo(texto) {
 
 //pasamos el saldo en negro
 function sumarSaldoAlClienteEnNegro(precio,codigo){
+    console.log(precio)
     ipcRenderer.send('sumarSaldoNegro',[precio,codigo])
 }
 
@@ -463,15 +462,6 @@ const sacarIdentificadorTabla = (arreglo)=>{
         delete producto.objeto.identificadorTabla  
     })
 }
-
-const traerTamanioVentas = async()=>{
-    let retornar;
-    await ipcRenderer.invoke('tamanioVentas').then(args=>{
-        retornar = parseFloat(JSON.parse(args)) + 1;
-    })
-    return retornar
-}
-
 //Aca mandamos la venta en presupuesto
 const presupuesto = document.querySelector('.presupuesto')
 presupuesto.addEventListener('click',async (e)=>{
@@ -490,7 +480,7 @@ presupuesto.addEventListener('click',async (e)=>{
     }
     sacarIdentificadorTabla(venta.productos);
     if (venta.tipo_pago !== "PP") {
-    venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
+        venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
     (venta.productos).forEach(producto => {
         sacarStock(producto.cantidad,producto.objeto)
         movimientoProducto(producto.cantidad,producto.objeto)
@@ -528,7 +518,10 @@ ticketFactura.addEventListener('click',async(e) =>{
     actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
     subirAAfip(venta)
     ipcRenderer.send('nueva-venta',venta);
-    //location.reload()
+    if (borraNegro) {
+        borrarCuentaCorriente(ventaDeCtaCte)
+    };
+    //borraNegro ? window.close() : location.reload();
  })
 
 
@@ -549,7 +542,6 @@ const subirAAfip = async(venta)=>{
             totalIva105 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.105)
         }
     })
-    console.log(venta.cod_comp)
     let data = {
         'CantReg': 1,
         'CbteTipo': venta.cod_comp,
@@ -622,7 +614,7 @@ async function generarQR(texto) {
  
     ipcRenderer.send('buscar-cliente',dnicuit.value)
     ipcRenderer.on('buscar-cliente',(e,args)=>{
-        cliente = JSON.parse(args)[0]   
+        cliente = JSON.parse(args)
         if (args.length !== 2) {
             ponerInputsClientes(cliente)
         }else{
@@ -651,37 +643,47 @@ async function generarQR(texto) {
     Https.open("GET", url);
     Https.send()
     Https.onreadystatechange = (e) => {
-        const persona = JSON.parse(Https.responseText)
+        if (Https.responseText !== "") {
+            console.log(Https.responseText)
+            const persona = JSON.parse(Https.responseText)
+            const {nombre,domicilioFiscal,EsRI,EsMonotributo,EsExento,EsConsumidorFinal}= persona.Contribuyente;
+            const cliente = {};
+            cliente.cliente=nombre;
+            cliente.localidad = domicilioFiscal.localidad;
+            cliente.direccion = domicilioFiscal.direccion;
+            cliente.provincia = domicilioFiscal.nombreProvincia;
+            buscarCliente.value = nombre;
+            localidad.value=domicilioFiscal.localidad;
+            direccion.value = domicilioFiscal.direccion;
+            provincia.value = domicilioFiscal.nombreProvincia;
+            if (EsRI) {
+                cliente.cond_iva="Inscripto"
+            }else if (EsExento) {
+                cliente.cond_iva="Exento"
+            } else if (EsMonotributo) {
+                cliente.cond_iva="Monotributista"
+            } else if(EsConsumidorFinal) {
+                cliente.cond_iva="Consumidor Final"
+            }
+            cliente.cuit = dnicuit.value;
+            ponerInputsClientes(cliente) ;
         
-        const {nombre,domicilioFiscal,EsRI,EsMonotributo,EsExento,EsConsumidorFinal}= persona.Contribuyente;
-        const cliente = {};
-        cliente.cliente=nombre;
-        cliente.localidad = domicilioFiscal.localidad;
-        cliente.direccion = domicilioFiscal.direccion;
-        cliente.provincia = domicilioFiscal.nombreProvincia;
-        buscarCliente.value = nombre;
-        localidad.value=domicilioFiscal.localidad;
-        direccion.value = domicilioFiscal.direccion;
-        provincia.value = domicilioFiscal.nombreProvincia;
-        if (EsRI) {
-            cliente.cond_iva="Inscripto"
-        }else if (EsExento) {
-            cliente.cond_iva="Exento"
-        } else if (EsMonotributo) {
-            cliente.cond_iva="Monotributista"
-        } else if(EsConsumidorFinal) {
-            cliente.cond_iva="Consumidor Final"
         }
-        cliente.cuit = dnicuit.value;
-        ponerInputsClientes(cliente) ;
+
     }
+
  }
  //lo usamos para borrar un producto de la tabla
 borrarProducto.addEventListener('click',e=>{
     if (yaSeleccionado) {
         producto = venta.productos.find(e=>e.objeto.identificadorTabla === yaSeleccionado.id);
         total.value = (parseFloat(total.value)-(parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta))).toFixed(2)
-        venta.productos.pop(producto)
+        venta.productos.forEach(e=>{
+            if (yaSeleccionado.id === e.objeto.identificadorTabla) {
+                    venta.productos = venta.productos.filter(e=>e.objeto.identificadorTabla !== yaSeleccionado.id)
+            }
+        })
+
         yaSeleccionado.innerHTML = ""
     }
 })
@@ -753,7 +755,6 @@ const PdfParse = require('pdf-parse');
         subtotal.innerHTML=parseFloat(venta.precioFinal)+parseFloat(venta.descuento)
         precioFinal.innerHTML=venta.precioFinal
         tipoPago.innerHTML= venta.tipo_pago
-        console.log(cod_comp)
         if(cod_comp === 1){
             tipoFactura.innerHTML = "A"
         }else if (cod_comp === 6) {
@@ -838,8 +839,12 @@ function ponerInputsClientes(cliente) {
     const cuentaC = document.querySelector('.cuentaC');
     (cliente.cond_fact === "4") && cuentaC.classList.add('none');
 }
- ipcRenderer.once('venta',(e,args)=>{
+
+ipcRenderer.once('venta',(e,args)=>{
+    borraNegro = true;
+    console.log(args)
     const [usuario,numero] = JSON.parse(args)
+    ventaDeCtaCte = numero
     textoUsuario.innerHTML = usuario
     venta.vendedor = usuario
     ipcRenderer.send('traerVenta',numero);
@@ -853,3 +858,8 @@ function ponerInputsClientes(cliente) {
         })
     })
 })
+
+const borrarCuentaCorriente = (numero)=>{
+    console.log(numero)
+    ipcRenderer.send('borrarVentaACliente',[venta.cliente,numero])
+}   
