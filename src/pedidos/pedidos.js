@@ -47,13 +47,30 @@ numero.addEventListener('change',e =>{
 
 codigo.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
-        ipcRenderer.send('abrir-ventana',"productos")
+        if (codigo.value === "") {
+            ipcRenderer.send('abrir-ventana',"productos")
+        }else{
+            
+            ipcRenderer.send('get-producto',codigo.value)
+            ipcRenderer.once('get-producto',(e,args)=>{
+                if (JSON.parse(args) !== "") {
+                    dialogs.prompt('Cantidad',async valor=>{
+                        await mostrarVentas(JSON.parse(args),valor)
+                        codigo.value=""
+                        codigo.focus()
+                    })
+                }else{
+                    alert("El producto no existe")
+                }
+            })
+        }
+
     }
 })
 
 ipcRenderer.on('mando-el-producto',(e,args) => {
-    producto = args.producto[0]._doc;
-    mostrarVentas(producto,args.cantidad)
+    const {producto,cantidad} = JSON.parse(args);
+    mostrarVentas(producto,cantidad)
 })
 
 function mostrarVentas(objeto,cantidad) {
