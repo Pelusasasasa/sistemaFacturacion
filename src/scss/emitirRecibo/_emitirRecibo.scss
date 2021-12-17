@@ -3,6 +3,9 @@
 }
 
 .contenedorEmitirRecibo {
+  .disabled{
+    display: none !important;
+  }
   display: flex;
   flex-direction: column;
 
@@ -70,7 +73,7 @@
     display: flex;
     justify-content: space-around;
 
-    .pagoCuenta {
+    .saldoAFavor {
       display: flex;
       h3 {
         margin-top: 0;

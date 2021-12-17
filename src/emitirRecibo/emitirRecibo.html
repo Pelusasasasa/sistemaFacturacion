@@ -72,9 +72,9 @@
       </div>
 
       <div class="pagado">
-        <div class="pagoCuenta">
+        <div class="saldoAFavor">
           <h3>Saldo a favor</h3>
-          <input type="text" id="pagoCuenta" name="pagoCuenta" />
+          <input type="text" id="saldoAFavor" name="saldoAFavor" />
         </div>
 
         <div class="total">
@@ -94,7 +94,10 @@
         <button class="imprimir">Imprimir</button>
         <div class="vendedor"></div>
       </div>
-
+      
+      <div class="divImprimir">
+        <iframe id="iframe" src="./imprimirRecibo.html"></iframe>
+      </div>
   </body>
   <script src="./emitirRecibo.js"></script>
 </html>

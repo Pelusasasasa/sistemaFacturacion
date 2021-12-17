@@ -1,7 +1,7 @@
 #iframe {
   width: 220mm;
   height: 165mm;
-  position: fixed;
+  //position: fixed;
   top: 0px;
   left: -2rem;
   z-index: -1;
@@ -128,6 +128,44 @@
 
     img{
       width: 10rem;
+    }
+  }
+
+  .parrafo{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+    p{
+      margin: 0;
+    }
+  }
+  .detalle{
+    height: 30rem;
+    table{
+      border-collapse: collapse;
+      width: 100%;
+      thead{
+        border-top: .1rem solid black;
+        border-bottom: .1rem solid black;
+      }
+      tbody{
+        tr{
+          text-align: center;
+        }
+      }
+
+    }
+  }
+  .totalRecibo{
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    label{
+      font-weight: bold;
+    }
+    input{
+      font-weight: bold;
+      text-align: end;
     }
   }
 }

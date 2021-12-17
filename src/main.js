@@ -1,4 +1,4 @@
-const URL = "http://192.168.0.121:4000/api/";
+const URL = "http://192.168.1.107:4000/api/";
 
 const axios = require("axios")
 const path = require('path');
@@ -306,7 +306,7 @@ ipcMain.on('modificamosLasVentas',async (e,arreglo)=>{
         const pagado = Venta.pagado
         let venta = await axios.get(`${URL}ventas/${id}`)
         venta = venta.data[0];
-        venta.abonado = abonado.toFixed(2)
+        venta.abonado = parseFloat(abonado).toFixed(2)
         venta.pagado = pagado
         await axios.put(`${URL}ventas/${id}`,venta)
     }

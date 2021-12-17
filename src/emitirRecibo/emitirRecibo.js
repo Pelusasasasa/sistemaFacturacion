@@ -72,14 +72,16 @@ const cuit = document.querySelector('#cuit')
 const listar = document.querySelector('.listar')
 const imprimir = document.querySelector('.imprimir')
 const cancelar = document.querySelector('.cancelar')
-const vendedor = document.querySelector('.vendedor')
-const total = document.querySelector('#total')
+const vendedor = document.querySelector('.vendedor');
+const saldoAfavor = document.querySelector('#saldoAFavor');
+const total = document.querySelector('#total');
 let inputSeleccionado  = listar
 let trSeleccionado
 total.value = 0.00
 let cliente = {}
 let listaVentas = []
 let nuevaLista=[]
+let arregloParaImprimir = [];
 vendedor.innerHTML = `<h3>${Vendedor}</h3>`
 
 
@@ -153,34 +155,58 @@ const listarLista = (lista,situacion)=>{
         }
     });
 }
-
+let a;
 let valorAnterior = ""
     listar.addEventListener('click',e=>{
         trSeleccionado = e.path[2]
         inputSeleccionado = e.path[0]
     })
 inputSeleccionado.addEventListener('keydown',(e)=>{
-    if (e.key==="Tab") {
-            trSeleccionado.children[6].innerHTML = (parseFloat(trSeleccionado.children[3].innerHTML)-parseFloat(trSeleccionado.children[4].innerHTML) - parseFloat(inputSeleccionado.value)).toFixed(2)
-
+    if (e.key==="Tab" || e.key === "Enter") {
+        const aDescontar = parseFloat(trSeleccionado.children[3].innerHTML) - parseFloat(trSeleccionado.children[6].innerHTML)
+        console.log(aDescontar)
+            if (inputSeleccionado.value !== "") {
+                trSeleccionado.children[6].innerHTML = (parseFloat(trSeleccionado.children[3].innerHTML)-parseFloat(trSeleccionado.children[4].innerHTML) - parseFloat(inputSeleccionado.value)).toFixed(2)
+            }
             let venta
             nuevaLista.forEach(e =>{
                 if(e._id === trSeleccionado.id){
                     venta = e
                 }
-            })
+            });
+
+            if (!arregloParaImprimir.includes(trSeleccionado.id)) {
+                const renglon = trSeleccionado.children
+                let objeto = {
+                    fecha: renglon[0].innerHTML,
+                    comprobante: renglon[1].innerHTML,
+                    numero: renglon[2].innerHTML,
+                    pagado: renglon[5].children[0].value,
+                    saldo: renglon[6].innerHTML
+                };
+
+                (inputSeleccionado.value !== "")  && arregloParaImprimir.push(objeto);
+                console.log(arregloParaImprimir);
+            }
             venta.abonado = parseFloat(venta.abonado) + parseFloat(inputSeleccionado.value);
             (venta.abonado === venta.precioFinal) && (venta.pagado = true);
-            if(valorAnterior !== ""){
-                total.value = (parseFloat(inputSeleccionado.value) + parseFloat(total.value) - parseFloat(valorAnterior)).toFixed(2)
+            if(a === inputSeleccionado.id){
+                total.value = (parseFloat(inputSeleccionado.value) + parseFloat(total.value) - parseFloat(aDescontar).toFixed(2))
             }else{
-                total.value = (parseFloat(inputSeleccionado.value) + parseFloat(total.value)).toFixed(2)
+                if (inputSeleccionado.value !== "") {
+                    total.value = ((parseFloat(inputSeleccionado.value) + parseFloat(total.value)) - parseFloat(aDescontar)).toFixed(2)
+                }
             }
+            a=trSeleccionado.id
+            valorAnterior = inputSeleccionado.value;
             if(trSeleccionado.nextElementSibling){
                 trSeleccionado = trSeleccionado.nextElementSibling
-            inputSeleccionado = trSeleccionado.children[5].children[0] 
-            }    
-            valorAnterior = inputSeleccionado.value
+                inputSeleccionado = trSeleccionado.children[5].children[0] 
+                trSeleccionado.children[5].children[0].focus()
+            }else{
+                saldoAfavor.focus()
+            }
+
         }
 
 })
@@ -196,10 +222,13 @@ imprimir.addEventListener('click',async e=>{
     recibo.precioFinal = parseFloat(total.value).toFixed(2)
     recibo.tipo_comp = "Recibos"
     const aux = (situacion === "negro") ? "saldo_p" : "saldo"
-    const saldoNuevo = parseFloat((parseFloat(cliente.saldo_p) - parseFloat(total.value)).toFixed(2))
+    let saldoFavor = 0;
+    saldoFavor = (saldoAfavor.value !== "") && parseFloat(saldoAFavor.value);
+    const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2)) - saldoFavor
     ipcRenderer.send('modificarSaldo',[cliente._id,aux,saldoNuevo])
     ipcRenderer.send('modificamosLasVentas',nuevaLista)
     ipcRenderer.send('nueva-venta',recibo)
+    printPage(recibo,cliente.cliente,cliente.cuit,cliente.direccion,cliente.localidad,cliente.cond_iva,arregloParaImprimir,total.value)
     location.reload()
 })
 
@@ -211,17 +240,60 @@ const traerUltimoNroRecibo =async ()=>{
     return retornar
 }
 
-const traerTamanioVentas = async()=>{
-    let retornar;
-    await ipcRenderer.invoke('tamanioVentas').then(args=>{
-        retornar = parseFloat(JSON.parse(args)) + 1;
-    })
-    return retornar
-}
-
-
 document.addEventListener('keydown',e=>{
     if(e.key === "Escape"){
         window.history.go(-1)
     }
 })
+
+
+async function printPage(recibo,nombreCliente,cuitCliente,direccionCliente,localidadCliente,ivaCliente,lista,precio){
+    const div = document.querySelector('divImprimir')
+    var iframe = document.getElementById("iframe");
+    var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
+    const numero = innerDoc.querySelector('.numero')
+    const fecha = innerDoc.querySelector('.fecha');
+    const cliente = innerDoc.querySelector('.cliente')
+    const cuit = innerDoc.querySelector('.cuit')
+    const localidad = innerDoc.querySelector('.localidad')
+    const direccion = innerDoc.querySelector('.direccion')
+    const iva = innerDoc.querySelector('.cond_iva')
+    const total = innerDoc.querySelector('#total')
+    const tbody = innerDoc.querySelector('.tbody')
+    const tomarFecha = new Date();
+    const hoy = tomarFecha.getDate()
+    const mes = tomarFecha.getMonth() + 1;
+    const anio = tomarFecha.getFullYear();
+
+    fecha.innerHTML = `${hoy}/${mes}/${anio}`;
+    numero.innerHTML = recibo.nro_comp;
+    cliente.innerHTML = nombreCliente;
+    cuit.innerHTML = cuitCliente;
+    localidad.innerHTML=localidadCliente;
+    direccion.innerHTML=direccionCliente;
+    iva.innerHTML = ivaCliente;
+    tbody.innerHTML = ""
+
+    lista.forEach(objeto => {
+        tbody.innerHTML += `
+            <tr>
+                <td>${objeto.fecha}</td>
+                <td>${objeto.comprobante}</td>
+                <td>${objeto.numero}</td>
+                <td>${(parseFloat(objeto.pagado)).toFixed(2)}</td>
+                <td>${(parseFloat(objeto.saldo)).toFixed(2)}</td>
+            </tr>
+        `
+    })
+    total.value = precio
+    const informacionCliente = document.querySelector('.informacionCliente')
+    const tabla = document.querySelector('.tabla')
+    const pagado = document.querySelector('.pagado')
+    console.log(pagado)
+    const botones = document.querySelector('.botones')
+    informacionCliente.classList.add('disabled')
+    tabla.classList.add('disabled')
+    pagado.classList.add('disabled')
+    botones.classList.add('disabled')
+    window.print()
+}
