@@ -135,6 +135,8 @@
       }
     }
 
+
+
     .numeroFactura {
       margin-left: 2rem;
       display: flex;
@@ -173,5 +175,13 @@
 
   @media print {
     display: none;
+  }
+}
+.tipoVenta{
+  .form-check{
+    input{
+      transform: scale(1.8);
+      margin-right: .5rem;
+    }
   }
 }

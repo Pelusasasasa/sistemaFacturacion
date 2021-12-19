@@ -211,6 +211,10 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
 
 })
 
+saldoAfavor.addEventListener('blur',()=>{
+    (saldoAfavor.value !== "") && (total.value = parseFloat(total.value) + parseFloat(saldoAfavor.value))
+})
+
 imprimir.addEventListener('click',async e=>{
     const nrmComp = await traerUltimoNroRecibo()
     const recibo = {}

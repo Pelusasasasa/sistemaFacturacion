@@ -6,12 +6,27 @@ const dialogs = Dialogs()
 const cliente = document.querySelector('#buscador')
 const saldo = document.querySelector('#saldo')
 const listar = document.querySelector('.listar')
+const compensada = document.querySelector('.compensada')
+const historica = document.querySelector('.historica')
+
 let nuevaLista=[]
 let lista=[]
 let listaGlobal=[]
 vendedor = ""
 let seleccionado
-let situacion = "blanco"
+let situacion = "blanco";
+
+historica.addEventListener('click',e=>{
+    historica.classList.add("disable")
+    compensada.classList.remove('disable')
+    listarLista(lista,situacion)
+})
+
+compensada.addEventListener('click',e=>{
+    compensada.classList.add("disable")
+    historica.classList.remove('disable')
+    listarLista(nuevaLista,situacion)
+})
 
 document.addEventListener('keydown',(event) =>{
     if (event.key === "Alt") {
@@ -72,7 +87,6 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
 
     await ipcRenderer.invoke('traerVentas',listaVentas).then((args)=>{
         lista = JSON.parse(args)
-        console.log(listaVentas)
     })
         lista.forEach(venta =>{
             (venta.pagado === false) && nuevaLista.push(venta);
@@ -96,8 +110,17 @@ listar.addEventListener('click',e=>{
 
 const listarLista = (lista,situacion)=>{
     let aux
+    console.log(lista);
     (situacion === "negro") ? (aux = "Presupuesto") : (aux = "Ticket Factura")
-    listaGlobal = lista.filter(e=>e.tipo_comp === aux)
+    listaGlobal = lista.filter(e=>{
+        if (aux === "Presupuesto") {
+            console.log("a")
+            return  (e.tipo_comp === aux ||  e.tipo_comp=== "Recibos")   
+        }else{
+            return (e.tipo_comp === aux)
+        }
+    })
+    console.log(listaGlobal)
     listar.innerHTML = ''
     listaGlobal.forEach(venta => {
         vendedor = venta.vendedor
