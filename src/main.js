@@ -1,4 +1,4 @@
-const URL = "http://192.168.1.107:4000/api/";
+const URL = "http://192.168.0.121:4000/api/";
 
 const axios = require("axios")
 const path = require('path');
@@ -139,6 +139,18 @@ ipcMain.on('mando-el-producto', async (e, args) => {
     }))
 })
 
+//cambiamos el precio de los productos con dolares
+ipcMain.on('CambiarPrecios',async(e,args)=>{
+    let productos = await axios.get(`${URL}productos/textoVacio/dolar`)
+    let dolar = await axios.get(`${URL}tipoVenta`);
+    dolar = dolar.data.dolar
+    productos = productos.data;
+
+    productos.forEach(producto => {
+        (producto.precio_venta) = (parseFloat(producto.utilidad)+(dolar*(parseFloat(producto.impuestos) + parseFloat(producto.costodolar)))).toFixed(2);
+    });
+})
+
 //FIN PRODUCTOS
 
 
@@ -260,7 +272,7 @@ ipcMain.on('traerSaldo',async (e,args)=>{
 //tamanio de las ventas
 ipcMain.handle('tamanioVentas',async(e,args)=>{
     let tamanio = await axios.get(`${URL}ventas`)
-    tamanio = tamanio.data;
+    tamanio = tamanio.data.length;
     return(JSON.stringify(tamanio))
 })
 
@@ -1077,8 +1089,8 @@ function abrirVentana(texto,numeroVenta){
 }
 
 async function descargas() {
-    pedidos(JSON.stringify(await axios.get(`${Url}pedidos`)))
-    // ventas(JSON.stringify(await axios.get()))
+    pedidos((await axios.get(`${URL}pedidos`)).data)
+    ventas((await axios.get(`${URL}ventas`)).data)
 }
 
 

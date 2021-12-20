@@ -515,9 +515,13 @@ ticketFactura.addEventListener('click',async(e) =>{
         sacarStock(producto.cantidad,producto.objeto)
         movimientoProducto(producto.cantidad,producto.objeto)
     });
-    actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-    subirAAfip(venta)
-    ipcRenderer.send('nueva-venta',venta);
+    //actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+    //subirAAfip(venta)
+    //ipcRenderer.send('nueva-venta',venta);
+
+    imprimirTikectFactura(venta,cliente)
+
+
     if (borraNegro) {
         borrarCuentaCorriente(ventaDeCtaCte)
     };
@@ -863,3 +867,47 @@ const borrarCuentaCorriente = (numero)=>{
     console.log(numero)
     ipcRenderer.send('borrarVentaACliente',[venta.cliente,numero])
 }   
+const XLSX = require('xlsx');
+
+const imprimirTikectFactura = async(venta,cliente)=>{
+
+    const tipo_doc = (venta.cod_doc === 96) ? 67 : 50
+    let cond_iva = 67
+    if (cliente.cond_iva==="Inscripto") {
+        cond_iva = 69
+    }else if (cliente.cond_iva==="Exento") {
+        cond_iva = 60
+    } else if (cliente.cond_iva==="Monotributista") {
+        cond_iva = 73
+    }else{
+        cond_iva=67
+    }
+    console.log(cliente)
+    const ventaAGuardar = {
+        ref:venta._id,
+        codigo: cliente._id,
+        nombre: cliente.cliente,
+        cuit: cliente.cuit,
+        cond_iva: cond_iva,
+        tipo_doc: tipo_doc,
+        domicilio: cliente.direccion,
+        descuento: venta.descuento,
+        tipo_pago: venta.tipo_pago,
+        vendedor: venta.vendedor,
+        empresa: "ELECTRO AVENIDA"
+    }
+    console.log(ventaAGuardar)
+         let wb = XLSX.utils.book_new();
+    
+         wb.props = {
+             Title: "Ventas",
+             subject: "Test",
+             Author: "Electro Avenida"
+         }
+    
+         let newWs = XLSX.utils.json_to_sheet([ventaAGuardar])
+    
+         XLSX.utils.book_append_sheet(wb,newWs,'Ventas')
+         XLSX.writeFile(wb,"Ventas.xlsx")
+    
+}
