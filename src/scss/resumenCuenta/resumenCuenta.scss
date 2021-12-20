@@ -1,0 +1,42 @@
+.seccionResumeCuenta{
+    display: flex;
+    flex-direction: column;
+    
+    .buscador{
+        font-size: 2rem;
+        font-weight: bold;
+
+    }
+    .informacionCliente{
+        display: flex;
+        justify-content: space-between;
+    }
+    .seccionTabla{
+        min-height: 25rem;
+        table{
+            width: 100%;
+            border-collapse: collapse;
+            .tbody{
+                text-align: center;
+            }
+        }
+    }
+    .saldoActual{
+        text-align: end;
+        font-weight: bold;
+    }
+    header{
+        margin-top: 2rem;
+        padding: 2rem 2rem 0 2rem;
+        background-color: white;
+    }
+    main{
+        padding: 0 2rem 0 2rem;
+        background-color: white;
+    }
+
+    .mostrarNegro{
+        background-color: black;
+    }
+}
+

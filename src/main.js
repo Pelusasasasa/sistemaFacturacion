@@ -18,10 +18,11 @@ global.nuevaVentana2 = null;
 global.ventanaPrincipal = null
 function crearVentanaPrincipal() {
     ventanaPrincipal = new BrowserWindow({  
-        width: 7000,
-        height: 7000,
+        //width: 7000,
+        //height: 7000,
         fullscreen: false,
         webPreferences: {
+            contextIsolation: false,
             nodeIntegration: true
         }
     });
@@ -628,6 +629,11 @@ const templateMenu = [
                         click(){
                             abrirVentana("listadoSaldo")
                         }
+                    },
+                    {
+                        label:"Resumen de Cuent",
+                        click(){
+                        }
                     }
                 ]
             },
@@ -721,6 +727,7 @@ function abrirVentana(texto,numeroVenta){
             width: 800,
             height: 500,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -740,6 +747,7 @@ function abrirVentana(texto,numeroVenta){
             width: 1000,
             height: 500,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -764,6 +772,7 @@ function abrirVentana(texto,numeroVenta){
             width: 1100,
             height: 450,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -781,6 +790,7 @@ function abrirVentana(texto,numeroVenta){
             width: 1000,
             height: 600,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -799,6 +809,7 @@ function abrirVentana(texto,numeroVenta){
             width: 1200,
             height: 600,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -818,6 +829,7 @@ function abrirVentana(texto,numeroVenta){
             width: 500,
             height: 1000,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -832,6 +844,7 @@ function abrirVentana(texto,numeroVenta){
             width: 1000,
             height: 600,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -846,6 +859,7 @@ function abrirVentana(texto,numeroVenta){
             width: 1000,
             height: 450,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -863,6 +877,7 @@ function abrirVentana(texto,numeroVenta){
             width: 1000,
             height: 900,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -880,6 +895,7 @@ function abrirVentana(texto,numeroVenta){
             width: 1000,
             height: 900,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -897,6 +913,7 @@ function abrirVentana(texto,numeroVenta){
             width: 400,
             height: 300,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -914,6 +931,7 @@ function abrirVentana(texto,numeroVenta){
             width: 1200,
             height: 1000,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -931,6 +949,7 @@ function abrirVentana(texto,numeroVenta){
             width: 1200,
             height: 1000,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -948,6 +967,7 @@ function abrirVentana(texto,numeroVenta){
             width: 1200,
             height: 1000,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -965,6 +985,7 @@ function abrirVentana(texto,numeroVenta){
             width: 1200,
             height: 1000,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -982,6 +1003,7 @@ function abrirVentana(texto,numeroVenta){
             width: 1200,
             height: 1000,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -999,6 +1021,7 @@ function abrirVentana(texto,numeroVenta){
             width: 1100,
             height: 500,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -1017,6 +1040,7 @@ function abrirVentana(texto,numeroVenta){
             width: 1100,
             height: 500,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })
@@ -1035,6 +1059,7 @@ function abrirVentana(texto,numeroVenta){
             width: 1100,
             height: 500,
             webPreferences: {
+                contextIsolation: false,
                 nodeIntegration: true
             }
         })

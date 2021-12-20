@@ -114,7 +114,6 @@ const listarLista = (lista,situacion)=>{
     (situacion === "negro") ? (aux = "Presupuesto") : (aux = "Ticket Factura")
     listaGlobal = lista.filter(e=>{
         if (aux === "Presupuesto") {
-            console.log("a")
             return  (e.tipo_comp === aux ||  e.tipo_comp=== "Recibos")   
         }else{
             return (e.tipo_comp === aux)

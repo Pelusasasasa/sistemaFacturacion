@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resumen De Cuenta</title>
+    <link rel="stylesheet" href="../../build/css/app.css">
+</head>
+<body class="seccionResumeCuenta">
+    <header>
+        <div class="buscador">
+            <label for="buscador">Buscar Cliente</label>
+            <input type="text" autofocus id="buscador" name="buscador">
+
+            <button class="imprimir">Imprimir</button>
+        </div>
+        <img src="" alt="">
+        <h1>Resumen De Cuenta Corriente</h1>
+        <div class="cliente">
+            Sr: <span class="nombre"></span>
+            <div class=informacionCliente>
+                <p class="direccion"></p>
+                <p class="telefono"></p>
+            </div>
+        </div>
+    </header>
+    <main>
+        <div class="seccionTabla">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo Comprobante</th>
+                        <th>Nº Comprob</th>
+                        <th>Debe</th>
+                        <th>Haber</th>
+                        <th>Saldo</th>
+                    </tr>
+                </thead>
+                <tbody class="tbody">
+    
+                </tbody>
+            </table>
+        </div>
+        <div class="saldoActual">
+            <label for="saldoActual">Saldo Actual</label>
+            <input type="text" name="saldoActual" id="saldoActual">
+        </div>
+        <div class="informacion">
+            <p>Sr: Cliente:</p>
+            <p>Este Resumen debe ser cancenlado antes del dia 10, de lo contrario los precios seran actualizados al dia de efectivo el pago</p>
+        </div>
+    </main>
+</body>
+<script src="./resumenCuenta.js"></script>
+</html>

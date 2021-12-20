@@ -13,6 +13,7 @@ const body = document.querySelector('body')
 const emitirComprobante = document.querySelector('.emitirComprobante')
 const pedidos = document.querySelector('#pedidos')
 const emitirRecibo = document.querySelector('.emitirRecibo')
+const resumenCuenta = document.querySelector('.resumenCuenta')
 
 listaPedidos.addEventListener('click', (e) =>{
     const handlePedidos = document.querySelector('.handlePedidos')
@@ -29,6 +30,10 @@ pedidos.addEventListener('click',e=>{
 
 emitirRecibo.addEventListener('click',e=>{
     validacionUsuario("emitirRecibo/emitirRecibo.html")
+})
+
+resumenCuenta.addEventListener('click',e=>{
+    window.location = 'resumenCuenta/resumenCuenta.html'
 })
 
 
