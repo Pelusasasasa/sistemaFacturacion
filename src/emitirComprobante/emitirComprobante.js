@@ -515,7 +515,9 @@ ticketFactura.addEventListener('click',async(e) =>{
         movimientoProducto(producto.cantidad,producto.objeto)
     });
     actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-    subirAAfip(venta)
+    
+    //subirAAfip(venta)
+    
     ipcRenderer.send('nueva-venta',venta);
 
     imprimirTikectFactura(venta,cliente)
