@@ -142,7 +142,7 @@ observaciones.addEventListener('keypress',e=>{
 
 //Cuando buscamos un producto
 codigo.addEventListener('keypress',(e) => {
-    if(codigo.value.length===3 && e.key != "Backspace"){
+    if(codigo.value.length===3 && e.key != "Backspace" && e.key !== "-"){
         codigo.value = codigo.value + "-"
     }
     if (e.key === 'Enter') {
@@ -450,7 +450,6 @@ function verSiPagoONo(texto) {
 
 //pasamos el saldo en negro
 function sumarSaldoAlClienteEnNegro(precio,codigo){
-    console.log(precio)
     ipcRenderer.send('sumarSaldoNegro',[precio,codigo])
 }
 
@@ -515,17 +514,18 @@ ticketFactura.addEventListener('click',async(e) =>{
         sacarStock(producto.cantidad,producto.objeto)
         movimientoProducto(producto.cantidad,producto.objeto)
     });
-    //actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-    //subirAAfip(venta)
-    //ipcRenderer.send('nueva-venta',venta);
+    actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+    subirAAfip(venta)
+    ipcRenderer.send('nueva-venta',venta);
 
     imprimirTikectFactura(venta,cliente)
+    imprimirItem(venta,cliente)
 
 
     if (borraNegro) {
         borrarCuentaCorriente(ventaDeCtaCte)
     };
-    //borraNegro ? window.close() : location.reload();
+    borraNegro ? window.close() : location.reload();
  })
 
 
@@ -648,7 +648,7 @@ async function generarQR(texto) {
     Https.send()
     Https.onreadystatechange = (e) => {
         if (Https.responseText !== "") {
-            console.log(Https.responseText)
+
             const persona = JSON.parse(Https.responseText)
             const {nombre,domicilioFiscal,EsRI,EsMonotributo,EsExento,EsConsumidorFinal}= persona.Contribuyente;
             const cliente = {};
@@ -846,7 +846,7 @@ function ponerInputsClientes(cliente) {
 
 ipcRenderer.once('venta',(e,args)=>{
     borraNegro = true;
-    console.log(args)
+
     const [usuario,numero] = JSON.parse(args)
     ventaDeCtaCte = numero
     textoUsuario.innerHTML = usuario
@@ -864,25 +864,27 @@ ipcRenderer.once('venta',(e,args)=>{
 })
 
 const borrarCuentaCorriente = (numero)=>{
-    console.log(numero)
+
     ipcRenderer.send('borrarVentaACliente',[venta.cliente,numero])
 }   
 const XLSX = require('xlsx');
 
 const imprimirTikectFactura = async(venta,cliente)=>{
 
-    const tipo_doc = (venta.cod_doc === 96) ? 67 : 50
-    let cond_iva = 67
+    const tipo_doc = (venta.cod_doc === 96) ? 67 : 50;
+    let cond_iva = 67;
+    let tipo_fact = 66;
     if (cliente.cond_iva==="Inscripto") {
-        cond_iva = 69
-    }else if (cliente.cond_iva==="Exento") {
-        cond_iva = 60
-    } else if (cliente.cond_iva==="Monotributista") {
         cond_iva = 73
+    }else if (cliente.cond_iva==="Exento") {
+        cond_iva = 69
+    } else if (cliente.cond_iva==="Monotributista") {
+        cond_iva = 77
     }else{
         cond_iva=67
-    }
-    console.log(cliente)
+    };
+    (cond_iva===73) && (tipo_fact = 65);
+
     const ventaAGuardar = {
         ref:venta._id,
         codigo: cliente._id,
@@ -890,24 +892,72 @@ const imprimirTikectFactura = async(venta,cliente)=>{
         cuit: cliente.cuit,
         cond_iva: cond_iva,
         tipo_doc: tipo_doc,
+        tipo_fact: tipo_fact,
         domicilio: cliente.direccion,
         descuento: venta.descuento,
         tipo_pago: venta.tipo_pago,
         vendedor: venta.vendedor,
         empresa: "ELECTRO AVENIDA"
     }
-    console.log(ventaAGuardar)
-         let wb = XLSX.utils.book_new();
+         let wb = XLSX.readFile('Ventas.dbf')
+         const ws = wb.SheetNames[0]
+
+         const datos  = XLSX.utils.sheet_to_json(wb.Sheets[ws])
     
-         wb.props = {
-             Title: "Ventas",
-             subject: "Test",
-             Author: "Electro Avenida"
-         }
+         const newwb = XLSX.utils.book_new()
+         newwb.props = {
+            Title: "Ventas",
+            subject: "Test",
+            Author: "Electro Avenida"
+        }
+         datos.push(ventaAGuardar)
+
+
+         const newWs = XLSX.utils.json_to_sheet(datos)
+
+         XLSX.utils.book_append_sheet(newwb,newWs,'Ventas')
+         XLSX.writeFile(newwb,"Ventas.dbf")
     
-         let newWs = XLSX.utils.json_to_sheet([ventaAGuardar])
+}
+
+const imprimirItem = async(venta,cliente)=>{
+    const datosAGuardar = [];
+
+    venta.productos.forEach(({objeto,cantidad})=>{
+
+        let iva = 21
+        if (objeto.iva === "N") {
+            iva = 21
+        }else{
+            iva = 10.5
+        }
+        const item = {
+            ref: venta._id,
+            descripcion: objeto.descripcion,
+            cantidad: cantidad,
+            monto: (parseFloat(objeto.precio_venta)*cantidad).toFixed(2),
+            iva: iva
+        }
+        datosAGuardar.push(item)
+    })
+
+    let wb = XLSX.readFile('Item.dbf')
+         const ws = wb.SheetNames[0]
+         const datos  = XLSX.utils.sheet_to_json(wb.Sheets[ws])
     
-         XLSX.utils.book_append_sheet(wb,newWs,'Ventas')
-         XLSX.writeFile(wb,"Ventas.xlsx")
-    
+         const newwb = XLSX.utils.book_new()
+         newwb.props = {
+            Title: "Item",
+            subject: "Test",
+            Author: "Electro Avenida"
+        }
+        datosAGuardar.forEach((dato)=>{
+            datos.push(dato)
+        })
+
+
+         const newWs = XLSX.utils.json_to_sheet(datos)
+
+         XLSX.utils.book_append_sheet(newwb,newWs,'Item')
+         XLSX.writeFile(newwb,"Item.dbf")
 }

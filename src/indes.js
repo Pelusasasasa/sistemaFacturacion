@@ -50,10 +50,10 @@ body.addEventListener('keydown',e=>{
 let vendedor
 function validacionUsuario(texto) {
     dialogs.promptPassword("Contraseña").then(value=>{
+        console.log()
         vendedores.forEach(e=>{
             value === e._id && (vendedor=e.nombre)
         })
-
         if(typeof vendedor !== "undefined"){ 
              window.location = `${texto}?vendedor=${vendedor}`
         }else{
@@ -61,7 +61,6 @@ function validacionUsuario(texto) {
                 validacionUsuario(texto)
             })
             document.querySelector('.ok').focus()
-
         }
        })
        .catch(()=>{
