@@ -7,7 +7,7 @@ ipcRenderer.on('traerSaldo',(e,args)=>{
     clientes.forEach(cliente => {
         tbody.innerHTML += `
             <tr>
-                <td>${cliente._id}</td>
+                <td class = "id">${cliente._id}</td>
                 <td>${cliente.cliente}</td>
                 <td>${cliente.direccion}</td>
                 <td>${cliente.cond_iva}</td>
@@ -22,7 +22,7 @@ const descargar = document.querySelector('.descargar')
 const tabla = document.querySelector('#tabla')
 
 descargar.addEventListener('click',e=>{
-    tabla.save()
+    window.print()
 })
 
 document.addEventListener('keyup',e=>{

@@ -24,6 +24,13 @@
     #codigoC{
       width: 5rem;
     }
+    .buscar{
+      display: flex;
+      .nombre{
+        margin-left: 1rem;
+      }
+
+    }
     .arriba {
       display: grid;
       grid-template-columns: 1fr 1fr 1fr 1fr;
@@ -45,7 +52,7 @@
     .formulario__campo {
       margin-bottom: 0.5rem;
       #nombre{
-        width: 40rem;
+        width: 35rem;
       }
       input {
         width: 90%;

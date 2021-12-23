@@ -19,8 +19,8 @@ const textoUsuario = document.createElement("P")
 textoUsuario.innerHTML = vendedor
 usuario.appendChild(textoUsuario)
 const resultado = document.querySelector('#resultado');
+const codigoC = document.querySelector('#codigoC')
 const buscarCliente = document.querySelector('#nombre');
-document.querySelector('#nombre').focus()
 const saldo = document.querySelector('#saldo');
 const localidad = document.querySelector('#localidad');
 const direccion = document.querySelector('#direccion');
@@ -42,7 +42,7 @@ let yaSeleccionado;
 let tipoVenta;
 let borraNegro = false;
 let ventaDeCtaCte = "";
-nombre.focus()
+codigoC.focus()
 
 
 
@@ -108,10 +108,11 @@ let Preciofinal = 0
 venta.vendedor = vendedor
 
 //abrimos una ventana para buscar el cliente
-buscarCliente.addEventListener('keypress', (e) =>{
-    if (e.key === 'Enter' ) {
-        if ( buscarCliente.value!=="") {
-            ipcRenderer.invoke('get-cliente',buscarCliente.value).then((args)=>{
+codigoC.addEventListener('keypress', (e) =>{
+    if (e.key === 'Enter'  ) {
+        if ( codigoC.value!=="") {
+            ipcRenderer.invoke('get-cliente',(codigoC.value).toUpperCase()).then((args)=>{
+                cliente = JSON.parse(args)
                 ponerInputsClientes(JSON.parse(args))
                 observaciones.focus()
             })
@@ -121,15 +122,14 @@ buscarCliente.addEventListener('keypress', (e) =>{
      }
 })
 
-buscarCliente.addEventListener('focus',e=>{
-    buscarCliente.value=""
+codigoC.addEventListener('focus',e=>{
+    codigoC.value=""
 })
 
 //recibimos el cliente
 ipcRenderer.on('mando-el-cliente',(e,args)=>{ 
     cliente = JSON.parse(args)
     ponerInputsClientes(cliente);//ponemos en los inputs los valores del cliente
-
     observaciones.focus()
 })
 
@@ -364,9 +364,9 @@ const traerTamanioDeMovProducto = async()=>{
 
 //Registramos un movimiento de producto
 async function movimientoProducto(cantidad,objeto){
-    const id = traerTamanioDeMovProducto()
+    const id = await traerTamanioDeMovProducto()
     let movProducto = {}
-    movProducto._id = ((await traerTamanioDeMovProducto()) + 1).toFixed(0)
+    movProducto._id = (id + 1).toFixed(0)
     movProducto.codProd = objeto._id
     movProducto.descripcion = objeto.descripcion
     movProducto.cliente = cliente.cliente
@@ -377,8 +377,9 @@ async function movimientoProducto(cantidad,objeto){
     movProducto.stock = objeto.stock
     movProducto.precio_unitario=objeto.precio_venta
     movProducto.total=(parseFloat(movProducto.egreso)*parseFloat(movProducto.precio_unitario)).toFixed(2)
-    movProducto.vendedor = venta.vendedor
-    ipcRenderer.send('movimiento-producto',movProducto)
+    movProducto.vendedor = venta.vendedor;
+    console.log(movProducto)
+    await ipcRenderer.send('movimiento-producto',movProducto)
 }
 
 //FIN MOV PRODUCTOS
@@ -480,20 +481,20 @@ presupuesto.addEventListener('click',async (e)=>{
     sacarIdentificadorTabla(venta.productos);
     if (venta.tipo_pago !== "PP") {
         venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
-    (venta.productos).forEach(producto => {
-        sacarStock(producto.cantidad,producto.objeto)
-        movimientoProducto(producto.cantidad,producto.objeto)
-    });
+       for (let producto of venta.productos){
+            sacarStock(producto.cantidad,producto.objeto)
+            await movimientoProducto(producto.cantidad,producto.objeto)
+        }
     }
     actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
     ipcRenderer.send('nueva-venta',venta);
     printPage("presupuesto")
-    location.reload()
+    //location.reload()
 })
 
 //Aca mandamos la venta con tikect Factura
 const ticketFactura = document.querySelector('.ticketFactura')
-ticketFactura.addEventListener('click',async(e) =>{
+ticketFactura.addEventListener('click',async (e) =>{
     e.preventDefault()
      tipoVenta = "Ticket Factura"
      venta.observacion = observaciones.value
@@ -510,16 +511,15 @@ ticketFactura.addEventListener('click',async(e) =>{
      venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
      venta.comprob = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp);
     //venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,cliente_id);
-    (venta.productos).forEach(producto => {
+    for(let producto of venta.productos){
         sacarStock(producto.cantidad,producto.objeto)
-        movimientoProducto(producto.cantidad,producto.objeto)
-    });
+        await movimientoProducto(producto.cantidad,producto.objeto)
+    };
     actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
     
     //subirAAfip(venta)
     
     ipcRenderer.send('nueva-venta',venta);
-
     imprimirTikectFactura(venta,cliente)
     imprimirItem(venta,cliente)
 
@@ -527,7 +527,7 @@ ticketFactura.addEventListener('click',async(e) =>{
     if (borraNegro) {
         borrarCuentaCorriente(ventaDeCtaCte)
     };
-    borraNegro ? window.close() : location.reload();
+    //borraNegro ? window.close() : location.reload();
  })
 
 
@@ -869,7 +869,9 @@ const borrarCuentaCorriente = (numero)=>{
 
     ipcRenderer.send('borrarVentaACliente',[venta.cliente,numero])
 }   
-const XLSX = require('xlsx');
+
+const {DBFFile} = require ('dbffile')
+const path = '/home/pelusa/Escritorio/'
 
 const imprimirTikectFactura = async(venta,cliente)=>{
 
@@ -887,44 +889,55 @@ const imprimirTikectFactura = async(venta,cliente)=>{
     };
     (cond_iva===73) && (tipo_fact = 65);
 
-    const ventaAGuardar = {
-        ref:venta._id,
-        codigo: cliente._id,
-        nombre: cliente.cliente,
-        cuit: cliente.cuit,
-        cond_iva: cond_iva,
-        tipo_doc: tipo_doc,
-        tipo_fact: tipo_fact,
-        domicilio: cliente.direccion,
-        descuento: venta.descuento,
-        tipo_pago: venta.tipo_pago,
-        vendedor: venta.vendedor,
-        empresa: "ELECTRO AVENIDA"
+    let fieldDescriptors = [
+        { name: 'ref', type: 'C', size: 255 },
+        { name: 'codigo', type: 'C', size: 255 },
+        { name: 'Nombre', type: 'C', size: 255 },
+        { name: 'Cuit', type: 'C', size: 255 },
+        { name: 'Cond_iva', type: 'C', size: 255 },
+        { name: 'Tipo_doc', type: 'C', size: 255 },
+        { name: 'Tipo_fact', type: 'C', size: 255 },
+        { name: 'Domicilio', type: 'C', size: 255 },
+        { name: 'Descuento', type: 'B', size: 8 },
+        { name: 'Tipo_pago', type: 'C', size: 255 },
+        { name: 'Vendedor', type: 'C', size: 255 },
+        { name: 'Empresa', type: 'C', size: 255 }
+    ];
+
+    let records = [
+        { ref: `${venta._id}`,
+          codigo: `${cliente._id}`,
+          Nombre:`${cliente.cliente}`,
+          Cuit:`${cliente.cuit}`,
+          Cond_iva:`${cond_iva}`,
+          Tipo_doc:`${tipo_doc}`,
+          Tipo_fact:`${tipo_fact}`,
+          Domicilio:`${cliente.direccion}`,
+          Descuento:`${venta.descuento}`,
+          Tipo_pago:`${venta.tipo_pago}`,
+          Vendedor:`${venta.vendedor}`,
+          Empresa: `ELECTRO AVENIDA`
+        },
+    ];
+    if (fs.existsSync(`${path}Ventas.dbf`)) {
+        let dbf = await DBFFile.open(`${path}Ventas.dbf`);
+        await dbf.appendRecords(records);
+    }else{
+        let dbf = await DBFFile.create( `${path}Ventas.dbf`,fieldDescriptors);
+        await dbf.appendRecords(records);
     }
-         let wb = XLSX.readFile('Ventas.dbf')
-         const ws = wb.SheetNames[0]
-
-         const datos  = XLSX.utils.sheet_to_json(wb.Sheets[ws])
-    
-         const newwb = XLSX.utils.book_new()
-         newwb.props = {
-            Title: "Ventas",
-            subject: "Test",
-            Author: "Electro Avenida"
-        }
-         datos.push(ventaAGuardar)
-
-
-         const newWs = XLSX.utils.json_to_sheet(datos)
-
-         XLSX.utils.book_append_sheet(newwb,newWs,'Ventas')
-         XLSX.writeFile(newwb,"Ventas.dbf")
-    
 }
 
 const imprimirItem = async(venta,cliente)=>{
     const datosAGuardar = [];
 
+    let fieldDescriptors = [
+        { name: 'ref', type: 'C', size: 255 },
+        { name: 'descripcio', type: 'C', size: 255 },
+        { name: 'cantidad', type: 'B', size: 8 },
+        { name: 'monto', type: 'B', size: 8 },
+        { name: 'iva', type: 'N', size: 20 },
+    ]
     venta.productos.forEach(({objeto,cantidad})=>{
 
         let iva = 21
@@ -933,6 +946,7 @@ const imprimirItem = async(venta,cliente)=>{
         }else{
             iva = 10.5
         }
+
         const item = {
             ref: venta._id,
             descripcion: objeto.descripcion,
@@ -942,24 +956,11 @@ const imprimirItem = async(venta,cliente)=>{
         }
         datosAGuardar.push(item)
     })
-
-    let wb = XLSX.readFile('Item.dbf')
-         const ws = wb.SheetNames[0]
-         const datos  = XLSX.utils.sheet_to_json(wb.Sheets[ws])
-    
-         const newwb = XLSX.utils.book_new()
-         newwb.props = {
-            Title: "Item",
-            subject: "Test",
-            Author: "Electro Avenida"
-        }
-        datosAGuardar.forEach((dato)=>{
-            datos.push(dato)
-        })
-
-
-         const newWs = XLSX.utils.json_to_sheet(datos)
-
-         XLSX.utils.book_append_sheet(newwb,newWs,'Item')
-         XLSX.writeFile(newwb,"Item.dbf")
+    if (fs.existsSync(`${path}Item.dbf`)) {
+        let dbf = await DBFFile.open(`${path}Item.dbf`);
+        await dbf.appendRecords(datosAGuardar);
+    }else{
+        let dbf = await DBFFile.create( `${path}Item.dbf`,fieldDescriptors);
+        await dbf.appendRecords(datosAGuardar);
+    }
 }

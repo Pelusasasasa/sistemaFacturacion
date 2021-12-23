@@ -23,12 +23,16 @@
             border-collapse: collapse;
             width: 100%;
             .tbody{
+                .id{
+                    font-size: 1rem;
+                }
                 tr{
                     td{
-                            width: 10rem;
                             white-space: nowrap;
-                            overflow: hidden;
+                            overflow: auto;
+                            resize: both;
                             text-overflow: clip;
+                            padding: 0;
                             border: .1rem solid black
                     }
                 }
