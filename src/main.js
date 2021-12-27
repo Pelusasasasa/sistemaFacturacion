@@ -751,7 +751,6 @@ function abrirVentana(texto,numeroVenta){
         }));
         nuevaVentana.setMenuBarVisibility(false)
         nuevaVentana.on('close', function (event) {
-            ventanaPrincipal.reload()
             nuevaVentana = null
         })
     }else if(texto === "info-movProducto"){

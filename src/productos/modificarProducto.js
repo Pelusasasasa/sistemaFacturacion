@@ -92,7 +92,7 @@ costoTotal.addEventListener('focus',()=>{
     
     if (costoPesos.value === "0.00") {
         costoP = parseFloat(costoDolares.value);
-        costoTotal.value = (parseFloat(ivaImp.value)+parseFloat(costoDolares.value))*dolar
+        costoTotal.value = ((parseFloat(ivaImp.value)+parseFloat(costoDolares.value))*dolar).toFixed(2)
     }else{
         costoP = parseFloat(costoPesos.value)
         costoTotal.value = ((costo+costoP).toFixed(2))
@@ -101,10 +101,35 @@ costoTotal.addEventListener('focus',()=>{
 
 precioVenta.addEventListener('focus',e=>{
     selecciona_value(precioVenta.id);
-    precioVenta.value = parseFloat((parseFloat(utilidad.value)+parseFloat(costoTotal.value)).toFixed(2))
+    const aux = (parseFloat(utilidad.value)*parseFloat(costoTotal.value)/100).toFixed(2)
+    console.log(costoTotal.value)
+    precioVenta.value = parseFloat((parseFloat(aux) + parseFloat(costoTotal.value)).toFixed(2))
 })
+
 const modificar = document.querySelector('.modificar')
 modificar.addEventListener('click',e=>{
+    modificar.classList.add('disable')
+    guardar.classList.remove('disable')
+    codFabrica.removeAttribute("disabled")
+    descripcion.removeAttribute("disabled") 
+    provedor.removeAttribute("disabled")
+    marca.removeAttribute("disabled") 
+    stock.removeAttribute("disabled") 
+    tasaIva.removeAttribute("disabled") 
+    costoPesos.removeAttribute("disabled") 
+    costoDolares.removeAttribute("disabled") 
+    ivaImp.removeAttribute("disabled") 
+    costoTotal.removeAttribute("disabled") 
+    observaciones.removeAttribute("disabled")
+    utilidad.removeAttribute("disabled") 
+    precioVenta.removeAttribute("disabled") 
+    unidad.removeAttribute('disabled')
+
+})
+
+
+const guardar = document.querySelector('.guardar')
+guardar.addEventListener('click',e=>{
     producto._id = codigo.value
     producto.cod_fabrica = codFabrica.value
     producto.descripcion = descripcion.value
@@ -113,11 +138,13 @@ modificar.addEventListener('click',e=>{
     producto.stock = stock.value
     producto.iva = tasaIva.value
     producto.costo = costoPesos.value
-    producto.costodolares = costoDolares.value
+    producto.costodolar = costoDolares.value
     producto.observacion = observaciones.value
     producto.utilidad = utilidad.value
     producto.precio_venta = precioVenta.value
     producto.unidad = unidad.value
+    producto.impuestos = ivaImp.value
+    console.log(producto)
     ipcRenderer.send('modificarProducto',producto)
     window.close()
 })
@@ -235,7 +262,7 @@ function selecciona_value(idInput) {
     
     precioVenta.addEventListener('keypress',e=>{
         if (e.key === "Enter") {
-            modificar.focus()
+            guardar.focus()
         }
     })
 
