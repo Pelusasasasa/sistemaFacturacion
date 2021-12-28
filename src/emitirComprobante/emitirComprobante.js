@@ -738,7 +738,7 @@ const imprimirTikectFactura = async(venta,cliente)=>{
         { name: 'Tipo_doc', type: 'B', size: 8},
         { name: 'Tipo_fact', type: 'B', size: 8},
         { name: 'Domicilio', type: 'C', size: 255 },
-        { name: 'Descuento', type: 'F', size: 8 ,decimalPlaces: 2},
+        { name: 'Descuento', type: 'B', size: 8 ,decimalPlaces: 2},
         { name: 'Tipo_pago', type: 'C', size: 255 },
         { name: 'Vendedor', type: 'C', size: 255 },
         { name: 'Empresa', type: 'C', size: 255 }
@@ -750,7 +750,7 @@ const imprimirTikectFactura = async(venta,cliente)=>{
           Nombre:cliente.cliente,
           Cuit:cliente.cuit,
           Cod_iva:cond_iva,
-          Tipo_doc:tipo_doc,
+          Tipo_doc: parseFloat(tipo_doc),
           Tipo_fact:tipo_fact,
           Domicilio:cliente.direccion,
           Descuento:(parseFloat(venta.descuento)),
@@ -759,13 +759,14 @@ const imprimirTikectFactura = async(venta,cliente)=>{
           Empresa: "ELECTRO AVENIDA"
         },
     ];
-    if (fs.existsSync(`${path}Ventas.dbf`)) {
-        let dbf = await DBFFile.open(`${path}Ventas.dbf`);
-        await dbf.appendRecords(records);
-    }else{
-        let dbf = await DBFFile.create( `${path}Ventas.dbf`,fieldDescriptors);
-        await dbf.appendRecords(records);
-    }
+    ipcRenderer.send('fiscal',{fieldDescriptors,records})
+    // if (fs.existsSync(`${path}Ventas.dbf`)) {
+    //     let dbf = await DBFFile.open(`${path}Ventas.dbf`);
+    //     await dbf.appendRecords(records);
+    // }else{
+    //     let dbf = await DBFFile.create( `${path}Ventas.dbf`,fieldDescriptors);
+    //     await dbf.appendRecords(records);
+    // }
 }
 
 const imprimirItem = async(venta,cliente)=>{

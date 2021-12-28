@@ -407,6 +407,15 @@ ipcMain.on('ventaModificada',async (e,[args,id,saldo])=>{
     })
 //FIN VENTAS
 
+//INICIO FISCAL
+
+    ipcMain.on('fiscal', async(e,args)=>{
+        console.log(args)
+        await axios.put(`${URL}fiscal`,args)
+    })
+
+//FIN FISCAL
+
 //INICIO NUMEROS
 
 //mandamos el tipo de comprobante
