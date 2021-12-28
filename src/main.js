@@ -1,4 +1,4 @@
-const URL = "http://192.168.0.123:4000/api/";
+const URL = "http://192.168.0.102:4000/api/";
 
 const axios = require("axios")
 const path = require('path');
@@ -305,7 +305,8 @@ ipcMain.on('imprimir-venta',(e,args)=>{
     nuevaVentana.webContents.on('did-finish-load', function() {
         nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
             nuevaVentana.webContents.print(options,(success, errorType) => {
-                if (success) (nuevaVentana = null)
+                    ventanaPrincipal.focus()
+                    nuevaVentana.close();
               })
     });
 })
