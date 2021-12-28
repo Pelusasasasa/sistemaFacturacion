@@ -13,7 +13,6 @@
         <form class="formularioFactura">
           <fieldset>
             <div class="arriba">
-
               <div class="formulario__campo buscar">
                 
                 <div>
@@ -72,6 +71,10 @@
                   id="telefono"
                   placeholder="Telefono"
                 />
+              </div>
+
+              <div class="formulario__campo">
+                <a class="buscarAfip">Buscar AFIP</a>
               </div>
             </div>
 
@@ -152,10 +155,6 @@
         </form>
       </div>
 
-      <div class="formulario__campo buscarAfip">
-        <button>Buscar AFIP</button>
-      </div>
-
       <div class="contenedor listaProductos">
         <table class="table">
           <thead>
@@ -224,15 +223,29 @@
           <label class="" for="cuentaCorriente">Cuenta Corriente</label>
         </div>
 
-        <div class="form-check none ventaValorizado">
-          <input
-            class="valorizado"
-            type="radio"
-            name="valorizado"
-            id="valorizado"
-            value="valorizado"
-          />
-          <label class="" for="valorizado">Valorizado</label>
+        <div class="opcional">
+          <div class="form-check none ventaValorizado">
+            <input
+              class="valorizado"
+              type="radio"
+              name="valorizado"
+              id="valorizado"
+              value="valorizado"
+            />
+            <label class="" for="valorizado">Valorizado</label>
+          </div>
+  
+          <div class="form-check none imprimirCheck">
+            <input
+              class="impresion"
+              type="radio"
+              name="Impresion"
+              id="Impresion"
+              value="Impresion"
+              checked
+            />
+            <label class="" for="Impresion">Impresion</label>
+          </div>
         </div>
       </div>
 

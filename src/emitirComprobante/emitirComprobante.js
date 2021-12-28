@@ -31,6 +31,8 @@ const conIva = document.querySelector('#conIva');
 const total = document.querySelector('#total');
 const ventaValorizado = document.querySelector('.ventaValorizado')
 const valorizado = document.querySelector('.valorizado')
+const imprimirCheck = document.querySelector('.imprimirCheck')
+const impresion = document.querySelector('.impresion')
 const observaciones = document.querySelector('#observaciones')
 const codigo = document.querySelector('#codigo')
 const tiposVentas = document.querySelectorAll('input[name="tipoVenta"]')
@@ -83,6 +85,7 @@ function mostrarNegro() {
         ventaNegro.classList.remove('none')
         ticketFactura.classList.add('none')
         ventaValorizado.classList.remove('none')
+        imprimirCheck.classList.remove('none')
 }
 
 function ocultarNegro() {
@@ -98,6 +101,7 @@ function ocultarNegro() {
         ventaNegro.classList.add('none')
         ticketFactura.classList.remove('none')
         ventaValorizado.classList.add('none')
+        imprimirCheck.classList.add('none')
 }
 
 let cliente = {}
@@ -488,8 +492,16 @@ presupuesto.addEventListener('click',async (e)=>{
     }
     actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
     ipcRenderer.send('nueva-venta',venta);
-    printPage("presupuesto")
-    //location.reload()
+
+    if (impresion.checked) {
+        if (venta.tipo_pago === "CC") {
+            ipcRenderer.send('imprimir-venta',[venta,cliente,true,1])
+            ipcRenderer.send('imprimir-venta',[venta,cliente,true,1])
+        }else{
+            ipcRenderer.send('imprimir-venta',[venta,cliente,false,1])
+        }
+    }
+    location.reload()
 })
 
 //Aca mandamos la venta con tikect Factura
@@ -510,7 +522,7 @@ ticketFactura.addEventListener('click',async (e) =>{
      venta.tipo_pago = tipopago(tipoPago)   
      venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
      venta.comprob = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp);
-    //venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,cliente_id);
+     venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,cliente_id);
     for(let producto of venta.productos){
         sacarStock(producto.cantidad,producto.objeto)
         await movimientoProducto(producto.cantidad,producto.objeto)
@@ -531,80 +543,6 @@ ticketFactura.addEventListener('click',async (e) =>{
  })
 
 
-const subirAAfip = async(venta)=>{
-    const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-    let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
-    (ultimoElectronica === 0) && (ultimoElectronica=1); 
-    let totalIva105 = 0
-    let totalIva21=0
-    let totalNeto21 = 0 
-    let totalNeto105 = 0 
-    venta.productos.forEach(({objeto,cantidad}) =>{
-        if (objeto.iva === "N") {
-            totalNeto21 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta/1.21))
-            totalIva21 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.21)
-        }else{
-            totalNeto105 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta/1.105))
-            totalIva105 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.105)
-        }
-    })
-    let data = {
-        'CantReg': 1,
-        'CbteTipo': venta.cod_comp,
-
-        'Concepto': 1,
-        'DocTipo': venta.cod_doc,
-        'DocNro': venta.dnicuit,
-        'CbteDesde': 1,
-        'CbteHasta': ultimoElectronica+1,
-        'CbteFch': parseInt(fecha.replace(/-/g, '')),
-        'ImpTotal': venta.precioFinal,
-        'ImpTotConc': 0,
-        'ImpNeto': (totalNeto105+totalNeto21).toFixed(2),
-        'ImpOpEx': 0,
-        'ImpIVA': (totalIva21+totalIva105).toFixed(2), //Importe total de IVA
-        'ImpTrib': 0,
-        'MonId': 'PES',
-        'PtoVta': 5,
-        'MonCotiz' 	: 1,
-        'Iva' 		: [],
-        }
-        
-        if (totalNeto105 !=0 ) {
-            data.Iva.push({
-                    'Id' 		: 4, // Id del tipo de IVA (4 para 10.5%)
-                    'BaseImp' 	: totalNeto105.toFixed(2), // Base imponible
-                    'Importe' 	: totalIva105.toFixed(2) // Importe 
-            })
-        }
-        if (totalNeto21 !=0 ) {
-            data.Iva.push({
-                    'Id' 		: 5, // Id del tipo de IVA (5 para 21%)
-                    'BaseImp' 	: totalNeto21.toFixed(2), // Base imponible
-                    'Importe' 	: totalIva21.toFixed(2) // Importe 
-            })
-        }
-        const res = await afip.ElectronicBilling.createNextVoucher(data); //creamos la factura electronica
-
-        const qr = {
-            ver: 1,
-            fecha: data.CbteFch,
-            cuit: 27165767433,
-            ptoVta: 5 ,
-            tipoCmp: venta.cod_comp,
-            nroCmp: ultimoElectronica,
-            importe: data.ImpTotal,
-            moneda: "PES",
-            ctz: 1,
-            tipoDocRec: data.DocTipo,
-            nroDocRec: parseInt(data.DocNro),
-            tipoCodAut: "E",
-            codAut: parseFloat(res.CAE)
-        }
-        const textoQR = btoa(unescape(encodeURIComponent(qr)));//codificamos lo que va en el QR
-        const QR = await generarQR(textoQR,res.CAE,res.CAEFchVto)
-        printPage("ticket factura",QR,res.CAE,res.CAEFchVto,ultimoElectronica,venta.cod_comp);
-}
 //Generamos el qr
 async function generarQR(texto) {
     const fs = require('fs')
@@ -617,7 +555,6 @@ async function generarQR(texto) {
 //funcion que busca en la afip a una persona
  const buscarAfip = document.querySelector('.buscarAfip')
  buscarAfip.addEventListener('click',  (e)=>{
- 
     ipcRenderer.send('buscar-cliente',dnicuit.value)
     ipcRenderer.on('buscar-cliente',(e,args)=>{
         cliente = JSON.parse(args)
@@ -640,7 +577,6 @@ async function generarQR(texto) {
             }
     })
     observaciones.focus()
-    e.preventDefault()
  })
 
  function buscarPersonaPorCuit(cuit) {
@@ -719,116 +655,10 @@ const tamanioCancelados = async() =>{
 }
 
 const fs = require('fs');
-const PdfParse = require('pdf-parse');
-//funcion para imprimir una hoja
-    async function printPage(factura,qr,cae,fechaCAE,numeroVoucher,cod_comp){
-        const div = document.querySelector('divImprimir')
-        var iframe = document.getElementById("iframe");
-        var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
-        const fecha = innerDoc.querySelector('.fecha')
-        const numero = innerDoc.querySelector('.numero')
-        const vendedor = innerDoc.querySelector('.vendedor')
-        const clientes = innerDoc.querySelector('.cliente')
-        const idCliente = innerDoc.querySelector('.idCliente')
-        const cuit = innerDoc.querySelector('.cuit')
-        const direccion = innerDoc.querySelector('.direccion')
-        const localidad = innerDoc.querySelector('.localidad')
-        const numeroComp = innerDoc.querySelector('.numero')
-        const cond_iva = innerDoc.querySelector('.cond_iva')
-        const subtotal = innerDoc.querySelector('.subtotal')
-        const precioFinal = innerDoc.querySelector('.precioFinal')
-        const tipoPago = innerDoc.querySelector('.tipoPago')
-        const tbody = innerDoc.querySelector('.tbody')
-        const seccionQR = innerDoc.querySelector('.seccionQR')
-        const tipoFactura = innerDoc.querySelector('.tipoFactura')
-        const tomarFecha = new Date()
-        const dia = tomarFecha.getDate() 
-        const mes = tomarFecha.getMonth() + 1
-        const anio = tomarFecha.getFullYear()
-        const hora = tomarFecha.getHours()
-        const minuto = tomarFecha.getMinutes()
-        const segundo = tomarFecha.getSeconds()
-        const lista = venta.productos
-        numero.innerHTML=venta.nro_comp
-        clientes.innerHTML = cliente.cliente
-        idCliente.innerHTML = cliente._id
-        vendedor.innerHTML = venta.vendedor
-        cuit.innerHTML = cliente.cuit
-        direccion.innerHTML = cliente.direccion
-        localidad.innerHTML = cliente.localidad
-        fecha.innerHTML = `${dia}/${mes}/${anio} ${hora}:${minuto}:${segundo}`
-        numeroComp.innerHTML = venta.nro_comp
-        subtotal.innerHTML=parseFloat(venta.precioFinal)+parseFloat(venta.descuento)
-        precioFinal.innerHTML=venta.precioFinal
-        tipoPago.innerHTML= venta.tipo_pago
-        if(cod_comp === 1){
-            tipoFactura.innerHTML = "A"
-        }else if (cod_comp === 6) {
-            tipoFactura.innerHTML = "B"
-        }else{
-            tipoFactura.innerHTML = "R"
-        }
-
-        if (venta.tipo_pago === "CC") {
-            precioFinal.innerHTML = ""
-            subtotal.innerHTML=""
-        }
-
-
-        if (cliente.cond_iva) {
-            cond_iva.innerHTML = cliente.cond_iva
-        }else{
-            cond_iva.innerHTML = "Consumidor Final"
-        }
-        tbody.innerHTML=""
-         for await (let {objeto,cantidad} of lista) {
-             if (venta.tipo_pago !== "CC") {
-                    
-                tbody.innerHTML += `
-                <tr>
-                    <td>${(parseFloat(cantidad)).toFixed(2)}</td>
-                    <td>${objeto._id}</td>
-                    <td class="descripcion">${objeto.descripcion}</td>
-                    <td>${parseFloat(objeto.precio_venta).toFixed(2)}</td>
-                    <td>${(parseFloat(objeto.precio_venta)*cantidad).toFixed(2)}</td>
-                </tr>
-                `
-            }else{
-                tbody.innerHTML += `
-                <tr>
-                    <td>${(parseFloat(cantidad)).toFixed(2)}</td>
-                    <td class="descripcion">${objeto._id}</td>
-                    <td>${objeto.descripcion}</td>
-                </tr>
-                `
-            }
-
-            if (factura === "ticket factura") {
-                numero.innerHTML =`0005-${(numeroVoucher.toString()).padStart(8,0)}`
-                const insertar= `
-                <div>
-                    <img src=${qr}>
-                </div>
-                <div>
-                    <h3>CAE: ${cae}</h3>
-                    <h4>Fecha Vto. Cae: ${fechaCAE}</h4>
-                </div>
-                `
-                seccionQR.innerHTML = insertar
-            }
-         };
-
-         window.print()
-
-     } 
-     document.addEventListener('keydown',e=>{
-        if(e.key === "Escape"){
-            window.history.go(-1)
-        }
-    })
 
  //Ponemos valores a los inputs
 function ponerInputsClientes(cliente) {
+    codigoC.value = cliente._id
     buscarCliente.value = cliente.cliente;
     saldo.value = cliente.saldo;
     saldo_p.value = cliente.saldo_p;
@@ -866,12 +696,12 @@ ipcRenderer.once('venta',(e,args)=>{
 })
 
 const borrarCuentaCorriente = (numero)=>{
-
     ipcRenderer.send('borrarVentaACliente',[venta.cliente,numero])
 }   
 
 const {DBFFile} = require ('dbffile')
-const path = '/home/pelusa/Escritorio/'
+// const path = "/home/pelusa/Escritorio/"
+   const path = '\\\\SERVIDOR\\Fiscal\\'
 
 const imprimirTikectFactura = async(venta,cliente)=>{
 
@@ -889,34 +719,44 @@ const imprimirTikectFactura = async(venta,cliente)=>{
     };
     (cond_iva===73) && (tipo_fact = 65);
 
+    let tipo_pago = ""
+
+    if (venta.tipo_pago === "CD") {
+        tipo_pago = "Contado";
+    }else if (venta.tipo_pago === "CC") {
+        tipo_pago = "Cuenta Corriente"
+    }else{
+        tipo_pago = "Presupuesto"
+    }
+
     let fieldDescriptors = [
-        { name: 'ref', type: 'C', size: 255 },
-        { name: 'codigo', type: 'C', size: 255 },
+        { name: 'Ref', type: 'B', size: 8},
+        { name: 'Codigo', type: 'C', size: 255 },
         { name: 'Nombre', type: 'C', size: 255 },
         { name: 'Cuit', type: 'C', size: 255 },
-        { name: 'Cond_iva', type: 'C', size: 255 },
-        { name: 'Tipo_doc', type: 'C', size: 255 },
-        { name: 'Tipo_fact', type: 'C', size: 255 },
+        { name: 'Cod_iva', type: 'B', size: 8},
+        { name: 'Tipo_doc', type: 'B', size: 8},
+        { name: 'Tipo_fact', type: 'B', size: 8},
         { name: 'Domicilio', type: 'C', size: 255 },
-        { name: 'Descuento', type: 'B', size: 8 },
+        { name: 'Descuento', type: 'F', size: 8 ,decimalPlaces: 2},
         { name: 'Tipo_pago', type: 'C', size: 255 },
         { name: 'Vendedor', type: 'C', size: 255 },
         { name: 'Empresa', type: 'C', size: 255 }
     ];
 
     let records = [
-        { ref: `${venta._id}`,
-          codigo: `${cliente._id}`,
-          Nombre:`${cliente.cliente}`,
-          Cuit:`${cliente.cuit}`,
-          Cond_iva:`${cond_iva}`,
-          Tipo_doc:`${tipo_doc}`,
-          Tipo_fact:`${tipo_fact}`,
-          Domicilio:`${cliente.direccion}`,
-          Descuento:`${venta.descuento}`,
-          Tipo_pago:`${venta.tipo_pago}`,
-          Vendedor:`${venta.vendedor}`,
-          Empresa: `ELECTRO AVENIDA`
+        { Ref: venta._id,
+          Codigo: cliente._id,
+          Nombre:cliente.cliente,
+          Cuit:cliente.cuit,
+          Cod_iva:cond_iva,
+          Tipo_doc:tipo_doc,
+          Tipo_fact:tipo_fact,
+          Domicilio:cliente.direccion,
+          Descuento:(parseFloat(venta.descuento)),
+          Tipo_pago: tipo_pago,
+          Vendedor:venta.vendedor,
+          Empresa: "ELECTRO AVENIDA"
         },
     ];
     if (fs.existsSync(`${path}Ventas.dbf`)) {
@@ -930,26 +770,25 @@ const imprimirTikectFactura = async(venta,cliente)=>{
 
 const imprimirItem = async(venta,cliente)=>{
     const datosAGuardar = [];
-
     let fieldDescriptors = [
-        { name: 'ref', type: 'C', size: 255 },
+        { name: 'ref', type: 'B', size: 8},
         { name: 'descripcio', type: 'C', size: 255 },
-        { name: 'cantidad', type: 'B', size: 8 },
-        { name: 'monto', type: 'B', size: 8 },
-        { name: 'iva', type: 'N', size: 20 },
+        { name: 'cantidad', type: 'B', size: 8, decimalPlaces: 2 },
+        { name: 'monto', type: 'B', size: 8, decimalPlaces: 2 },
+        { name: 'iva', type: 'B', size: 8, decimalPlaces: 2 },
     ]
     venta.productos.forEach(({objeto,cantidad})=>{
 
         let iva = 21
         if (objeto.iva === "N") {
-            iva = 21
+            iva = 21.00
         }else{
-            iva = 10.5
+            iva = 10.50
         }
 
         const item = {
             ref: venta._id,
-            descripcion: objeto.descripcion,
+            descripcio: objeto.descripcion,
             cantidad: cantidad,
             monto: (parseFloat(objeto.precio_venta)*cantidad).toFixed(2),
             iva: iva
@@ -963,4 +802,78 @@ const imprimirItem = async(venta,cliente)=>{
         let dbf = await DBFFile.create( `${path}Item.dbf`,fieldDescriptors);
         await dbf.appendRecords(datosAGuardar);
     }
+}
+
+const subirAAfip = async(venta)=>{
+    const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+    let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
+    (ultimoElectronica === 0) && (ultimoElectronica=1); 
+    let totalIva105 = 0
+    let totalIva21=0
+    let totalNeto21 = 0 
+    let totalNeto105 = 0 
+    venta.productos.forEach(({objeto,cantidad}) =>{
+        if (objeto.iva === "N") {
+            totalNeto21 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta/1.21))
+            totalIva21 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.21)
+        }else{
+            totalNeto105 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta/1.105))
+            totalIva105 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.105)
+        }
+    })
+    let data = {
+        'CantReg': 1,
+        'CbteTipo': venta.cod_comp,
+        'Concepto': 1,
+        'DocTipo': venta.cod_doc,
+        'DocNro': venta.dnicuit,
+        'CbteDesde': 1,
+        'CbteHasta': ultimoElectronica+1,
+        'CbteFch': parseInt(fecha.replace(/-/g, '')),
+        'ImpTotal': venta.precioFinal,
+        'ImpTotConc': 0,
+        'ImpNeto': (totalNeto105+totalNeto21).toFixed(2),
+        'ImpOpEx': 0,
+        'ImpIVA': (totalIva21+totalIva105).toFixed(2), //Importe total de IVA
+        'ImpTrib': 0,
+        'MonId': 'PES',
+        'PtoVta': 5,
+        'MonCotiz' 	: 1,
+        'Iva' 		: [],
+        }
+        
+        if (totalNeto105 !=0 ) {
+            data.Iva.push({
+                    'Id' 		: 4, // Id del tipo de IVA (4 para 10.5%)
+                    'BaseImp' 	: totalNeto105.toFixed(2), // Base imponible
+                    'Importe' 	: totalIva105.toFixed(2) // Importe 
+            })
+        }
+        if (totalNeto21 !=0 ) {
+            data.Iva.push({
+                    'Id' 		: 5, // Id del tipo de IVA (5 para 21%)
+                    'BaseImp' 	: totalNeto21.toFixed(2), // Base imponible
+                    'Importe' 	: totalIva21.toFixed(2) // Importe 
+            })
+        }
+        const res = await afip.ElectronicBilling.createNextVoucher(data); //creamos la factura electronica
+
+        const qr = {
+            ver: 1,
+            fecha: data.CbteFch,
+            cuit: 27165767433,
+            ptoVta: 5 ,
+            tipoCmp: venta.cod_comp,
+            nroCmp: ultimoElectronica,
+            importe: data.ImpTotal,
+            moneda: "PES",
+            ctz: 1,
+            tipoDocRec: data.DocTipo,
+            nroDocRec: parseInt(data.DocNro),
+            tipoCodAut: "E",
+            codAut: parseFloat(res.CAE)
+        }
+        const textoQR = btoa(unescape(encodeURIComponent(qr)));//codificamos lo que va en el QR
+        const QR = await generarQR(textoQR,res.CAE,res.CAEFchVto)
+        printPage("ticket factura",QR,res.CAE,res.CAEFchVto,ultimoElectronica,venta.cod_comp);
 }

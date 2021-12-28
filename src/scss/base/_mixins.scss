@@ -6,12 +6,12 @@
 
 
     @mixin Grande(){
-        @media(min-width: 1250px){
+        @media(min-height: 900px){
             @content
         }
     };
     @mixin Comun(){
-        @media(min-width: 800px){
+        @media(min-height: 800px){
             @content
         }
     }

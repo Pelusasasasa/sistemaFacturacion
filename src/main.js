@@ -290,6 +290,26 @@ ipcMain.on('nueva-venta', async (e, args) => {
     await axios.put(`${URL}clientes/${_id}`,cliente)
 })
 
+ipcMain.on('imprimir-venta',(e,args)=>{
+    const [venta,cliente,condicion,numeroDeCopias] = args;
+    const options = {
+        silent: condicion,
+        //device: 'HP_Deskjet_3540_series_D1A047_',
+        pageRanges: [{
+            from: 0,
+            to: 1
+          }],
+    }
+    abrirVentana("imprimir")
+    
+    nuevaVentana.webContents.on('did-finish-load', function() {
+        nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
+            nuevaVentana.webContents.print(options,(success, errorType) => {
+                if (success) (nuevaVentana = null)
+              })
+    });
+})
+
 //buscamos las ventas
 ipcMain.handle('traerVentas' ,async (e,args)=>{
     const lista=[]
@@ -753,6 +773,25 @@ function abrirVentana(texto,numeroVenta){
         nuevaVentana.on('close', function (event) {
             nuevaVentana = null
         })
+    }else if(texto === "imprimir"){
+            nuevaVentana = new BrowserWindow({
+                parent:ventanaPrincipal,
+                width: 1000,
+                height: 500,
+                webPreferences: {
+                    contextIsolation: false,
+                    nodeIntegration: true
+                }
+            })
+            nuevaVentana.loadURL(url.format({
+                pathname: path.join(__dirname, `emitirComprobante/imprimir.html`),
+                protocol: 'file',
+                slashes: true
+            }));
+            nuevaVentana.on('close', ()=> {
+                nuevaVentana = null
+            })
+            nuevaVentana.setMenuBarVisibility(false)
     }else if(texto === "info-movProducto"){
         nuevaVentana = new BrowserWindow({
             parent:ventanaPrincipal,
