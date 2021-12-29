@@ -229,11 +229,12 @@ imprimir.addEventListener('click',async e=>{
     let saldoFavor = 0;
     saldoFavor = (saldoAfavor.value !== "") && parseFloat(saldoAFavor.value);
     const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2)) - saldoFavor
-    ipcRenderer.send('modificarSaldo',[cliente._id,aux,saldoNuevo])
-    ipcRenderer.send('modificamosLasVentas',nuevaLista)
-    ipcRenderer.send('nueva-venta',recibo)
-    printPage(recibo,cliente.cliente,cliente.cuit,cliente.direccion,cliente.localidad,cliente.cond_iva,arregloParaImprimir,total.value)
-    location.reload()
+    // ipcRenderer.send('modificarSaldo',[cliente._id,aux,saldoNuevo])
+    // ipcRenderer.send('modificamosLasVentas',nuevaLista)
+    // ipcRenderer.send('nueva-venta',recibo)
+    ipcRenderer.send('imprimir-venta',[cliente,recibo,false,"Recibo"])
+    //printPage(recibo,cliente.cliente,cliente.cuit,cliente.direccion,cliente.localidad,cliente.cond_iva,arregloParaImprimir,total.value)
+    //location.reload()
 })
 
 const traerUltimoNroRecibo =async ()=>{
@@ -248,56 +249,4 @@ document.addEventListener('keydown',e=>{
     if(e.key === "Escape"){
         window.history.go(-1)
     }
-})
-
-
-async function printPage(recibo,nombreCliente,cuitCliente,direccionCliente,localidadCliente,ivaCliente,lista,precio){
-    const div = document.querySelector('divImprimir')
-    var iframe = document.getElementById("iframe");
-    var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
-    const numero = innerDoc.querySelector('.numero')
-    const fecha = innerDoc.querySelector('.fecha');
-    const cliente = innerDoc.querySelector('.cliente')
-    const cuit = innerDoc.querySelector('.cuit')
-    const localidad = innerDoc.querySelector('.localidad')
-    const direccion = innerDoc.querySelector('.direccion')
-    const iva = innerDoc.querySelector('.cond_iva')
-    const total = innerDoc.querySelector('#total')
-    const tbody = innerDoc.querySelector('.tbody')
-    const tomarFecha = new Date();
-    const hoy = tomarFecha.getDate()
-    const mes = tomarFecha.getMonth() + 1;
-    const anio = tomarFecha.getFullYear();
-
-    fecha.innerHTML = `${hoy}/${mes}/${anio}`;
-    numero.innerHTML = recibo.nro_comp;
-    cliente.innerHTML = nombreCliente;
-    cuit.innerHTML = cuitCliente;
-    localidad.innerHTML=localidadCliente;
-    direccion.innerHTML=direccionCliente;
-    iva.innerHTML = ivaCliente;
-    tbody.innerHTML = ""
-
-    lista.forEach(objeto => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${objeto.fecha}</td>
-                <td>${objeto.comprobante}</td>
-                <td>${objeto.numero}</td>
-                <td>${(parseFloat(objeto.pagado)).toFixed(2)}</td>
-                <td>${(parseFloat(objeto.saldo)).toFixed(2)}</td>
-            </tr>
-        `
-    })
-    total.value = precio
-    const informacionCliente = document.querySelector('.informacionCliente')
-    const tabla = document.querySelector('.tabla')
-    const pagado = document.querySelector('.pagado')
-    console.log(pagado)
-    const botones = document.querySelector('.botones')
-    informacionCliente.classList.add('disabled')
-    tabla.classList.add('disabled')
-    pagado.classList.add('disabled')
-    botones.classList.add('disabled')
-    window.print()
-}
+}) 

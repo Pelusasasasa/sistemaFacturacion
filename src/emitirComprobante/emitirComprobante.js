@@ -633,7 +633,8 @@ borrarProducto.addEventListener('click',e=>{
 
 const cancelar = document.querySelector('.cancelar')
 cancelar.addEventListener('click',async e=>{
-    e.preventDefault()
+    if (("Cancelar Presupuesto?")) {
+        e.preventDefault()
         const ventaCancelada = {}
         if (cliente._id) {
             ventaCancelada.cliente = cliente._id
@@ -643,6 +644,8 @@ cancelar.addEventListener('click',async e=>{
         ventaCancelada.vendedor = vendedor
         ipcRenderer.send('ventaCancelada',ventaCancelada)
         window.location = "../index.html"
+    }
+        
 })
 
 // Vemos el tamanio de los Cancelados
@@ -760,13 +763,6 @@ const imprimirTikectFactura = async(venta,cliente)=>{
         },
     ];
     ipcRenderer.send('fiscal',{fieldDescriptors,records})
-    // if (fs.existsSync(`${path}Ventas.dbf`)) {
-    //     let dbf = await DBFFile.open(`${path}Ventas.dbf`);
-    //     await dbf.appendRecords(records);
-    // }else{
-    //     let dbf = await DBFFile.create( `${path}Ventas.dbf`,fieldDescriptors);
-    //     await dbf.appendRecords(records);
-    // }
 }
 
 const imprimirItem = async(venta,cliente)=>{
@@ -796,13 +792,9 @@ const imprimirItem = async(venta,cliente)=>{
         }
         datosAGuardar.push(item)
     })
-    if (fs.existsSync(`${path}Item.dbf`)) {
-        let dbf = await DBFFile.open(`${path}Item.dbf`);
-        await dbf.appendRecords(datosAGuardar);
-    }else{
-        let dbf = await DBFFile.create( `${path}Item.dbf`,fieldDescriptors);
-        await dbf.appendRecords(datosAGuardar);
-    }
+    
+    ipcRenderer.send('item',{fieldDescriptors,datosAGuardar})
+
 }
 
 const subirAAfip = async(venta)=>{

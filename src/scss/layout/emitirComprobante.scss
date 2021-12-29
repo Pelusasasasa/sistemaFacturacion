@@ -7,10 +7,18 @@
     background-color: black;
   }
   width: 100%;
-  .buscarAfip {
-    position: fixed;
-    right: 15rem;
-    top: 2rem;
+  .parteAfip{
+    margin-top: 1.5rem;
+  }
+  .buscarAfip { 
+    background-color: lightgrey;
+    padding: 1.5rem;
+    border-radius: 7.5rem;  
+
+    &:hover{
+      cursor: pointer;
+    }
+
   }
   background-color: gray;
   .formulario-verde {
@@ -128,9 +136,6 @@
   .listaProductos {
     background-color: white;
     overflow: scroll;
-    @include Grande(){
-      height: 40rem;
-    }
     height: 30rem;
     border: 0.1rem solid black;
   }

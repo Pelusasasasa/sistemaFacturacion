@@ -1,4 +1,4 @@
-const URL = "http://192.168.0.102:4000/api/";
+const URL = "http://179.62.24.12/api/";
 
 const axios = require("axios")
 const path = require('path');
@@ -233,7 +233,6 @@ ipcMain.on('sumarSaldoNegro', async (e, args) => {
     let cliente = await axios.get(`${URL}clientes/id/${id}`)
     cliente = cliente.data;
     let saldo_p = (parseFloat(precio) + parseFloat(cliente.saldo_p)).toFixed(2)
-    console.log(saldo_p)
     cliente.saldo_p = saldo_p
     await axios.put(`${URL}clientes/${id}`,cliente)
 })
@@ -291,7 +290,7 @@ ipcMain.on('nueva-venta', async (e, args) => {
 })
 
 ipcMain.on('imprimir-venta',(e,args)=>{
-    const [venta,cliente,condicion,numeroDeCopias] = args;
+    const [venta,cliente,condicion,tipo] = args;
     const options = {
         silent: condicion,
         //device: 'HP_Deskjet_3540_series_D1A047_',
@@ -299,15 +298,17 @@ ipcMain.on('imprimir-venta',(e,args)=>{
             from: 0,
             to: 1
           }],
-    }
-    abrirVentana("imprimir")
-    
+    };
+
+    (tipo === "Recibo") ? abrirVentana("imprimir-recibo") : abrirVentana("imprimir-comprobante");
+
     nuevaVentana.webContents.on('did-finish-load', function() {
         nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
-            nuevaVentana.webContents.print(options,(success, errorType) => {
-                    ventanaPrincipal.focus()
-                    nuevaVentana.close();
-              })
+
+            // nuevaVentana.webContents.print(options,(success, errorType) => {
+            //         ventanaPrincipal.focus()
+            //         nuevaVentana.close();
+            //   })
     });
 })
 
@@ -407,14 +408,17 @@ ipcMain.on('ventaModificada',async (e,[args,id,saldo])=>{
     })
 //FIN VENTAS
 
-//INICIO FISCAL
+//INICIO FISCAL E ITEM
 
     ipcMain.on('fiscal', async(e,args)=>{
-        console.log(args)
         await axios.put(`${URL}fiscal`,args)
     })
 
-//FIN FISCAL
+    ipcMain.on('item',async(e,args)=>{
+        await axios.post(`${URL}item`,args)
+    })
+
+//FIN FISCAL  E ITEM
 
 //INICIO NUMEROS
 
@@ -662,6 +666,12 @@ const templateMenu = [
         ]
     },
     {
+        label: "Emitir Nota De Credito",
+        click(){
+            abrirVentana("EmitirNotaCredito")
+        }
+    },
+    {
         label: "Datos",
         submenu: [
             {
@@ -783,7 +793,7 @@ function abrirVentana(texto,numeroVenta){
         nuevaVentana.on('close', function (event) {
             nuevaVentana = null
         })
-    }else if(texto === "imprimir"){
+    }else if(texto === "imprimir-comprobante"){
             nuevaVentana = new BrowserWindow({
                 parent:ventanaPrincipal,
                 width: 1000,
@@ -795,6 +805,25 @@ function abrirVentana(texto,numeroVenta){
             })
             nuevaVentana.loadURL(url.format({
                 pathname: path.join(__dirname, `emitirComprobante/imprimir.html`),
+                protocol: 'file',
+                slashes: true
+            }));
+            nuevaVentana.on('close', ()=> {
+                nuevaVentana = null
+            })
+            nuevaVentana.setMenuBarVisibility(false)
+        }else if(texto === "imprimir-r  ecibo"){
+            nuevaVentana = new BrowserWindow({
+                parent:ventanaPrincipal,
+                width: 1000,
+                height: 500,
+                webPreferences: {
+                    contextIsolation: false,
+                    nodeIntegration: true
+                }
+            })
+            nuevaVentana.loadURL(url.format({
+                pathname: path.join(__dirname, `emitirRecibo/imprimirRecibo.html`),
                 protocol: 'file',
                 slashes: true
             }));
