@@ -2,7 +2,6 @@ const { ipcRenderer } = require("electron")
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
 
-
 const cliente = document.querySelector('#buscador')
 const saldo = document.querySelector('#saldo')
 const listar = document.querySelector('.listar')
@@ -34,6 +33,7 @@ document.addEventListener('keydown',(event) =>{
            if (e.key === "F9" && situacion === "blanco") {
                mostrarNegro();
                situacion = 'negro'
+
                listarLista(nuevaLista,situacion)
            }
        })
@@ -74,25 +74,25 @@ const mostrarNegro = ()=>{
     body.classList.add('mostrarNegro')
 }
 
-cliente.addEventListener('keypress',e =>{
-    e.key === 'Enter' &&  ipcRenderer.send('abrir-ventana',"clientes")
+cliente.addEventListener('keypress', e =>{
+    if (e.key === "Enter") {
+        if (cliente.value !== "") {
+            ipcRenderer.invoke('get-cliente',(cliente.value).toUpperCase()).then(async(args)=>{
+                if (JSON.parse(args) !== "") {
+                    ponerDatosCliente(JSON.parse(args));
+                }else{
+                     alert("El cliente no existe")
+                     cliente.value = "";
+                     cliente.focus();
+                }
+
+            })
+        }
+    }
 })
 
 ipcRenderer.on('mando-el-cliente',async(e,args)=>{
-    let Cliente = JSON.parse(args)
-    cliente.value = Cliente.cliente
-    saldo.value = Cliente.saldo
-    saldo_p.value = Cliente.saldo_p
-    listaVentas=Cliente.listaVentas
-
-    await ipcRenderer.invoke('traerVentas',listaVentas).then((args)=>{
-        lista = JSON.parse(args)
-    })
-        lista.forEach(venta =>{
-            (venta.pagado === false) && nuevaLista.push(venta);
-        })
-        listarLista(nuevaLista,situacion)
-        
+    ponerDatosCliente(JSON.parse(args))
 })
 
 
@@ -110,7 +110,6 @@ listar.addEventListener('click',e=>{
 
 const listarLista = (lista,situacion)=>{
     let aux
-    console.log(lista);
     (situacion === "negro") ? (aux = "Presupuesto") : (aux = "Ticket Factura")
     listaGlobal = lista.filter(e=>{
         if (aux === "Presupuesto") {
@@ -119,7 +118,6 @@ const listarLista = (lista,situacion)=>{
             return (e.tipo_comp === aux)
         }
     })
-    console.log(listaGlobal)
     listar.innerHTML = ''
     listaGlobal.forEach(venta => {
         vendedor = venta.vendedor
@@ -168,15 +166,13 @@ const actualizar = document.querySelector('.actualizar')
         if (seleccionado) {
         nuevaLista.find(e=>{
             if (e._id === seleccionado.id) {
-                ventaAModificar=e
-                saldoABorrar = ventaAModificar.precioFinal
-                console.log(saldoABorrar)
+                ventaAModificar=e;
             }
         })
         ventaAModificar.productos.forEach(producto=>{
              ipcRenderer.send('traerPrecio',producto.objeto._id)
              ipcRenderer.once('traerPrecio',(e,args) => {  
-                 console.log(JSON.parse(args))
+
                 const productoModificado = JSON.parse(args)
                 if(producto.objeto._id === productoModificado._id){
                     producto.objeto.precio_venta = productoModificado.precio_venta
@@ -225,3 +221,19 @@ document.addEventListener('keydown',e=>{
         window.history.go(-1)
     }
 })
+
+const ponerDatosCliente = async (Cliente)=>{
+
+    cliente.value = Cliente.cliente
+    saldo.value = Cliente.saldo
+    saldo_p.value = Cliente.saldo_p
+    listaVentas=Cliente.listaVentas
+
+    await ipcRenderer.invoke('traerVentas',listaVentas).then((args)=>{
+        lista = JSON.parse(args)
+    })
+        lista.forEach(venta =>{
+            (venta.pagado === false) && nuevaLista.push(venta);
+        })
+        listarLista(nuevaLista,situacion)
+}

@@ -50,17 +50,21 @@ body.addEventListener('keydown',e=>{
 let vendedor
 function validacionUsuario(texto) {
     dialogs.promptPassword("Contraseña").then(value=>{
-        console.log()
-        vendedores.forEach(e=>{
-            value === e._id && (vendedor=e.nombre)
-        })
-        if(typeof vendedor !== "undefined"){ 
-             window.location = `${texto}?vendedor=${vendedor}`
+        if (value === undefined) {
+            console.log(value)
+            location.reload()
         }else{
-            dialogs.alert("Contraseña incorrecta").then(()=>{
-                validacionUsuario(texto)
+            vendedores.forEach(e=>{
+                value === e._id && (vendedor=e.nombre)
             })
-            document.querySelector('.ok').focus()
+            if(typeof vendedor !== "undefined"){ 
+                window.location = `${texto}?vendedor=${vendedor}`
+            }else{
+                dialogs.alert("Contraseña incorrecta").then(()=>{
+                    validacionUsuario(texto)
+                })
+                document.querySelector('.ok').focus()
+            }
         }
        })
        .catch(()=>{

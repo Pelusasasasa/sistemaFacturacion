@@ -1,0 +1,34 @@
+.seccionLibroVentas{
+    margin-top: 1rem;
+    .buscador{
+        display: flex;
+        justify-content: space-around;
+
+        .botones button{
+            margin-right: 2rem;
+            border-radius: 7.5rem;
+            border:none;
+            padding: 1.5rem;
+
+            &:hover{
+                cursor: pointer;
+                transform: scale(1.2);
+            }
+        }
+    }
+    main{
+        h2{
+            text-align: center;
+        }
+        .tabla{ 
+            border-collapse: collapse;
+            table{
+                width: 100%;
+                .tbody{
+                    text-align: center;
+                    font-size: 1.5rem;
+                }
+            }
+        }
+    }
+}

@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Libro Ventas</title>
+    <link rel="stylesheet" href="../../build/css/app.css">
+</head>
+<body class="seccionLibroVentas">
+    <header class="buscador">
+            <div>
+                <label for="desde">Desde</label>
+                <input type="date" name="desde" id="desde">
+            </div> 
+            <div>
+                <label for="hasta">Hasta</label>
+                <input type="date" name="hasta" id="hasta">
+            </div>
+            
+            <div class="botones">
+                <button class="imprimir">Imprimir</button>
+                <button class="buscar">Buscar</button>
+            </div>
+    </header>
+
+    <main>
+        <h2>LIBRO DE VENTAS  <span class="mes"></span></h2>
+        <div class="tabla">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Cliente</th>
+                        <th>Cond Iva</th>
+                        <th>Nro Cuit</th>
+                        <th>Tipo Comp</th>
+                        <th>Nro Comp</th>
+                        <th>Gravado 21%</th>
+                        <th>Iva 21%</th>
+                        <th>Gravado 10.5%</th>
+                        <th>Iva 10.5%</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody class="tbody"></tbody>
+            </table>
+        </div>
+    </main>
+    <script src="./libroVentas.js"></script>
+</body>
+</html>

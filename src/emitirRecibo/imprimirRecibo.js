@@ -1,31 +1,36 @@
 const {ipcRenderer} = require('electron')
 
-const div = document.querySelector('divImprimir')
-var iframe = document.getElementById("iframe");
-var innerDoc = iframe.contentDocument || iframe.contentWindow.document;
-const numero = innerDoc.querySelector('.numero')
-const fecha = innerDoc.querySelector('.fecha');
-const cliente = innerDoc.querySelector('.cliente')
-const cuit = innerDoc.querySelector('.cuit')
-const localidad = innerDoc.querySelector('.localidad')
-const direccion = innerDoc.querySelector('.direccion')
-const iva = innerDoc.querySelector('.cond_iva')
-const total = innerDoc.querySelector('#total')
-const tbody = innerDoc.querySelector('.tbody')
+ipcRenderer.on('imprimir',(e,args)=>{
+    console.log(JSON.parse(args))
+    const [Cliente,Venta,,,arreglo,total] = JSON.parse(args)
+    listar(Venta,Cliente,arreglo,total)
+})
+
+const listar = (venta,Cliente,lista,precio)=>{
+const numero = document.querySelector('.numero')
+const fecha = document.querySelector('.fecha');
+const cliente = document.querySelector('.cliente')
+const cuit = document.querySelector('.cuit')
+const localidad = document.querySelector('.localidad')
+const direccion = document.querySelector('.direccion')
+const iva = document.querySelector('.cond_iva')
+const total = document.querySelector('#total')
+const tbody = document.querySelector('.tbody')
 const tomarFecha = new Date();
 const hoy = tomarFecha.getDate()
 const mes = tomarFecha.getMonth() + 1;
 const anio = tomarFecha.getFullYear();
 
-fecha.innerHTML = `${hoy}/${mes}/${anio}`;
-numero.innerHTML = recibo.nro_comp;
-cliente.innerHTML = nombreCliente;
-cuit.innerHTML = cuitCliente;
-localidad.innerHTML=localidadCliente;
-direccion.innerHTML=direccionCliente;
-iva.innerHTML = ivaCliente;
-tbody.innerHTML = ""
+const cond_iva = (Cliente.iva === undefined) && "Consumidor Final";
 
+fecha.innerHTML = `${hoy}/${mes}/${anio}`;
+numero.innerHTML = venta.nro_comp;
+cliente.innerHTML = Cliente.cliente;
+cuit.innerHTML = Cliente.cuit;
+localidad.innerHTML=Cliente.localidad;
+direccion.innerHTML=Cliente.direccion;
+iva.innerHTML = cond_iva;
+tbody.innerHTML = ""
 lista.forEach(objeto => {
     tbody.innerHTML += `
         <tr>
@@ -38,12 +43,10 @@ lista.forEach(objeto => {
     `
 })
 total.value = precio
-const informacionCliente = document.querySelector('.informacionCliente')
-const tabla = document.querySelector('.tabla')
-const pagado = document.querySelector('.pagado')
-console.log(pagado)
-const botones = document.querySelector('.botones')
-informacionCliente.classList.add('disabled')
-tabla.classList.add('disabled')
-pagado.classList.add('disabled')
-botones.classList.add('disabled')
+}
+
+document.addEventListener('keydown',e=>{
+    if (e.key=== "Escape") {
+        window.close()
+    }
+})

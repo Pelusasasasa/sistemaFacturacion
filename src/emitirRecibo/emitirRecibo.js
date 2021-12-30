@@ -87,45 +87,19 @@ vendedor.innerHTML = `<h3>${Vendedor}</h3>`
 
 codigo.addEventListener('keypress', (e)=>{
     if (e.key === 'Enter') {
-        ipcRenderer.send('abrir-ventana',"clientes")
+        if (codigo.value !== "") {
+            ipcRenderer.invoke('get-cliente',(codigo.value).toUpperCase()).then((args)=>{
+            cliente = JSON.parse(args)
+            inputsCliente(cliente)
+            })
+        }else{
+            ipcRenderer.send('abrir-ventana',"clientes")
+        }
     }
 })
 
 ipcRenderer.on('mando-el-cliente',async(e,args)=>{
-    const obtenerFecha = new Date()
-    let dia = obtenerFecha.getDate()
-    dia < 10 ? dia=`0${dia}` : dia
-    let mes = obtenerFecha.getMonth() + 1
-    mes < 10 ? mes=`0${mes}` : mes
-    let anio = obtenerFecha.getFullYear() 
-    const mostrarFecha =`${anio}-${mes}-${dia}`;
-    cliente = JSON.parse(args)
-    codigo.value = cliente._id;
-    nombre.value = cliente.cliente;
-    saldo.value = cliente.saldo;
-    saldo_p.value = cliente.saldo_p
-    direccion.value = cliente.direccion;
-    localidad.value = cliente.localidad;
-    cond_iva.value = cliente.cond_iva;
-    cuit.value = cliente.cuit;
-    fecha.value = mostrarFecha;
-
-    await ipcRenderer.invoke('traerVentas',cliente.listaVentas).then((args)=>{
-        nuevaLista = []
-        listaVentas = JSON.parse(args)
-    })
-    //Sacamos las ventas que ya estan pagadas
-
-    listaVentas.forEach(venta => {
-        venta.pagado === false && nuevaLista.push(venta)
-    });
-
-    listarLista(nuevaLista,situacion)
-    trSeleccionado = listar.firstElementChild
-    if (trSeleccionado) {
-        inputSeleccionado = trSeleccionado.children[5].children[0]  
-    }
-
+    inputsCliente(JSON.parse(args))
 })
 
 const listarLista = (lista,situacion)=>{
@@ -164,7 +138,6 @@ let valorAnterior = ""
 inputSeleccionado.addEventListener('keydown',(e)=>{
     if (e.key==="Tab" || e.key === "Enter") {
         const aDescontar = parseFloat(trSeleccionado.children[3].innerHTML) - parseFloat(trSeleccionado.children[6].innerHTML)
-        console.log(aDescontar)
             if (inputSeleccionado.value !== "") {
                 trSeleccionado.children[6].innerHTML = (parseFloat(trSeleccionado.children[3].innerHTML)-parseFloat(trSeleccionado.children[4].innerHTML) - parseFloat(inputSeleccionado.value)).toFixed(2)
             }
@@ -217,24 +190,24 @@ saldoAfavor.addEventListener('blur',()=>{
 
 imprimir.addEventListener('click',async e=>{
     const nrmComp = await traerUltimoNroRecibo()
+    modifcarNroRecibo(nrmComp)
     const recibo = {}
     recibo.nro_comp = nrmComp
     recibo._id = nrmComp
     recibo.pagado = true
     recibo.cliente = cliente._id
     recibo.vendedor = Vendedor
-    recibo.precioFinal = parseFloat(total.value).toFixed(2)
-    recibo.tipo_comp = "Recibos"
+    recibo.precioFinal = parseFloat(total.value).toFixed(2);
+    recibo.tipo_comp = "Recibos";
     const aux = (situacion === "negro") ? "saldo_p" : "saldo"
     let saldoFavor = 0;
     saldoFavor = (saldoAfavor.value !== "") && parseFloat(saldoAFavor.value);
     const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2)) - saldoFavor
-    // ipcRenderer.send('modificarSaldo',[cliente._id,aux,saldoNuevo])
-    // ipcRenderer.send('modificamosLasVentas',nuevaLista)
-    // ipcRenderer.send('nueva-venta',recibo)
-    ipcRenderer.send('imprimir-venta',[cliente,recibo,false,"Recibo"])
-    //printPage(recibo,cliente.cliente,cliente.cuit,cliente.direccion,cliente.localidad,cliente.cond_iva,arregloParaImprimir,total.value)
-    //location.reload()
+    ipcRenderer.send('modificarSaldo',[cliente._id,aux,saldoNuevo])
+    ipcRenderer.send('modificamosLasVentas',nuevaLista)
+    ipcRenderer.send('nueva-venta',recibo)
+    ipcRenderer.send('imprimir-venta',[cliente,recibo,false,"Recibo",arregloParaImprimir,total.value])
+    location.reload()
 })
 
 const traerUltimoNroRecibo =async ()=>{
@@ -245,8 +218,51 @@ const traerUltimoNroRecibo =async ()=>{
     return retornar
 }
 
+const modifcarNroRecibo = async(numero)=>{
+    let [n1,n2] = numero.split('-')
+    n2 = parseFloat(n2 ) + 1
+    n2 = n2.toString().padStart(8,0)
+    let nrmComp = n1 + "-" + n2
+    await ipcRenderer.send('modificar-numeros',[nrmComp,'Ultimo Recibo'])
+}
+
 document.addEventListener('keydown',e=>{
     if(e.key === "Escape"){
         window.history.go(-1)
     }
 }) 
+
+
+const inputsCliente = async (cliente)=>{
+    const obtenerFecha = new Date()
+    let dia = obtenerFecha.getDate()
+    dia < 10 ? dia=`0${dia}` : dia
+    let mes = obtenerFecha.getMonth() + 1
+    mes < 10 ? mes=`0${mes}` : mes
+    let anio = obtenerFecha.getFullYear() 
+    const mostrarFecha =`${anio}-${mes}-${dia}`;
+    console.log(cliente.cond_iva === "");
+    (cliente.cond_iva === "") ? (cond_iva.value = "Consumidor Final") : (cond_iva.value = cliente.cond_iva) ;
+    codigo.value = cliente._id;
+    nombre.value = cliente.cliente;
+    saldo.value = cliente.saldo;
+    saldo_p.value = cliente.saldo_p
+    direccion.value = cliente.direccion;
+    localidad.value = cliente.localidad;
+    cuit.value = cliente.cuit;
+    fecha.value = mostrarFecha;
+
+    await ipcRenderer.invoke('traerVentas',cliente.listaVentas).then((args)=>{
+        nuevaLista = []
+        listaVentas = JSON.parse(args)
+    })
+    //Sacamos las ventas que ya estan pagadas
+    listaVentas.forEach(venta => {
+        venta.pagado === false && nuevaLista.push(venta)
+    });
+    listarLista(nuevaLista,situacion)
+    trSeleccionado = listar.firstElementChild
+    if (trSeleccionado) {
+        inputSeleccionado = trSeleccionado.children[5].children[0]  
+    }
+}

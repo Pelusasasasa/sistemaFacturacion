@@ -21,7 +21,7 @@ body.addEventListener('keypress',e=>{
         }else{
             dialogs.alert("Producto no seleccionado")
             document.querySelector('.ok').focus()
-        } ;
+        } ; 
     }})
 
 //Lo que hacemos es cuando se hace click en la tabla se le agrega una clase que dice que el foco lo tiene la tabla o no
@@ -106,7 +106,6 @@ const inputseleccionado = (e) =>{
 }
 
 seleccionarTBody.addEventListener('dblclick',(e) =>{
-    console.log(seleccionado);
     seleccionado ? cantidad(seleccionado) : dialogs.alert("Producto no seleccionado");
 })
 
@@ -114,16 +113,21 @@ filtrar();
 
 
 async function cantidad(e) {
-    await dialogs.prompt("cantidad",(valor) =>{
+    await dialogs.prompt("cantidad",async(valor) =>{
         const pro = productos.find(e=>e._id === seleccionado.id)
-        console.log(Number.isInteger(parseFloat(valor)))
-        if(!Number.isInteger(parseFloat(valor)) && pro.unidad==="U"){
-         alert("El producto no se puede escribir con decimal")
-     }else{
-        ipcRenderer.send('mando-el-producto',{
-            _id: e.id
-             ,cantidad: valor
-         })
-     }
+        if (valor === undefined) {
+            await seleccionado.classList.remove('seleccionado')
+            seleccionado = ""
+            buscarProducto.focus()
+        }else{
+            if(!Number.isInteger(parseFloat(valor)) && pro.unidad==="U"){
+                alert("El producto no se puede escribir con decimal")
+            }else{
+               ipcRenderer.send('mando-el-producto',{
+                   _id: e.id
+                    ,cantidad: valor
+                })
+            }
+        }
     })
 }

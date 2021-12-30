@@ -159,15 +159,21 @@ codigo.addEventListener('keypress',(e) => {
                         codigo.focus()
                 }else{
                     dialogs.prompt("Cantidad",async valor=>{
-                        if (!Number.isInteger(parseFloat(valor)) && JSON.parse(args).unidad === "U") {
-                                alert("La cantidad de este producto no puede ser en decimal")
+                        if (valor === undefined) {
+                            e.target.value = await "";
+                            codigo.focus()
+                        }else{
+                            if (!Number.isInteger(parseFloat(valor)) && JSON.parse(args).unidad === "U") {
+                                await alert("La cantidad de este producto no puede ser en decimal")
+                                codigo.focus()
                             }else{
                                 await mostrarVentas(JSON.parse(args),valor)
                                 e.target.value=""
                                 codigo.focus()
                                 }
-                        })
-                       
+                        }
+
+                        })   
                 }
             })
         }else{
@@ -459,7 +465,7 @@ function sumarSaldoAlClienteEnNegro(precio,codigo){
 }
 
 function sumarSaldoAlCliente(precio,codigo) {
-    ipcRenderer.send('sumarSaldo',[percio,codigo])
+    ipcRenderer.send('sumarSaldo',[precio,codigo])
 }
 const sacarIdentificadorTabla = (arreglo)=>{
     arreglo.forEach(producto=>{
@@ -522,7 +528,7 @@ ticketFactura.addEventListener('click',async (e) =>{
      venta.tipo_pago = tipopago(tipoPago)   
      venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
      venta.comprob = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp);
-     venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,cliente_id);
+     venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,cliente._id);
     for(let producto of venta.productos){
         sacarStock(producto.cantidad,producto.objeto)
         await movimientoProducto(producto.cantidad,producto.objeto)
@@ -539,7 +545,7 @@ ticketFactura.addEventListener('click',async (e) =>{
     if (borraNegro) {
         borrarCuentaCorriente(ventaDeCtaCte)
     };
-    //borraNegro ? window.close() : location.reload();
+    borraNegro ? window.close() : location.reload();
  })
 
 
@@ -703,8 +709,6 @@ const borrarCuentaCorriente = (numero)=>{
 }   
 
 const {DBFFile} = require ('dbffile')
-// const path = "/home/pelusa/Escritorio/"
-   const path = '\\\\SERVIDOR\\Fiscal\\'
 
 const imprimirTikectFactura = async(venta,cliente)=>{
 

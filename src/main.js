@@ -1,4 +1,4 @@
-const URL = "http://179.62.24.12/api/";
+const URL = "http://192.168.1.107:4000/api/";
 
 const axios = require("axios")
 const path = require('path');
@@ -241,9 +241,10 @@ ipcMain.on('sumarSaldo',async (e,args)=>{
     const [precio,id] = args;
     let cliente = await axios.get(`${URL}clientes/id/${id}`)
     cliente = cliente.data;
-    let saldo = (parseFloat(precio)+parseFloat(cliente.saldo_p)).toFixed(2)
+    let saldo = (parseFloat(precio)+parseFloat(cliente.saldo)).toFixed(2)
     cliente.saldo = saldo;
-    await axios.put(`${URL}clientes/${id}`)
+    console.log(cliente)
+    await axios.put(`${URL}clientes/${id}`,cliente)
 })
 
 ipcMain.on('borrarVentaACliente',async (e,args)=>{
@@ -304,11 +305,10 @@ ipcMain.on('imprimir-venta',(e,args)=>{
 
     nuevaVentana.webContents.on('did-finish-load', function() {
         nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
-
-            // nuevaVentana.webContents.print(options,(success, errorType) => {
-            //         ventanaPrincipal.focus()
-            //         nuevaVentana.close();
-            //   })
+            nuevaVentana.webContents.print(options,(success, errorType) => {
+                    ventanaPrincipal.focus()
+                    nuevaVentana.close();
+              })
     });
 })
 
@@ -393,8 +393,6 @@ ipcMain.on('ventaModificada',async (e,[args,id,saldo])=>{
    
     total = (parseFloat(total) - parseFloat(saldo) + parseFloat(cliente.saldo_p)).toFixed(2)
     cliente.saldo_p = total
-
-
 
      await axios.put(`${URL}clientes/${args.cliente}`,cliente)
 })
@@ -747,6 +745,12 @@ const templateMenu = [
                 click(){
                     abrirVentana("stockNegativo")
                 }
+            },
+            {
+                label: "Libro Ventas",
+                click(){
+                    abrirVentana("libroVentas")
+                }
             }
         ]
     },
@@ -812,7 +816,7 @@ function abrirVentana(texto,numeroVenta){
                 nuevaVentana = null
             })
             nuevaVentana.setMenuBarVisibility(false)
-        }else if(texto === "imprimir-r  ecibo"){
+        }else if(texto === "imprimir-recibo"){
             nuevaVentana = new BrowserWindow({
                 parent:ventanaPrincipal,
                 width: 1000,
@@ -1155,6 +1159,26 @@ function abrirVentana(texto,numeroVenta){
         })
         nuevaVentana.loadURL(url.format({
             pathname: path.join(__dirname, `emitirComprobante/emitirComprobante.html`),
+            protocol: 'file',
+            slashes: true
+        }));
+        nuevaVentana.setMenuBarVisibility(false)
+        nuevaVentana.on('close',e=>{
+            nuevaVentana = null;
+            ventanaPrincipal.reload()
+        })  
+    }else if(texto === "libroVentas"){
+        nuevaVentana = new BrowserWindow({
+            // width: 1100,
+            // height: 500,
+            webPreferences: {
+                contextIsolation: false,
+                nodeIntegration: true
+            }
+        })
+        nuevaVentana.maximize()
+        nuevaVentana.loadURL(url.format({
+            pathname: path.join(__dirname, `libroVentas/libroVentas.html`),
             protocol: 'file',
             slashes: true
         }));
