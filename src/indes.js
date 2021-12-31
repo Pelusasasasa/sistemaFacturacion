@@ -14,6 +14,8 @@ const emitirComprobante = document.querySelector('.emitirComprobante')
 const pedidos = document.querySelector('#pedidos')
 const emitirRecibo = document.querySelector('.emitirRecibo')
 const resumenCuenta = document.querySelector('.resumenCuenta')
+const notaCredito = document.querySelector('.notaCredito')
+
 
 listaPedidos.addEventListener('click', (e) =>{
     const handlePedidos = document.querySelector('.handlePedidos')
@@ -36,6 +38,10 @@ resumenCuenta.addEventListener('click',e=>{
     window.location = 'resumenCuenta/resumenCuenta.html'
 })
 
+notaCredito.addEventListener('click',e=>{
+    validacionUsuario("emitirComprobante/emitirNotaCredito.html")
+})
+
 
 body.addEventListener('keydown',e=>{
     if (e.key === "F1") {
@@ -51,7 +57,6 @@ let vendedor
 function validacionUsuario(texto) {
     dialogs.promptPassword("Contraseña").then(value=>{
         if (value === undefined) {
-            console.log(value)
             location.reload()
         }else{
             vendedores.forEach(e=>{

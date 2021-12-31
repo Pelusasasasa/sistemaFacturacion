@@ -46,6 +46,7 @@ const listar = (ventas)=>{
     let totalgravado105 = 0;
     let totaliva21 = 0;
     let totaliva105 = 0;
+    let total = 0
     let diaVentaAnterior = 1
 
     ventas.forEach(async venta => {
@@ -54,13 +55,20 @@ const listar = (ventas)=>{
         const month = fecha.getMonth();
         const year = fecha.getFullYear();
         const [gravado21,iva21,gravado105,iva105] = sacarIvas(venta.productos)
+       
+        await ipcRenderer.invoke('get-cliente',venta.cliente).then((args)=>{
+            cliente = JSON.parse(args);
+            cond_iva = (cliente.cond_iva) ? (cliente.cond_iva) : "Consumidor Final";
+        })
+
         if (diaVentaAnterior === day) {
-            totalgravado21 += gravado21
-            totaliva21 += iva21
-            totalgravado105 += gravado105
-            totaliva105 += iva105
+            totalgravado21 += await gravado21
+            totaliva21 += await iva21
+            totalgravado105 += await gravado105
+            totaliva105 += await iva105
+            total += await venta.precioFinal
         }else{
-            tbody.innerHTML + `
+            tbody.innerHTML += await `
                 <tr>
                     <td></td>
                     <td></td>
@@ -72,22 +80,17 @@ const listar = (ventas)=>{
                     <td>${totaliva21}</td>
                     <td>${totalgravado105}</td>
                     <td>${totaliva105}</td>
-                    <td></td>
+                    <td>${total}</td>
                     
                 </tr>
             `
             diaVentaAnterior = day
-            totalgravado21 += 0
-            totaliva21 += 0
-            totalgravado105 += 0
-            totaliva105 += 0
+            totalgravado21 = 0
+            totaliva21 = 0
+            totalgravado105 = 0
+            totaliva105 = 0
         }
-        await ipcRenderer.invoke('get-cliente',venta.cliente).then((args)=>{
-            cliente = JSON.parse(args);
-            cond_iva = (cliente.cond_iva) ? (cliente.cond_iva) : "Consumidor Final";
-        })
-
-        tbody.innerHTML += `
+        tbody.innerHTML += await `
             <tr>
                 <td>${day}/${month}/${year}</td>
                 <td>${cliente.cliente}</td>
@@ -102,6 +105,7 @@ const listar = (ventas)=>{
                 <td>${venta.precioFinal}<td>
             </tr>
         `
+       
     });
 }
 

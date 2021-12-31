@@ -1,0 +1,27 @@
+.emitirNota{
+    .notaCredito{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        .formulario__campo{
+            display: flex;
+            flex-direction: column;
+        }
+
+        .arriba{
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+                .buscar{
+                    display: flex;
+                    #codigoC{
+                        width: 5rem;
+                    }
+                }
+        }
+        .medio{
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+        }
+    }
+}
