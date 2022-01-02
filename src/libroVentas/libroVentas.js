@@ -12,9 +12,14 @@ let ultimoDiaMesAnterior = (new Date(anio,mes-1,0))
 ultimoDiaMesAnterior=ultimoDiaMesAnterior.getDate()
 
 let ultimoDia = (new Date(anio,mes,0))
-ultimoDia = ultimoDia.getDate()
-const fechaAyer = `${anio}-${mes-1}-${ultimoDiaMesAnterior}`
+ultimoDia = ultimoDia.getDate();
+
+const mesAyer = ((mes-1) === 0) ? 12 : mes;
+const anioAyer = (mes === "01") ? (anio-1) : anio;
+
+const fechaAyer = `${anioAyer}-${mesAyer}-${ultimoDiaMesAnterior}`
 const fechaHoy = `${anio}-${mes}-${ultimoDia}`
+
 
 const desde = document.querySelector('#desde');
 const hasta = document.querySelector('#hasta');
@@ -35,7 +40,7 @@ ipcRenderer.on('traerVentasEntreFechas',(e,args)=>{
     ventas = ventas.filter(venta => venta.tipo_comp !== "Presupuesto");
     listaTicketFactura = ventas.filter(venta=>venta.tipo_comp === "Ticket Factura");
     listaNotaCredito = ventas.filter(venta=>venta.tipo_comp !== "Ticket Factura");
-    listar(listaNotaCredito);
+    (listaNotaCredito.length > 0) && listar(listaNotaCredito);
     listar(listaTicketFactura);
 })
 
@@ -47,7 +52,7 @@ const listar = (ventas)=>{
     let totaliva21 = 0;
     let totaliva105 = 0;
     let total = 0
-    let diaVentaAnterior = 1
+    let diaVentaAnterior = new Date((ventas[0].fecha)).getDate()
 
     ventas.forEach(async venta => {
         let fecha = new Date(venta.fecha)
