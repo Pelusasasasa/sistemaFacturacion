@@ -36,6 +36,7 @@
                     placeholder="Nombre"
                   />
                 </div>
+               </div>
 
               <div class="formulario__campo saldo">
                 <label class="" for="saldo">Saldo</label>
@@ -72,7 +73,6 @@
                 />
               </div>
             </div>
-        </div>
 
             <div class="medio">
               <div class="formulario__campo">
@@ -149,7 +149,7 @@
             <input type="text" placeholder="codigo" id="codigo" name="codigo" />
           </fieldset>
         </form>
-      </div>
+      </div> <!--Formualrio Verde-->
 
       <div class="contenedor listaProductos">
         <table class="table">
@@ -168,26 +168,31 @@
       </div>
 
       <div class="contenedor total formulario-verde">
-        <div class="usuario"></div>
-
-        <div class="descuento">
-          <input type="Number" name="descuento%" id="descuento" />
-          <input disabled type="Number" name="descuentoN" id="descuentoN" />
+          <div class="descuento">
+            <label for="descuento">Descuento</label>
+            <input type="Number" name="descuento" id="descuento" value="0.00" />
+            <input disabled type="Number" name="descuentoN" id="descuentoN" value="0.00" />
+          </div>
+          <div class="facturaOriginal">
+            <label for="original">Factura Original</label>
+            <input type="text" name=original id=original>
+          </div>
+          
+          <div class="total__input">
+            <input
+              type="text"
+              disabled
+              name="total"
+              id="total"
+              placeholder="Total"
+            />
+          </div>
         </div>
-        <div class="total__input">
-          <input
-            type="text"
-            disabled
-            name="total"
-            id="total"
-            placeholder="Total"
-          />
-        </div>
-    </div>
-
+        <hr>
         <div class="botones">
+
             <button class="cancelar">Cancelar</button>
-            <button class="Factura">Ticket Factura</button>
+            <button class="factura">Ticket Factura</button>
         </div>
     </div>
     <script src="./emitirNotaCredito.js"></script>

@@ -57,3 +57,14 @@
 .disable {
   display: none;
 }
+.ayuda{
+  display: flex;
+  h3{
+    background-color: lightgray;
+    padding: 1rem;
+    margin-right: 1rem;
+    span{
+      font-weight: normal;
+    }
+  }
+}

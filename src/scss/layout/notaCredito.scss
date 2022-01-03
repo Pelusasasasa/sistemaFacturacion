@@ -1,5 +1,11 @@
 .emitirNota{
+
     .notaCredito{
+        background-color: lightgreen;
+        .none{
+            display: none !important;
+        }
+
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -7,15 +13,22 @@
         .formulario__campo{
             display: flex;
             flex-direction: column;
+            input,select{
+                width: 90%;
+            }
         }
 
         .arriba{
             display: grid;
-            grid-template-columns: repeat(3,1fr);
+            grid-template-columns: 2fr 1fr 1fr;
                 .buscar{
                     display: flex;
                     #codigoC{
                         width: 5rem;
+                    }
+                    .nombre{
+                        margin-left: .5rem;
+                        width: 55rem;
                     }
                 }
         }
@@ -23,5 +36,66 @@
             display: grid;
             grid-template-columns: repeat(3,1fr);
         }
-    }
+
+        .abajo{
+            display: grid;
+            grid-template-columns: repeat(3,1fr);
+        }
+
+        .listaProductos{
+            overflow: scroll;
+            height: 35rem;
+            border: .1rem solid black;
+            background-color: white;
+            .table{
+
+                border-collapse: collapse;
+                width: 100%;
+                thead{
+                    tr{
+                        background-color: #ffdfdf;
+                    }
+                    td{
+                        font-size: 2rem;
+                        border: .1rem solid black;
+                    }
+                }
+                tbody{
+                    td{
+                        border: .1rem solid black;
+                    }
+                }
+            }
+        }
+        #codigo{
+            padding: 1rem;
+        }
+        .total{
+            display: flex;
+            justify-content: space-around;
+
+            input{
+                padding: .5rem;
+            }
+            #descuento{
+                width: 15%;
+            }
+        }
+        .botones{
+            width: 100%;
+            display: flex;
+            justify-content: space-around;
+            padding-bottom: 1rem;
+
+            button{
+                border: none;
+                border-radius: 7.5rem;
+                padding: 1.5rem;
+                &:hover{
+                    transform: scale(1.2);
+                    cursor: pointer;
+                }
+            }
+        }
+    }   
 }

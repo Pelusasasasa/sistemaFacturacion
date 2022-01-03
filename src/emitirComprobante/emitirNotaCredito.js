@@ -5,20 +5,21 @@ const dialog = require("dialogs");
 const dialogs = Dialogs()
 
 
-const codigoC = document.querySelector('#codigoC')
-const buscarCliente = document.querySelector('#nombre')
-const saldo = document.querySelector('#saldo')
-const saldo_p = document.querySelector('#saldo_p')
-const localidad = document.querySelector('#localidad')
-const direccion = document.querySelector('#direccion')
-const provincia = document.querySelector('#provincia')
-const dnicuit = document.querySelector('#dnicuit')
-const telefono = document.querySelector('#telefono')
-const conIva = document.querySelector('#conIva')
-const observaciones = document.querySelector('#observaciones')
-const codigo = document.querySelector('#codigo')
-const resultado = document.querySelector('#resultado')
-const total = document.querySelector('#total')
+const codigoC = document.querySelector('#codigoC');
+const buscarCliente = document.querySelector('#nombre');
+const saldo = document.querySelector('#saldo');
+const saldo_p = document.querySelector('#saldo_p');
+const localidad = document.querySelector('#localidad');
+const direccion = document.querySelector('#direccion');
+const provincia = document.querySelector('#provincia');
+const dnicuit = document.querySelector('#dnicuit');
+const telefono = document.querySelector('#telefono');
+const conIva = document.querySelector('#conIva');
+const observaciones = document.querySelector('#observaciones');
+const codigo = document.querySelector('#codigo');
+const resultado = document.querySelector('#resultado');
+const total = document.querySelector('#total');
+const factura = document.querySelector('.factura');
 
 
 let cliente = {};
@@ -56,6 +57,8 @@ ipcRenderer.on('mando-el-cliente',(e,args)=>{
 
  //Ponemos valores a los inputs
  function ponerInputsClientes(cliente) {
+    const iva = (cliente.cond_iva !== "") ? cliente.cond_iva : "Consumidor Final"
+
     codigoC.value = cliente._id
     buscarCliente.value = cliente.cliente;
     saldo.value = cliente.saldo;
@@ -65,7 +68,7 @@ ipcRenderer.on('mando-el-cliente',(e,args)=>{
     provincia.value = cliente.provincia;
     dnicuit.value = cliente.cuit;
     telefono.value = cliente.telefono;
-    conIva.value = cliente.cond_iva;
+    conIva.value = iva;
     venta.cliente = cliente._id;
     if (cliente.condicion==="M") {
         alert(`${cliente.observacion}`)
@@ -144,3 +147,15 @@ const mostrarVentas = (objeto,cantidad)=>{
     listaProductos.push({objeto,cantidad});
     venta.productos = listaProductos
 }
+
+
+factura.addEventListener('click',e=>{
+    e.preventDefault();
+    const venta = {};
+    venta.tipo_comp = "Nota Credito";
+    venta.observacion = observaciones.value;
+    venta.descuento = descuentoN.value;
+
+    console.log(venta)
+})
+
