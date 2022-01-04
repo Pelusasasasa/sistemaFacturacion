@@ -1,4 +1,4 @@
- const URL = "http://192.168.0.123:4000/api/";
+ const URL = "http://192.168.0.101:4000/api/";
 //const URL = "http://179.62.24.12/api/";
 
 const axios = require("axios")
