@@ -425,6 +425,15 @@ function redondear(numero) {
     return retornar
 }
 
+
+const tamanioVentas = async()=>{
+    let retornar
+    await ipcRenderer.invoke('tamanioVentas').then(async(args)=>{
+        retornar = await JSON.parse(args)
+    })
+    return retornar
+}
+
 function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
     let numero
     let tipoFactura
@@ -477,13 +486,13 @@ const presupuesto = document.querySelector('.presupuesto')
 presupuesto.addEventListener('click',async (e)=>{
     e.preventDefault() 
     tipoVenta="Presupuesto"
+    venta._id = await tamanioVentas()
     venta.descuento = (descuentoN.value);
     venta.precioFinal = redondear(total.value)
     verElTipoDeVenta(tiposVentas) //vemos si es contado,cuenta corriente o presupuesto en el input[radio]
     venta.tipo_comp = tipoVenta
     venta.tipo_pago = tipopago(tipoPago)
     venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.Cod_comp,venta.tipo_pago);
-    venta._id=venta.nro_comp
     venta.pagado = verSiPagoONo(venta.tipo_pago);//Ejecutamos para ver si la venta se pago o no
     if (!valorizado.checked && venta.tipo_pago === "CC") {
        venta.precioFinal = "0.1" 
@@ -515,6 +524,7 @@ const ticketFactura = document.querySelector('.ticketFactura')
 ticketFactura.addEventListener('click',async (e) =>{
     e.preventDefault()
      tipoVenta = "Ticket Factura"
+     venta._id = await tamanioVentas();
      venta.observacion = observaciones.value
      verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
      venta.descuento = (descuentoN.value);
@@ -523,7 +533,6 @@ ticketFactura.addEventListener('click',async (e) =>{
      numeroComprobante(tipoVenta);
      venta.cod_comp = verCodComprobante(tipoVenta)
      venta.nro_comp = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp)
-     venta._id=venta.nro_comp;
      venta.pagado = verSiPagoONo(venta.tipo_pago)
      venta.tipo_pago = tipopago(tipoPago)   
      venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
@@ -752,7 +761,7 @@ const imprimirTikectFactura = async(venta,cliente)=>{
     ];
 
     let records = [
-        { Ref: venta._id,
+        { Ref: venta.nro_comp,
           Codigo: cliente._id,
           Nombre:cliente.cliente,
           Cuit:cliente.cuit,
@@ -788,7 +797,7 @@ const imprimirItem = async(venta,cliente)=>{
         }
 
         const item = {
-            ref: venta._id,
+            ref: venta.nro_comp,
             descripcio: objeto.descripcion,
             cantidad: cantidad,
             monto: (parseFloat(objeto.precio_venta)*cantidad).toFixed(2),

@@ -1,37 +1,52 @@
-.agregarUsuario {
+.vendedores{
   display: flex;
-  justify-content: center;
-
-  .inputUsuario {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-
-  input {
-    margin-right: 1rem;
-  }
+  justify-content: space-around;
 }
+.main{
+  .agregarUsuario {
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
 
-.botonEnviar {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  button {
-    background-color: lightsalmon;
-    border: none;
-    border-radius: 7.5rem;
-    padding: 1.5rem;
+  
+    .inputUsuario {
+      margin-top: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    input {
 
-    &:hover {
-      cursor: pointer;
-      transform: scale(1.2);
+      margin-right: 1rem;
+      width: 70%;
+    }
+  }
+  
+  .botonEnviar {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    button {
+      background-color: lightsalmon;
+      border: none;
+      border-radius: 7.5rem;
+      padding: .7rem;
+      font-size: 1.5rem;
+  
+      &:hover {
+        cursor: pointer;
+        transform: scale(1.2);
+      }
     }
   }
 }
 .listarUsuarios {
   list-style: none;
-
+  li{
+    text-align: center;
+  }
   h3 {
     font-weight: normal;
 

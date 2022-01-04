@@ -1,4 +1,5 @@
-const URL = "http://192.168.0.123:4000/api/";
+ const URL = "http://192.168.1.106:4000/api/";
+//const URL = "http://179.62.24.12/api/";
 
 const axios = require("axios")
 const path = require('path');
@@ -273,7 +274,9 @@ ipcMain.on('traerSaldo',async (e,args)=>{
 //tamanio de las ventas
 ipcMain.handle('tamanioVentas',async(e,args)=>{
     let tamanio = await axios.get(`${URL}ventas`)
-    tamanio = tamanio.data.length;
+    console.log(tamanio)
+    tamanio = tamanio.data;
+    console.log(tamanio)
     return(JSON.stringify(tamanio))
 })
 
@@ -285,7 +288,7 @@ ipcMain.on('nueva-venta', async (e, args) => {
     let cliente = await axios.get(`${URL}clientes/id/${_id}`)
     cliente = cliente.data
     let listaVentas = cliente.listaVentas
-    listaVentas[0] === "" ? (listaVentas[0] = nuevaVenta._id) : (listaVentas.push(nuevaVenta._id))
+    listaVentas[0] === "" ? (listaVentas[0] = nuevaVenta.nro_comp) : (listaVentas.push(nuevaVenta.nro_comp))
     cliente.listaVentas = listaVentas;
     await axios.put(`${URL}clientes/${_id}`,cliente)
 })
@@ -337,7 +340,7 @@ ipcMain.on('traerVenta',async (e,args)=>{
 //Modificamos las ventas
 ipcMain.on('modificamosLasVentas',async (e,arreglo)=>{
     for (let Venta of arreglo){
-        const id = Venta._id
+        const id = Venta.nro_comp
         const abonado = Venta.abonado
         const pagado = Venta.pagado
         let venta = await axios.get(`${URL}ventas/${id}`)
@@ -507,6 +510,10 @@ ipcMain.handle('traerUsuario',async(e,id)=>{
     return JSON.stringify(usuario)
 })
 
+ipcMain.handle('modificarUsuario',async(e,args)=>{
+    const a = await axios.put(`${URL}usuarios/${args._id}`,args)
+    return JSON.stringify(a.data)
+})
 
 //FIN USUARIOS
 
@@ -544,12 +551,13 @@ ipcMain.on('eliminarPedido', async (e, id) => {
 
 //Abrir ventana para modificar un producto
 ipcMain.on('abrir-ventana-modificar-producto',  (e, args) => {
-
+    const [id,acceso] = args
     abrirVentana('abrir-ventana-modificar-producto')
     nuevaVentana.on('ready-to-show',async ()=>{
-        let Producto = await axios.get(`${URL}productos/${args}`)
+        let Producto = await axios.get(`${URL}productos/${id}`)
         Producto = Producto.data
     nuevaVentana.webContents.send('datos-productos', JSON.stringify(Producto))
+    nuevaVentana.webContents.send('acceso', JSON.stringify(acceso))
     })
     nuevaVentana.on('close', ()=> {
         ventanaPrincipal.reload()
@@ -652,7 +660,7 @@ const templateMenu = [
         }]
     },
     {
-        label: "herramientas de desarrollo",
+        label: "h",
         submenu: [
             {
                 label: 'Show/Hide Dev Tools',
@@ -950,7 +958,7 @@ function abrirVentana(texto,numeroVenta){
         nuevaVentana.setMenuBarVisibility(false)
     }else if(texto === "usuarios"){
         nuevaVentana = new BrowserWindow({
-            width: 1000,
+            width: 500,
             height: 450,
             webPreferences: {
                 contextIsolation: false,

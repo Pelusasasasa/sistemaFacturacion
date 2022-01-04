@@ -1,5 +1,14 @@
 const { ipcRenderer } = require("electron")
 
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+    results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+const vendedor = getParameterByName('vendedor')
+
 const Dialogs = require("dialogs");
 const dialog = require("dialogs");
 const dialogs = Dialogs()
@@ -19,7 +28,9 @@ const observaciones = document.querySelector('#observaciones');
 const codigo = document.querySelector('#codigo');
 const resultado = document.querySelector('#resultado');
 const total = document.querySelector('#total');
+const original = document.querySelector('#original')
 const factura = document.querySelector('.factura');
+const cancelar = document.querySelector('.cancelar');
 
 
 let cliente = {};
@@ -148,14 +159,60 @@ const mostrarVentas = (objeto,cantidad)=>{
     venta.productos = listaProductos
 }
 
+console.log(descuento)
 
-factura.addEventListener('click',e=>{
+descuento.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        original.focus()
+    }
+})
+descuento.addEventListener('blur',e=>{
+    descuentoN.value =( parseFloat(total.value) - parseFloat((parseFloat(total.value) - parseFloat(total.value) * parseFloat(descuento.value) / 100).toFixed(2))).toFixed(2)
+    total.value = (parseFloat(total.value) - parseFloat(total.value) * parseFloat(descuento.value) / 100).toFixed(2)
+
+})
+
+factura.addEventListener('click',async e=>{
     e.preventDefault();
     const venta = {};
+    venta.cliente = cliente._id;
     venta.tipo_comp = "Nota Credito";
-    venta.observacion = observaciones.value;
+    venta.observaciones = observaciones.value;
     venta.descuento = descuentoN.value;
-
+    venta.cod_comp = verCod_comp(cliente.cond_iva)
+    venta.nro_comp = await traerNumeroComprobante(venta.cod_comp)
+    venta.comprob = venta.nro_comp;
+    venta.productos = listaProductos;
+    venta.tipo_pago = "CD";
+    venta.cod_doc = (cliente.cuit.length > 8) ? 80 : 96;
+    venta.dnicuit = cliente.cuit;
+    venta.conIva = cliente.cond_iva;
+    venta.pagado = true;
+    venta.abonado = "0";
+    venta.descuento = parseFloat(descuentoN.value);
+    venta.precioFinal = parseFloat(total.value);
+    venta.vendedor = vendedor
     console.log(venta)
 })
 
+
+const traerNumeroComprobante = async(codigo)=>{
+    let retornar
+    const tipo = (codigo === 113) ? "Ultima N Credito B" : "Ultima N Credito A"
+    await ipcRenderer.invoke('traerNumeros',tipo).then((args)=>{
+        retornar = JSON.parse(args)
+    });
+    return retornar
+}
+
+const verCod_comp = (iva)=>{
+    if(iva === "Inscripto"){
+        return "112"
+    }else{
+        return "113"
+    }
+}
+
+cancelar.addEventListener('click',e=>{
+    window.location = '../index.html'
+})

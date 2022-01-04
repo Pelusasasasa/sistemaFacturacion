@@ -21,6 +21,7 @@ if (mes<10) {
 }
 const fechaDeHoy = (`${hoy.getFullYear()}-${mes + 1}-${dia}`)
 
+
 seleccionar.addEventListener('click',e=>{
     seleccion.forEach(e=>{
         e.checked && (seleccionado = e);
@@ -64,7 +65,6 @@ ipcRenderer.on('get-clientes',(e,args)=>{
 })
 ipcRenderer.on('traerVenta',async (e,args)=>{
     cliente = await buscarCliente(JSON.parse(args)[0].cliente)
-    console.log(cliente)
     tbody.innerHTML = ``
     listarVentas(JSON.parse(args)[0])
 })

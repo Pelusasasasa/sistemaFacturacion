@@ -7,21 +7,29 @@
     <title>Usuarios</title>
     <link rel="stylesheet" href="../../build/css/app.css" />
   </head>
-  <body>
-    <form class="contenedor agregarUsuario">
-      <div class="inputUsuario">
-        <label for="nombre">Nombre</label>
-        <input type="text" name="nombre" id="nombre" />
+  <body class="vendedores">
+    <div class="main">
+      <form class="contenedor agregarUsuario">
+        <div class="inputUsuario">
+          <label for="nombre">Nombre</label>
+          <input type="text" name="nombre" id="nombre" />
+        </div>
+  
+        <div class="inputUsuario">
+          <label for="codigo">Codigo</label>
+          <input type="text" name="codigo" id="codigo" />
+        </div>
+  
+        <div class="inputUsuario">
+          <label for="acceso">Acceso</label>
+          <input type="text" name="acceso" id="acceso" />
+        </div>
+      </form>
+  
+      <div class="botonEnviar">
+        <button type="submit" id="enviar">Agregar</button>
+        <button id="guardar">Guardar</button>
       </div>
-
-      <div class="inputUsuario">
-        <label for="codigo">Codigo</label>
-        <input type="text" name="codigo" id="codigo" />
-      </div>
-    </form>
-
-    <div class="botonEnviar">
-      <button type="submit" id="enviar">Agregar Vendedor</button>
     </div>
 
     <ul class="listarUsuarios contenedor"></ul>

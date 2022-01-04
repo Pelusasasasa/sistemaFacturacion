@@ -52,13 +52,18 @@ const listar = (ventas)=>{
     let totaliva21 = 0;
     let totaliva105 = 0;
     let total = 0
+    console.log(ventas)
     let diaVentaAnterior = new Date((ventas[0].fecha)).getDate()
 
     ventas.forEach(async venta => {
         let fecha = new Date(venta.fecha)
-        const day = fecha.getDate();
-        const month = fecha.getMonth();
-        const year = fecha.getFullYear();
+        let day = fecha.getDate();
+        let month = fecha.getMonth();
+        month = (month===0) ? month + 1 : month;
+        day = (day < 10) ? `0${day}` : day;
+        month = (month < 10) ? `0${month}` : month;
+
+        let year = fecha.getFullYear();
         const [gravado21,iva21,gravado105,iva105] = sacarIvas(venta.productos)
        
         await ipcRenderer.invoke('get-cliente',venta.cliente).then((args)=>{

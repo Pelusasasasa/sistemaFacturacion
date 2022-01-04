@@ -47,13 +47,16 @@ function listarVentas(lista) {
     lista.forEach(venta => {
         venta.productos.forEach(({objeto,cantidad})=>{
             const fecha = new Date(venta.fecha);
-            const hoy = fecha.getDate();
-            const mes = fecha.getMonth();
-            const anio = fecha.getFullYear();
+            let hoy = fecha.getDate();
+            let mes = fecha.getMonth();
+            mes = (mes===0) ? mes + 1 : mes;
+            mes = (mes<10) ? `0${mes}` : mes;
+            hoy = (hoy<10) ? `0${hoy}` : hoy;
+            let anio = fecha.getFullYear();
             tbody.innerHTML += `
             <tr>
                 <td>${venta.nro_comp}</td>
-                <td>${dia}/${mes}/${anio}</td>
+                <td>${hoy}/${mes}/${anio}</td>
                 <td>${venta.cliente}</td>
                 <td>${objeto._id}</td>
                 <td>${objeto.descripcion}</td>

@@ -14,10 +14,7 @@ const fechaDeHoy = (`${hoy.getFullYear()}-${hoy.getMonth() + 1}-${hoy.getDate()}
 
 const { ipcRenderer } = require("electron");
 
-
-
 let situacion = "blanco"
-
 document.addEventListener('keydown',(event) =>{
     if (event.key === "Alt") {
        document.addEventListener('keydown',(e) =>{
@@ -111,11 +108,17 @@ const listarLista = (lista,situacion)=>{
         if (venta.length !== 0) {
             let saldo = parseFloat(venta.precioFinal) - parseFloat(venta.abonado)
             let fecha = new Date(venta.fecha) 
-            const dia = fecha.getDate()
-            const mes = fecha.getMonth();
-            const anio = fecha.getFullYear();   
+            let dia = fecha.getDate()
+            let mes = fecha.getMonth();
+            let anio = fecha.getFullYear();
+            
+            mes = (mes === 0 ) ? (mes + 1) : mes;
+            mes = (mes < 10) ? `0${mes}` : mes;
+
+            dia = (dia < 10) ? `0${dia}` : dia ;
+            
             listar.innerHTML += `
-                <tr id="${venta._id}">
+                <tr id="${venta.nro_comp}">
                 <td> ${ dia } / ${ mes } / ${ anio } </td>
                 <td> ${ venta.tipo_comp } </td>
                 <td> ${ venta.nro_comp } </td>
@@ -130,20 +133,19 @@ const listarLista = (lista,situacion)=>{
     });
 }
 let a;
-let valorAnterior = ""
     listar.addEventListener('click',e=>{
         trSeleccionado = e.path[2]
         inputSeleccionado = e.path[0]
     })
 inputSeleccionado.addEventListener('keydown',(e)=>{
     if (e.key==="Tab" || e.key === "Enter") {
-        const aDescontar = parseFloat(trSeleccionado.children[3].innerHTML) - parseFloat(trSeleccionado.children[6].innerHTML)
+        const aDescontar = parseFloat(trSeleccionado.children[3].innerHTML) - parseFloat(trSeleccionado.children[4].innerHTML) - parseFloat(trSeleccionado.children[6].innerHTML)
             if (inputSeleccionado.value !== "") {
                 trSeleccionado.children[6].innerHTML = (parseFloat(trSeleccionado.children[3].innerHTML)-parseFloat(trSeleccionado.children[4].innerHTML) - parseFloat(inputSeleccionado.value)).toFixed(2)
             }
             let venta
             nuevaLista.forEach(e =>{
-                if(e._id === trSeleccionado.id){
+                if(e._id === trSeleccionado.id){    
                     venta = e
                 }
             });
@@ -159,7 +161,7 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
                 };
 
                 (inputSeleccionado.value !== "")  && arregloParaImprimir.push(objeto);
-                console.log(arregloParaImprimir);
+
             }
             venta.abonado = parseFloat(venta.abonado) + parseFloat(inputSeleccionado.value);
             (venta.abonado === venta.precioFinal) && (venta.pagado = true);
@@ -171,7 +173,6 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
                 }
             }
             a=trSeleccionado.id
-            valorAnterior = inputSeleccionado.value;
             if(trSeleccionado.nextElementSibling){
                 trSeleccionado = trSeleccionado.nextElementSibling
                 inputSeleccionado = trSeleccionado.children[5].children[0] 
@@ -181,7 +182,6 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
             }
 
         }
-
 })
 
 saldoAfavor.addEventListener('blur',()=>{
@@ -234,14 +234,14 @@ document.addEventListener('keydown',e=>{
 
 
 const inputsCliente = async (cliente)=>{
-    const obtenerFecha = new Date()
-    let dia = obtenerFecha.getDate()
-    dia < 10 ? dia=`0${dia}` : dia
-    let mes = obtenerFecha.getMonth() + 1
-    mes < 10 ? mes=`0${mes}` : mes
-    let anio = obtenerFecha.getFullYear() 
+    const obtenerFecha = new Date();
+    let dia = obtenerFecha.getDate();
+    dia < 10 ? dia=`0${dia}` : dia;
+    let mes = obtenerFecha.getMonth() + 1;
+    mes = (mes === 0) ? mes + 1 : mes;
+    mes < 10 ? mes=`0${mes}` : mes;
+    let anio = obtenerFecha.getFullYear(); 
     const mostrarFecha =`${anio}-${mes}-${dia}`;
-    console.log(cliente.cond_iva === "");
     (cliente.cond_iva === "") ? (cond_iva.value = "Consumidor Final") : (cond_iva.value = cliente.cond_iva) ;
     codigo.value = cliente._id;
     nombre.value = cliente.cliente;

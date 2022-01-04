@@ -1,5 +1,5 @@
 const { ipcRenderer } = require("electron");
-const electron = require('electron')
+
 
 const formularioProducto = document.querySelector('#formularioProducto');
 const codigo = document.querySelector('#codigo');
@@ -20,6 +20,7 @@ const unidad = document.querySelector('#unidad');
 let dolar = 100
 let costo = 0
 let valorTasaIva = 26
+let acceso
 
 
 //Traer el dolar
@@ -40,6 +41,15 @@ const promesaProductos = new Promise((resolve,reject)=>{
         resolve()
     })
 })
+
+ipcRenderer.on('acceso',(e,args)=>{
+    acceso = JSON.parse(args)
+    console.log(acceso)
+    if (acceso === "2") {
+        document.querySelector('.costos').classList.add('none')
+    }
+})
+
 
 promesaProductos.then(()=>{
     asignarCampos()

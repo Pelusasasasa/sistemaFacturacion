@@ -2,6 +2,15 @@ const { ipcRenderer } = require("electron");
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
 
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+    results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+const acceso = getParameterByName('acceso')
+console.log(acceso)
 
 const resultado = document.querySelector('#resultado');
 const select = document.querySelector('#seleccion');
@@ -94,11 +103,11 @@ seleccionarTBody.addEventListener('click',(e) =>{
     seleccionado && mostrarImagen(seleccionado.id)
 })
 
-const inputseleccionado = (e) =>{
-    const yaSeleccionado = document.querySelector('.seleccionado')
-    yaSeleccionado && yaSeleccionado.classList.remove('seleccionado')
-   e.classList.toggle('seleccionado')
-}
+// const inputseleccionado = (e) =>{
+//     const yaSeleccionado = document.querySelector('.seleccionado')
+//     yaSeleccionado && yaSeleccionado.classList.remove('seleccionado')
+//    e.classList.toggle('seleccionado')
+// }
 
 const imagen = document.querySelector('.imagen')
 function mostrarImagen(id) {
@@ -111,10 +120,9 @@ function mostrarImagen(id) {
 const modificar = document.querySelector('.modificar')
 modificar.addEventListener('click',e=>{
     if(seleccionado){
-        ipcRenderer.send('abrir-ventana-modificar-producto',seleccionado.id)
+        ipcRenderer.send('abrir-ventana-modificar-producto',[seleccionado.id,acceso])
     }else{
         dialogs.alert('Producto no seleccionado')
-            console.log(document.activeElement)
             document.querySelector('.ok').focus()
     }
 })
@@ -146,7 +154,6 @@ ingresarMov.addEventListener('click', e => {
         await ipcRenderer.invoke('traerUsuario',valor).then((args)=>{
             vendedor =  JSON.parse(args).nombre
         })
-        console.log(vendedor)
             ipcRenderer.send('abrir-ventana-movimiento-producto',[seleccionado.id,vendedor])
         })
    }else{
@@ -177,3 +184,7 @@ document.addEventListener('keydown',e=>{
         window.history.go(-1)
     }
 })
+
+if (acceso === "2" || acceso === "1") {
+    eliminar.classList.add('none')
+}

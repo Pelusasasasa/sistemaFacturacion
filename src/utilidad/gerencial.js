@@ -5,7 +5,20 @@ const desde = document.querySelector('#desde')
 
 
 const hoy = new Date();
-const fechaDeHoy = (`${hoy.getFullYear()}-${hoy.getMonth() + 1}-${hoy.getDate()}`)
+
+let dia = hoy.getDate()
+if (dia<10) {
+    dia = `0${dia}`
+}
+let mes = hoy.getMonth()
+
+mes = mes === 0 ? mes+1 : mes ;
+
+if (mes<10) {
+    mes = `0${mes}`
+}
+
+const fechaDeHoy = (`${hoy.getFullYear()}-${mes}-${dia}`)
 const buscar = document.querySelector('.buscar')
 const tbody = document.querySelector('.tbody')
 desde.value = fechaDeHoy
@@ -19,6 +32,7 @@ buscar.addEventListener('click',e=>{
 ipcRenderer.on('traerVentasCanceladas',(e,args)=>{
     const ventas = JSON.parse(args)
     tbody.innerHTML = ""
+    console.log(ventas)
     ventas.forEach((venta)=>{
         listarVentasCanceladas(venta)
     })
@@ -35,10 +49,8 @@ const listarVentasCanceladas = async (venta)=>{
     let hora = fecha.getHours()
     let minutos = fecha.getMinutes()
     let segundos = fecha.getSeconds()
-    console.log(venta.cliente)
     await ipcRenderer.invoke('get-cliente',venta.cliente).
         then((clienteTraido)=>{
-            console.log(clienteTraido)
             cliente = JSON.parse(clienteTraido).cliente})
            
         venta.productos.forEach(({cantidad,objeto}) => {

@@ -11,7 +11,7 @@ const dnicuit = document.querySelector('#dnicuit')
 const conIva = document.querySelector('#conIva')
 const limite = document.querySelector('#limite')
 const moroso = document.querySelectorAll('input[name="moroso"]')
-const conFact = document.querySelector('#conFact   ')
+const conFact = document.querySelector('#conFact')
 const observaciones = document.querySelector('#observaciones')
 let _id = ""
 let condicion
@@ -74,9 +74,8 @@ guardar.addEventListener('click',e =>{
     nuevoCliente.cuit =  dnicuit.value 
     nuevoCliente.cond_iva = conIva.value 
     nuevoCliente.observacion = observaciones.value
-    console.log(condicion)
     nuevoCliente.condicion = condicion
-    nuevoCliente.cond_fact = condicionFacturacion.value 
+    nuevoCliente.cond_fact = conFact.value 
     nuevoCliente.lim_compra = limite.value 
     console.log(nuevoCliente)
     ipcRenderer.send('modificarCliente',nuevoCliente)

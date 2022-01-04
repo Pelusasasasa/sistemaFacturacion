@@ -7,9 +7,6 @@
     "start": "electron .",
     "dev": "nodemon src/index.js"
   },
-  "win": {
-    "icon": "./src/imagenes/electro.ico"
-  },
   "repository": {},
   "keywords": [],
   "author": "Pelusa",

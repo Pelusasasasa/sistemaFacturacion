@@ -87,6 +87,8 @@ cliente.addEventListener('keypress', e =>{
                 }
 
             })
+        }else{
+            ipcRenderer.send('abrir-ventana',"clientes")
         }
     }
 })
@@ -180,7 +182,7 @@ const actualizar = document.querySelector('.actualizar')
                     total=sacarTotal(ventaAModificar.productos)
                     ventaAModificar.precioFinal = total.toFixed(2)
             }
-            ipcRenderer.send('ventaModificada',[ventaAModificar,ventaAModificar._id,saldoABorrar])
+            ipcRenderer.send('ventaModificada',[ventaAModificar,ventaAModificar.nro_comp,saldoABorrar])
             location.reload()
             })
         })

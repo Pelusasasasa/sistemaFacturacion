@@ -5,10 +5,13 @@ if (dia<10) {
     dia = `0${dia}`
 }
 let mes = hoy.getMonth()
+
+mes = mes === 0 ? mes+1 : mes ;
+
 if (mes<10) {
     mes = `0${mes}`
 }
-const fechaDeHoy = (`${hoy.getFullYear()}-${mes + 1}-${dia}`)
+const fechaDeHoy = (`${hoy.getFullYear()}-${mes}-${dia}`)
 const buscar = document.querySelector('.buscar');
 const desde =  document.querySelector('#desde')
 const hasta =  document.querySelector('#hasta')
@@ -31,9 +34,12 @@ function listarVentas(lista,bodyelegido) {
     bodyelegido.innerHTML = ""
     lista.forEach(venta => {
         const fecha = new Date(venta.fecha);
-        const hoy = fecha.getDate();
-        const mes = fecha.getMonth();
-        const anio = fecha.getFullYear();
+        let hoy = fecha.getDate();
+        let mes = fecha.getMonth();
+        let anio = fecha.getFullYear();
+        mes = (mes===0) ? mes + 1 : mes;
+        mes = (mes<10) ? `0${mes}` : mes;
+        hoy = (hoy<10) ? `0${hoy}` : hoy;
         venta.productos.forEach(({objeto,cantidad})=>{
             bodyelegido.innerHTML += `
             <tr>
