@@ -244,7 +244,6 @@ ipcMain.on('sumarSaldo',async (e,args)=>{
     cliente = cliente.data;
     let saldo = (parseFloat(precio)+parseFloat(cliente.saldo)).toFixed(2)
     cliente.saldo = saldo;
-    console.log(cliente)
     await axios.put(`${URL}clientes/${id}`,cliente)
 })
 
@@ -274,9 +273,7 @@ ipcMain.on('traerSaldo',async (e,args)=>{
 //tamanio de las ventas
 ipcMain.handle('tamanioVentas',async(e,args)=>{
     let tamanio = await axios.get(`${URL}ventas`)
-    console.log(tamanio)
     tamanio = tamanio.data;
-    console.log(tamanio)
     return(JSON.stringify(tamanio))
 })
 
@@ -303,7 +300,6 @@ ipcMain.on('imprimir-venta',async(e,args)=>{
     (tipo === "Recibo") ? abrirVentana("imprimir-recibo") : abrirVentana("imprimir-comprobante");
 
     const a = await imprimir(options,args)
-    console.log(a)
     if (tipo === 2) {
         //imprimir(options,args)
     }
