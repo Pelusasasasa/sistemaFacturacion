@@ -10,7 +10,13 @@ const dialogs = Dialogs()
 const Vendedor = getParameterByName('vendedor')
 
 const hoy = new Date();
-const fechaDeHoy = (`${hoy.getFullYear()}-${hoy.getMonth() + 1}-${hoy.getDate()}`)
+let diaDeHoy =  hoy.getDate();
+let mesDeHoy = hoy.getMonth();
+let anioDeHoy = hoy.getFullYear();
+
+mesDeHoy = (mesDeHoy === 0) ? 1 : mesDeHoy;
+mesDeHoy = (mesDeHoy<10) ? `0${mesDeHoy}`: mesDeHoy;
+diaDeHoy = (diaDeHoy<10) ? `0${diaDeHoy}`: diaDeHoy;
 
 const { ipcRenderer } = require("electron");
 
@@ -63,7 +69,7 @@ const saldo_p = document.querySelector('#saldo_p')
 const direccion = document.querySelector('#direccion')
 const localidad = document.querySelector('#localidad');
 const fecha = document.querySelector('#fecha')
-fecha.value = fechaDeHoy
+fecha.value = `${anioDeHoy}-${mesDeHoy}-${diaDeHoy}`
 const cond_iva = document.querySelector('#cond_iva')
 const cuit = document.querySelector('#cuit')
 const listar = document.querySelector('.listar')
@@ -86,8 +92,8 @@ codigo.addEventListener('keypress', (e)=>{
     if (e.key === 'Enter') {
         if (codigo.value !== "") {
             ipcRenderer.invoke('get-cliente',(codigo.value).toUpperCase()).then((args)=>{
-            cliente = JSON.parse(args)
-            inputsCliente(cliente)
+            cliente = JSON.parse(args);
+            (cliente === "") ? alert("Cliente no encontrado") : inputsCliente(cliente);
             })
         }else{
             ipcRenderer.send('abrir-ventana',"clientes")
@@ -193,7 +199,7 @@ imprimir.addEventListener('click',async e=>{
     modifcarNroRecibo(nrmComp)
     const recibo = {}
     recibo.nro_comp = nrmComp
-    recibo._id = nrmComp
+    recibo._id = await tamanioVentas()
     recibo.pagado = true
     recibo.cliente = cliente._id
     recibo.vendedor = Vendedor
@@ -265,4 +271,12 @@ const inputsCliente = async (cliente)=>{
     if (trSeleccionado) {
         inputSeleccionado = trSeleccionado.children[5].children[0]  
     }
+}
+
+const tamanioVentas = async()=>{
+    let retornar
+    await ipcRenderer.invoke('tamanioVentas').then(async(args)=>{
+        retornar = await JSON.parse(args)
+    })
+    return retornar
 }

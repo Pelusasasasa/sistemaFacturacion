@@ -175,6 +175,7 @@ descuento.addEventListener('blur',e=>{
 factura.addEventListener('click',async e=>{
     e.preventDefault();
     const venta = {};
+    venta._id = await tamanioVentas();
     venta.cliente = cliente._id;
     venta.tipo_comp = "Nota Credito";
     venta.observaciones = observaciones.value;
@@ -211,6 +212,14 @@ const verCod_comp = (iva)=>{
     }else{
         return "113"
     }
+}
+
+const tamanioVentas = async()=>{
+    let retornar
+    await ipcRenderer.invoke('tamanioVentas').then(async(args)=>{
+        retornar = await JSON.parse(args)
+    })
+    return retornar
 }
 
 cancelar.addEventListener('click',e=>{

@@ -510,10 +510,10 @@ presupuesto.addEventListener('click',async (e)=>{
 
     if (impresion.checked) {
         if (venta.tipo_pago === "CC") {
-            ipcRenderer.send('imprimir-venta',[venta,cliente,true,1])
-            ipcRenderer.send('imprimir-venta',[venta,cliente,true,1])
+            ipcRenderer.send('imprimir-venta',[venta,cliente,true,2])
+            // ipcRenderer.send('imprimir-venta',[venta,cliente,true,1])
         }else{
-            ipcRenderer.send('imprimir-venta',[venta,cliente,false,1])
+            ipcRenderer.send('imprimir-venta',[venta,cliente,false,2])
         }
     }
     location.reload()

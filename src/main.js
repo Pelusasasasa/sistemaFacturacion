@@ -1,4 +1,4 @@
- const URL = "http://192.168.1.106:4000/api/";
+ const URL = "http://192.168.0.123:4000/api/";
 //const URL = "http://179.62.24.12/api/";
 
 const axios = require("axios")
@@ -293,27 +293,33 @@ ipcMain.on('nueva-venta', async (e, args) => {
     await axios.put(`${URL}clientes/${_id}`,cliente)
 })
 
-ipcMain.on('imprimir-venta',(e,args)=>{
+ipcMain.on('imprimir-venta',async(e,args)=>{
     const [venta,cliente,condicion,tipo] = args;
     const options = {
         silent: condicion,
-        //device: 'HP_Deskjet_3540_series_D1A047_',
-        pageRanges: [{
-            from: 0,
-            to: 1
-          }],
+        copies:tipo,
     };
 
     (tipo === "Recibo") ? abrirVentana("imprimir-recibo") : abrirVentana("imprimir-comprobante");
 
+    const a = await imprimir(options,args)
+    console.log(a)
+    if (tipo === 2) {
+        //imprimir(options,args)
+    }
+})
+
+const imprimir = (opciones,args)=>{
     nuevaVentana.webContents.on('did-finish-load', function() {
         nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
-            nuevaVentana.webContents.print(options,(success, errorType) => {
-                    ventanaPrincipal.focus()
-                    nuevaVentana.close();
+            nuevaVentana.webContents.print(opciones,(success, errorType) => {
+                    if (success) {
+                        ventanaPrincipal.focus()
+                        nuevaVentana.close();
+                    }
               })
     });
-})
+}
 
 //buscamos las ventas
 ipcMain.handle('traerVentas' ,async (e,args)=>{
