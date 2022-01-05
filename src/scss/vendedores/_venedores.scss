@@ -43,15 +43,33 @@
   }
 }
 .listarUsuarios {
+  display: grid;
+  grid-template-columns: repeat(2,1fr);
+  align-items: center;
   list-style: none;
   li{
+
     text-align: center;
+    div{
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
   }
   h3 {
+    // margin: 0;
+    width: 50%;
+    padding: 2rem 0;
     font-weight: normal;
+    font-size: 1.5rem;
+    border-radius: 7.5rem;
+    border: .1rem solid black;
+    background-color: lightgray;
 
-    span {
-      font-weight: bold;
+    &:hover{
+      cursor: pointer;
+      transform: scale(1.2);
     }
   }
 }

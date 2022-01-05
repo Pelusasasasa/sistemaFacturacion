@@ -83,6 +83,7 @@
           border: 0.1rem solid black;
           font-size: 2rem;
         }
+
       }
     }
     tbody {
@@ -93,6 +94,9 @@
         }
         &:hover {
           cursor: pointer;
+        }
+        .totalP,.precioU{
+         text-align: end;
         }
       }
     }

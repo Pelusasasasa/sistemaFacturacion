@@ -1,14 +1,5 @@
-document.addEventListener("DOMContentLoaded", function(){
-    let i=0;
-    setTimeout(() => {
-        i++
-    }, 1000);
-    console.log(i)    
-})
-
 const Afip = require('@afipsdk/afip.js');
 const afip = new Afip({ CUIT: 27165767433 });
-
 
 function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -125,8 +116,13 @@ codigoC.addEventListener('keypress', (e) =>{
         if ( codigoC.value!=="") {
             ipcRenderer.invoke('get-cliente',(codigoC.value).toUpperCase()).then((args)=>{
                 cliente = JSON.parse(args)
-                ponerInputsClientes(JSON.parse(args))
-                observaciones.focus()
+                if (cliente === "") {
+                    alert("Cliente no encontrado")
+                    codigoC.value = ""
+                }else{
+                    ponerInputsClientes(JSON.parse(args))
+                    observaciones.focus()
+                }
             })
         }else{
             ipcRenderer.send('abrir-ventana',"clientes")
@@ -205,12 +201,13 @@ function mostrarVentas(objeto,cantidad) {
         <td>${(parseFloat(cantidad)).toFixed(2)}</td>
         <td>${objeto.descripcion}</td>
         <td>${objeto.tasaIva === "normal" ? "10.50" : "21"}</td>
-        <td>${parseFloat(objeto.precio_venta).toFixed(2)}</td>
-        <td>${(parseFloat(objeto.precio_venta)*(cantidad)).toFixed(2)}</td>
+        <td class="precioU">${parseFloat(objeto.precio_venta).toFixed(2)}</td>
+        <td class="totalP">${(parseFloat(objeto.precio_venta)*(cantidad)).toFixed(2)}</td>
         </tr>
     `
     objeto.identificadorTabla = `${id}`
     id++
+
     listaProductos.push({objeto,cantidad});
     venta.productos = listaProductos
 }
@@ -396,7 +393,6 @@ async function movimientoProducto(cantidad,objeto){
     movProducto.precio_unitario=objeto.precio_venta
     movProducto.total=(parseFloat(movProducto.egreso)*parseFloat(movProducto.precio_unitario)).toFixed(2)
     movProducto.vendedor = venta.vendedor;
-    console.log(movProducto)
     await ipcRenderer.send('movimiento-producto',movProducto)
 }
 
@@ -507,24 +503,24 @@ presupuesto.addEventListener('click',async (e)=>{
     }
     sacarIdentificadorTabla(venta.productos);
     if (venta.tipo_pago !== "PP") {
-        venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
+        //venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
        for (let producto of venta.productos){
-            sacarStock(producto.cantidad,producto.objeto)
-            await movimientoProducto(producto.cantidad,producto.objeto)
+           // sacarStock(producto.cantidad,producto.objeto)
+            //await movimientoProducto(producto.cantidad,producto.objeto)
         }
     }
-    actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-    ipcRenderer.send('nueva-venta',venta);
-
+    //actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+    //ipcRenderer.send('nueva-venta',venta);
     if (impresion.checked) {
         if (venta.tipo_pago === "CC") {
-            ipcRenderer.send('imprimir-venta',[venta,cliente,true,2])
+            //ipcRenderer.send('imprimir-venta',[venta,cliente,true,2])
             // ipcRenderer.send('imprimir-venta',[venta,cliente,true,1])
         }else{
-            ipcRenderer.send('imprimir-venta',[venta,cliente,false,2])
+            //ipcRenderer.send('imprimir-venta',[venta,cliente,false,2])
         }
     }
-    location.reload()
+    console.log(venta)
+    //location.reload()
 })
 
 //Aca mandamos la venta con tikect Factura
@@ -641,15 +637,20 @@ async function generarQR(texto) {
  //lo usamos para borrar un producto de la tabla
 borrarProducto.addEventListener('click',e=>{
     if (yaSeleccionado) {
-        producto = venta.productos.find(e=>e.objeto.identificadorTabla === yaSeleccionado.id);
+        console.log(yaSeleccionado.id)
+        console.log(listaProductos)
+        producto = listaProductos.find(e=>e.objeto.identificadorTabla === yaSeleccionado.id);
+        console.log(producto)
         total.value = (parseFloat(total.value)-(parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta))).toFixed(2)
-        venta.productos.forEach(e=>{
+        Preciofinal = (Preciofinal - (parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)).toFixed(2)) 
+        listaProductos.forEach(e=>{
             if (yaSeleccionado.id === e.objeto.identificadorTabla) {
-                    venta.productos = venta.productos.filter(e=>e.objeto.identificadorTabla !== yaSeleccionado.id)
+                    listaProductos = listaProductos.filter(e=>e.objeto.identificadorTabla !== yaSeleccionado.id)
             }
         })
-
-        yaSeleccionado.innerHTML = ""
+        const a = yaSeleccionado
+        console.log(a);
+        a.parentNode.removeChild(a)
     }
 })
 
@@ -700,6 +701,25 @@ function ponerInputsClientes(cliente) {
     }
     const cuentaC = document.querySelector('.cuentaC');
     (cliente.cond_fact === "4") && cuentaC.classList.add('none');
+    if (codigoC.value === "9999") {
+        buscarCliente.removeAttribute('disabled');
+        telefono.removeAttribute('disabled');
+        localidad.removeAttribute('disabled');
+        direccion.removeAttribute('disabled');
+        provincia.removeAttribute('disabled');
+        dnicuit.removeAttribute('disabled');
+        telefono.removeAttribute('disabled');
+        conIva.removeAttribute('disabled');
+    }else{
+        buscarCliente.setAttribute('disabled',"");
+        telefono.setAttribute('disabled',"");
+        localidad.setAttribute('disabled',"");
+        direccion.setAttribute('disabled',"");
+        provincia.setAttribute('disabled',"");
+        dnicuit.setAttribute('disabled',"");
+        telefono.setAttribute('disabled',"");
+        conIva.setAttribute('disabled',"");
+    }
 }
 
 ipcRenderer.once('venta',(e,args)=>{
@@ -891,3 +911,40 @@ const subirAAfip = async(venta)=>{
         const QR = await generarQR(textoQR,res.CAE,res.CAEFchVto)
         printPage("ticket factura",QR,res.CAE,res.CAEFchVto,ultimoElectronica,venta.cod_comp);
 }
+
+telefono.addEventListener('focus',e=>{
+    selecciona_value(telefono.id)
+})
+
+buscarCliente.addEventListener('focus',e=>{
+    selecciona_value(buscarCliente.id)
+})
+localidad.addEventListener('focus',e=>{
+    selecciona_value(localidad.id)
+})
+provincia.addEventListener('focus',e=>{
+    selecciona_value(provincia.id)
+})
+direccion.addEventListener('focus',e=>{
+    selecciona_value(direccion.id)
+})
+dnicuit.addEventListener('focus',e=>{
+    selecciona_value(dnicuit.id)
+})
+
+function selecciona_value(idInput) {
+    valor_input = document.getElementById(idInput).value;
+    longitud = valor_input.length;
+    var selectionEnd = 0 + 1;
+    if (document.getElementById(idInput).setSelectionRange) {
+    document.getElementById(idInput).focus();
+    document.getElementById(idInput).setSelectionRange (0, longitud);
+    }
+    else if (input.createTextRange) {
+    var range = document.getElementById(idInput).createTextRange() ;
+    range.collapse(true);
+    range.moveEnd('character', 0);
+    range.moveStart('character', longitud);
+    range.select();
+    }
+    }

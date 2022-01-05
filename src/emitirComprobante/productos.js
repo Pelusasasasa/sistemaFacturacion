@@ -13,7 +13,6 @@ let seleccionado
 const body = document.querySelector('body')
 
 body.addEventListener('keypress',e=>{
-
     if (e.key === 'Enter' && document.activeElement.tabIndex !== 1 && document.activeElement.tabIndex !== 2 ) {
         seleccionado = document.querySelector('.seleccionado')
         if(seleccionado){
@@ -106,6 +105,7 @@ const inputseleccionado = (e) =>{
 }
 
 seleccionarTBody.addEventListener('dblclick',(e) =>{
+    seleccionado = document.querySelector('.seleccionado')
     seleccionado ? cantidad(seleccionado) : dialogs.alert("Producto no seleccionado");
 })
 

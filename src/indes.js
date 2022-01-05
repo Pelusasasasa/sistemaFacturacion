@@ -73,7 +73,7 @@ function validacionUsuario(texto) {
                 value === e._id && (acceso = e.acceso)
             })
             if(vendedor !== undefined){ 
-                window.location = `${texto}?acceso=${acceso}`
+                window.location = `${texto}?vendedor=${vendedor}&acceso=${acceso}`
             }else{
                 alert("Contraseña incorrecta").then(()=>{
                     validacionUsuario(texto)
@@ -98,7 +98,7 @@ ipcRenderer.on("validarUsuario",(e,args)=>{
                     
                 })
                 if(vendedor !== undefined){ 
-                    ipcRenderer.send('abrir-ventana',`usuarios?${acceso}`)
+                    ipcRenderer.send('abrir-ventana',`usuarios?${acceso}?${vendedor}`)
                 }else{
                     alert("Contraseña incorrecta").then(()=>{
                         validacionUsuario(texto)

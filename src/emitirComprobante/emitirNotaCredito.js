@@ -84,6 +84,25 @@ ipcRenderer.on('mando-el-cliente',(e,args)=>{
     if (cliente.condicion==="M") {
         alert(`${cliente.observacion}`)
     }
+    if (codigoC.value === "9999") {
+        buscarCliente.removeAttribute('disabled');
+        telefono.removeAttribute('disabled');
+        localidad.removeAttribute('disabled');
+        direccion.removeAttribute('disabled');
+        provincia.removeAttribute('disabled');
+        dnicuit.removeAttribute('disabled');
+        telefono.removeAttribute('disabled');
+        conIva.removeAttribute('disabled');
+    }else{
+        buscarCliente.setAttribute('disabled',"");
+        telefono.setAttribute('disabled',"");
+        localidad.setAttribute('disabled',"");
+        direccion.setAttribute('disabled',"");
+        provincia.setAttribute('disabled',"");
+        dnicuit.setAttribute('disabled',"");
+        telefono.setAttribute('disabled',"");
+        conIva.setAttribute('disabled',"");
+    }
 }
 
 observaciones.addEventListener('keypress',(e)=>{

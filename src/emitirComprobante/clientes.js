@@ -15,8 +15,20 @@ body.addEventListener('keypress',e=>{
 
 
 ipcRenderer.on('get-clientes',(e,args) =>{
-    console.log(args)
-    const clientes = JSON.parse(args);
+    let clientes = JSON.parse(args);
+    clientes = clientes.sort(function(a,b){
+        let A = a.cliente.toUpperCase()
+        let B = b.cliente.toUpperCase()
+
+        if (A<B) {
+            return -1;
+        }
+        if (A>B) {
+            return 1;
+        }
+
+        return 0
+    })
     for(let cliente of clientes){
         let nombre = cliente.cliente.toLowerCase();
         if(nombre.indexOf(texto) !== -1){
