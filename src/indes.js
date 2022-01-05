@@ -72,14 +72,12 @@ function validacionUsuario(texto) {
                 value === e._id && (vendedor=e.nombre)
                 value === e._id && (acceso = e.acceso)
             })
-            console.log(vendedor)
             if(vendedor !== undefined){ 
                 window.location = `${texto}?acceso=${acceso}`
             }else{
-                dialogs.alert("Contraseña incorrecta").then(()=>{
+                alert("Contraseña incorrecta").then(()=>{
                     validacionUsuario(texto)
                 })
-                document.querySelector('.ok').focus()
             }
         }
        })
@@ -87,3 +85,26 @@ function validacionUsuario(texto) {
         location.reload()
        })
 }
+
+ipcRenderer.on("validarUsuario",(e,args)=>{
+    if ((JSON.parse(args) === "Validar")) {
+        dialogs.promptPassword("Contraseña",value=>{
+            if (value === undefined) {
+                location.reload();
+            }else{
+                vendedores.forEach(e=>{
+                    value === e._id && (vendedor=e.nombre)
+                    value === e._id && (acceso = e.acceso)
+                    
+                })
+                if(vendedor !== undefined){ 
+                    ipcRenderer.send('abrir-ventana',`usuarios?${acceso}`)
+                }else{
+                    alert("Contraseña incorrecta").then(()=>{
+                        validacionUsuario(texto)
+                    })
+            }}
+        })
+
+    }
+})

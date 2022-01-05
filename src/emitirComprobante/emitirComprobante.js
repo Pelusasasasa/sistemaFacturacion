@@ -1,3 +1,11 @@
+document.addEventListener("DOMContentLoaded", function(){
+    let i=0;
+    setTimeout(() => {
+        i++
+    }, 1000);
+    console.log(i)    
+})
+
 const Afip = require('@afipsdk/afip.js');
 const afip = new Afip({ CUIT: 27165767433 });
 

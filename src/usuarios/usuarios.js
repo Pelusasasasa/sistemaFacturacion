@@ -1,9 +1,12 @@
 const { ipcRenderer } = require("electron/renderer")
+let permiso;
+ipcRenderer.on('acceso',(e,args)=>{
+    permiso = JSON.parse(args)
+})
 
 const nombre = document.querySelector('#nombre')
 const codigo = document.querySelector('#codigo')
 const acceso = document.querySelector('#acceso')
-
 const enviar = document.querySelector('#enviar')
 
 enviar.addEventListener('click', e =>{
@@ -33,11 +36,10 @@ for(let usuario of JSON.parse(args)){
 }
 })
 
-
 const lista = document.querySelector('.listarUsuarios')
 lista.addEventListener('click',e=>{
-    const click = e.path[1].id
-    ponerValoresInputs(click)
+    const click = e.path[1].id;
+    (permiso === "0") ? ponerValoresInputs(click) : alert("no tiene permisos para interactuar");
 })
 
 const ponerValoresInputs = (id)=>{
@@ -64,4 +66,13 @@ guardar.addEventListener('click',e=>{
         await alert(alerta)
         location.reload();
     });
+})
+
+
+document.addEventListener('keyup',e=>{
+    console.log(e.key)
+    if (e.key === "Escape") {
+
+        window.close()
+    }
 })

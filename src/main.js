@@ -1,14 +1,10 @@
-<<<<<<< HEAD
- const URL = "http://192.168.1.108:4000/api/";
-//  const URL = "http://192.168.0.123:4000/api/";
-=======
- const URL = "http://192.168.0.101:4000/api/";
->>>>>>> 5ba2d03fb6cda784b0a1bc4ec495a6fd8a45294e
+//const URL = "http://192.168.1.108:4000/api/";
+const URL = "http://192.168.0.123:4000/api/";
 //const URL = "http://179.62.24.12/api/";
 
 const axios = require("axios")
 const path = require('path');
-const { app, BrowserWindow, ipcMain, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, Menu, ipcRenderer } = require('electron');
 const { DateTime } = require("luxon");
 const url = require('url')
 const [pedidos, ventas] = require('./descargas/descargas')
@@ -729,7 +725,8 @@ const templateMenu = [
             },{
                 label: "Vendedores",
                 click(){
-                    abrirVentana("usuarios")
+                    validarUsuario()
+                    // abrirVentana("usuarios")
                 }
             }
         ]
@@ -784,11 +781,7 @@ const templateMenu = [
 
 //AbrirVentanaParaBuscarUnCliente
 ipcMain.on('abrir-ventana', (e, args) => {
-    if (args === "numeros") {
       abrirVentana(args)
-    } else {
-       abrirVentana(args);
-    }
 })
 
 
@@ -970,7 +963,8 @@ function abrirVentana(texto,numeroVenta){
             slashes: true
         }));
         nuevaVentana.setMenuBarVisibility(false)
-    }else if(texto === "usuarios"){
+    }else if(texto.includes("usuarios")){
+        const a = texto.split('?')[1];
         nuevaVentana = new BrowserWindow({
             width: 500,
             parent:ventanaPrincipal,
@@ -981,13 +975,16 @@ function abrirVentana(texto,numeroVenta){
             }
         })
         nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, 'usuarios/usuarios.html'),
+            pathname: path.join(__dirname, `usuarios/usuarios.html`),
             protocol: 'file',
             slashes: true
         }));
         nuevaVentana.setMenuBarVisibility(false)
         nuevaVentana.on('close',e=>{
             nuevaVentana = null
+        })
+        nuevaVentana.on('ready-to-show',()=>{
+            nuevaVentana.webContents.send('acceso',JSON.stringify(a))
         })
     }else if(texto === "listadoSaldo"){
         nuevaVentana = new BrowserWindow({
@@ -1228,6 +1225,9 @@ function abrirVentana(texto,numeroVenta){
 async function descargas() {
     pedidos((await axios.get(`${URL}pedidos`)).data)
     ventas((await axios.get(`${URL}ventas`)).data)
+}
+const validarUsuario = ()=>{
+    ventanaPrincipal.webContents.send('validarUsuario',JSON.stringify("Validar"))
 }
 
 
