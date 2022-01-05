@@ -2,7 +2,6 @@
   background-color: black;
 }
 .consultaCtaCte {
-
   display: flex;
   flex-direction: column;
   .buscador {
@@ -10,6 +9,7 @@
     justify-content: space-around;
     background-color: lightgreen;
     padding: 1rem;
+    padding-bottom: 2rem;
 
     label {
       font-size: 2.4rem;
@@ -31,13 +31,24 @@
   }
 
   .listarventas {
-    margin-top: 2rem;
+
+    @include Chico(){
+      height: 25rem;
+    }
+    @include Comun(){
+      height: 30rem;
+    }
+    @include P900(){
+      height: 35rem;
+    }
+    @include P950(){
+      height: 40rem;
+    }
     height: 20rem;
     overflow: scroll;
     border: 0.1rem solid black;
     background-color: white;
     table {
-
       border-collapse: collapse;
       width: 100%;
       thead {
@@ -62,6 +73,18 @@
 
   .listarDetalleVenta {
     background-color: white;
+    @include Chico(){
+      height: 35rem;
+    }
+    @include Comun(){
+      height: 34rem;
+    }
+    @include P900(){
+      height: 39rem;
+    }
+    @include P950(){
+      height: 39rem;
+    }
     height: 25rem;
     overflow: scroll;
     border: 0.1rem solid black;
@@ -89,12 +112,14 @@
   }
 
   .seccion_botones {
-    margin-top: 2rem;
+    background-color: lightgreen;
+    padding-top: 2rem;
     .botones {
       background-color: lightgray;
       border-radius: 7.5rem;
       border: none;
       padding: 1.5rem;
+      margin: .5rem;
 
       &:hover {
         cursor: pointer;

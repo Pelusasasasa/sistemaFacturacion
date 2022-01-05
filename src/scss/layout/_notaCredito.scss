@@ -5,7 +5,6 @@
         .none{
             display: none !important;
         }
-
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -45,6 +44,18 @@
         .listaProductos{
             overflow: scroll;
             height: 35rem;
+            @include Chico(){
+                height: 40rem;
+            }
+            @include Comun(){
+                height: 45rem;
+            }
+            @include P900(){
+                height: 55rem;
+            }
+            @include P950(){
+                height: 60rem;
+            }
             border: .1rem solid black;
             background-color: white;
             .table{

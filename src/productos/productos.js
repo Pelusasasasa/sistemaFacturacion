@@ -122,8 +122,7 @@ modificar.addEventListener('click',e=>{
     if(seleccionado){
         ipcRenderer.send('abrir-ventana-modificar-producto',[seleccionado.id,acceso])
     }else{
-        dialogs.alert('Producto no seleccionado')
-            document.querySelector('.ok').focus()
+            alert('Producto no seleccionado')
     }
 })
 //Agregar producto
@@ -140,8 +139,7 @@ movimiento.addEventListener('click',()=>{
     if (seleccionado) {
         ipcRenderer.send('abrir-ventana-info-movimiento-producto',seleccionado.id)
     }else{
-        dialogs.alert('Producto no seleccionado')
-        document.querySelector('.ok').focus()
+            alert('Producto no seleccionado')
     }
 })
 
@@ -157,9 +155,8 @@ ingresarMov.addEventListener('click', e => {
             ipcRenderer.send('abrir-ventana-movimiento-producto',[seleccionado.id,vendedor])
         })
    }else{
-    dialogs.alert('Producto no seleccionado')
-    document.querySelector('.ok').focus()
-   }
+        alert('Producto no seleccionado')
+       }
 })
 
 //Eliminar un producto
@@ -169,8 +166,7 @@ eliminar.addEventListener('click',e=>{
         ipcRenderer.send('eliminar-producto',seleccionado.id)
         location.reload()
     }else{
-        dialogs.alert('Producto no seleccionado')
-        document.querySelector('.ok').focus()
+            alert('Producto no seleccionado')
     }
 
 })

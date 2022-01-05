@@ -1,4 +1,5 @@
- const URL = "http://192.168.0.123:4000/api/";
+ const URL = "http://192.168.1.108:4000/api/";
+//  const URL = "http://192.168.0.123:4000/api/";
 //const URL = "http://179.62.24.12/api/";
 
 const axios = require("axios")
@@ -793,12 +794,14 @@ function abrirVentana(texto,numeroVenta){
         nuevaVentana = new BrowserWindow({
             width: 800,
             height: 500,
+            parent:ventanaPrincipal,
             webPreferences: {
                 contextIsolation: false,
                 nodeIntegration: true
             }
         })
         nuevaVentana.loadURL(url.format({
+
             pathname: path.join(__dirname, `movProductos/movProductos.html`),
             protocol: 'file',
             slashes: true
@@ -875,6 +878,7 @@ function abrirVentana(texto,numeroVenta){
         nuevaVentana = new BrowserWindow({
             width: 1100,
             height: 450,
+            parent:ventanaPrincipal,
             webPreferences: {
                 contextIsolation: false,
                 nodeIntegration: true
@@ -891,6 +895,7 @@ function abrirVentana(texto,numeroVenta){
         })
     }else if(texto === "clientes"){
         nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
             width: 1000,
             height: 600,
             webPreferences: {
@@ -910,6 +915,7 @@ function abrirVentana(texto,numeroVenta){
         })
     }else if(texto === "productos"){
         nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
             width: 1200,
             height: 600,
             webPreferences: {
@@ -930,6 +936,7 @@ function abrirVentana(texto,numeroVenta){
         nuevaVentana.setMenuBarVisibility(false)
     }else if(texto === "numeros"){
         nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
             width: 500,
             height: 1000,
             webPreferences: {
@@ -945,6 +952,7 @@ function abrirVentana(texto,numeroVenta){
         nuevaVentana.setMenuBarVisibility(false)
     }else if(texto === "abrir-ventana-modificar-producto"){
         nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
             width: 1000,
             height: 600,
             webPreferences: {
@@ -961,6 +969,7 @@ function abrirVentana(texto,numeroVenta){
     }else if(texto === "usuarios"){
         nuevaVentana = new BrowserWindow({
             width: 500,
+            parent:ventanaPrincipal,
             height: 450,
             webPreferences: {
                 contextIsolation: false,
@@ -978,6 +987,7 @@ function abrirVentana(texto,numeroVenta){
         })
     }else if(texto === "listadoSaldo"){
         nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
             width: 1000,
             height: 900,
             webPreferences: {
@@ -996,6 +1006,7 @@ function abrirVentana(texto,numeroVenta){
         })
     }else if(texto === "listadoStock"){
         nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
             width: 1000,
             height: 900,
             webPreferences: {
@@ -1015,6 +1026,7 @@ function abrirVentana(texto,numeroVenta){
     }else if(texto==="cambioCodigo"){
         nuevaVentana = new BrowserWindow({
             width: 400,
+            parent:ventanaPrincipal,
             height: 300,
             webPreferences: {
                 contextIsolation: false,
@@ -1032,6 +1044,7 @@ function abrirVentana(texto,numeroVenta){
         })
     }else if(texto === "porComprobante"){
         nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
             width: 1200,
             height: 1000,
             webPreferences: {
@@ -1050,6 +1063,7 @@ function abrirVentana(texto,numeroVenta){
         })
     }else if(texto === "presupuesto"){
         nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
             width: 1200,
             height: 1000,
             webPreferences: {
@@ -1068,6 +1082,7 @@ function abrirVentana(texto,numeroVenta){
         })
     }else if(texto === "stockNegativo"){
         nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
             width: 1200,
             height: 1000,
             webPreferences: {
@@ -1086,6 +1101,7 @@ function abrirVentana(texto,numeroVenta){
         })  
     }else if(texto === "buscarVenta"){
         nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
             width: 1200,
             height: 1000,
             webPreferences: {
@@ -1104,6 +1120,7 @@ function abrirVentana(texto,numeroVenta){
         }) 
     }else if(texto === "gerencial"){
         nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
             width: 1200,
             height: 1000,
             webPreferences: {
@@ -1122,6 +1139,7 @@ function abrirVentana(texto,numeroVenta){
         })
     }else if(texto === "agregarCliente"){
         nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
             width: 1100,
             height: 500,
             webPreferences: {
@@ -1141,6 +1159,7 @@ function abrirVentana(texto,numeroVenta){
         })  
     }else if(texto === "agregarProducto"){
         nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
             width: 1100,
             height: 500,
             webPreferences: {
@@ -1160,6 +1179,7 @@ function abrirVentana(texto,numeroVenta){
         })  
     }else if(texto === "emitirComrpobante"){
         nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
             width: 1100,
             height: 500,
             webPreferences: {
@@ -1179,6 +1199,7 @@ function abrirVentana(texto,numeroVenta){
         })  
     }else if(texto === "libroVentas"){
         nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
             // width: 1100,
             // height: 500,
             webPreferences: {

@@ -4,14 +4,23 @@
 //     align-items: $aling;
 // }
 
-
-    @mixin Grande(){
+    @mixin P950(){
+        @media(min-height: 950px){
+            @content
+        }
+    };
+    @mixin P900(){
         @media(min-height: 900px){
             @content
         }
     };
     @mixin Comun(){
         @media(min-height: 800px){
+            @content
+        }
+    };
+    @mixin Chico(){
+        @media(min-height: 750px){
             @content
         }
     }

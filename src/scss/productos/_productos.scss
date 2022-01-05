@@ -49,11 +49,18 @@
       background-color: white;
       margin: 0;
       overflow: scroll;
-      @include Grande(){
-        height: 40rem;
+
+      @include Chico(){
+        height: 50rem;
       }
       @include Comun(){
-        height: 50rem;
+        height: 52rem;
+      }
+      @include P900(){
+        height: 60rem;
+      }
+      @include P950(){
+        height: 68rem;
       }
       height: 40rem;
       border: 0.1rem solid black;

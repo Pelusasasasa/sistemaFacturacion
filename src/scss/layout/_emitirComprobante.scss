@@ -136,6 +136,18 @@
   .listaProductos {
     background-color: white;
     overflow: scroll;
+    @include Chico(){
+      height: 38rem;
+    }
+    @include Comun(){
+      height: 42rem;
+    }
+    @include P900(){
+      height: 50rem;
+    }
+    @include P950(){
+      height: 55rem;
+    }
     height: 30rem;
     border: 0.1rem solid black;
   }
