@@ -159,8 +159,6 @@ const mostrarVentas = (objeto,cantidad)=>{
     venta.productos = listaProductos
 }
 
-console.log(descuento)
-
 descuento.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
         original.focus()
@@ -193,20 +191,34 @@ factura.addEventListener('click',async e=>{
     venta.descuento = parseFloat(descuentoN.value);
     venta.precioFinal = parseFloat(total.value);
     venta.vendedor = vendedor
+    console.log(venta)
+    actualizarNroCom(venta.nro_comp,venta.cod_comp)
     ipcRenderer.send('nueva-venta',venta)
-    console.log(cliente,venta)
-    // imprimirTikectFactura(venta,cliente)
-    // imprimirItem(venta,cliente)
+    imprimirTikectFactura(venta,cliente)
+    imprimirItem(venta,cliente)
 })
 
 
 const traerNumeroComprobante = async(codigo)=>{
     let retornar
-    const tipo = (codigo === 113) ? "Ultima N Credito B" : "Ultima N Credito A"
+    const tipo = (codigo === "113") ? "Ultima N Credito B" : "Ultima N Credito A"
     await ipcRenderer.invoke('traerNumeros',tipo).then((args)=>{
         retornar = JSON.parse(args)
     });
     return retornar
+}
+
+const actualizarNroCom = async(comprobante,codigo)=>{
+    let numero
+    let tipoFactura
+    if (codigo === "113") {
+        tipoFactura = "Ultima N Credito B"
+    }else{
+        tipoFactura = "Ultima N Credito A"
+    }
+    numero = comprobante
+    numero = (parseFloat(numero) + 1).toString().padStart(8,0)
+    ipcRenderer.send('modificar-numeros',[numero,tipoFactura])
 }
 
 const verCod_comp = (iva)=>{

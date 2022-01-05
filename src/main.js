@@ -1,5 +1,9 @@
+<<<<<<< HEAD
  const URL = "http://192.168.1.108:4000/api/";
 //  const URL = "http://192.168.0.123:4000/api/";
+=======
+ const URL = "http://192.168.0.101:4000/api/";
+>>>>>>> 5ba2d03fb6cda784b0a1bc4ec495a6fd8a45294e
 //const URL = "http://179.62.24.12/api/";
 
 const axios = require("axios")
