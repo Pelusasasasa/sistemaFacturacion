@@ -1,7 +1,6 @@
 const a = require('./config')
 let URL
 if (a === 1) {
-    console.log(a)
     URL = "http://179.62.24.12/api/";
 }else if(a === 2){
     URL = "http://192.168.0.123:4000/api/";
@@ -310,12 +309,11 @@ ipcMain.on('imprimir-venta',async(e,args)=>{
     const [venta,cliente,condicion,tipo] = args;
     const options = {
         silent: condicion,
-        copies:tipo,
     };
 
     (tipo === "Recibo") ? abrirVentana("imprimir-recibo") : abrirVentana("imprimir-comprobante");
 
-    const a = await imprimir(options,args)
+    await imprimir(options,args)
     if (tipo === 2) {
         //imprimir(options,args)
     }
@@ -358,11 +356,13 @@ ipcMain.on('traerVenta',async (e,args)=>{
 //Modificamos las ventas
 ipcMain.on('modificamosLasVentas',async (e,arreglo)=>{
     for (let Venta of arreglo){
-        const id = Venta.nro_comp
+        const id = Venta._id
+        const nro_comp = Venta.nro_comp
         const abonado = Venta.abonado
         const pagado = Venta.pagado
-        let venta = await axios.get(`${URL}ventas/${id}`)
+        let venta = await axios.get(`${URL}ventas/${nro_comp}`)
         venta = venta.data[0];
+
         venta.abonado = parseFloat(abonado).toFixed(2)
         venta.pagado = pagado
         await axios.put(`${URL}ventas/${id}`,venta)
@@ -1221,14 +1221,13 @@ function abrirVentana(texto,numeroVenta){
     }else if(texto === "libroVentas"){
         nuevaVentana = new BrowserWindow({
             parent:ventanaPrincipal,
-            // width: 1100,
-            // height: 500,
+            width: 1100,
+            height: 500,
             webPreferences: {
                 contextIsolation: false,
                 nodeIntegration: true
             }
         })
-        nuevaVentana.maximize()
         nuevaVentana.loadURL(url.format({
             pathname: path.join(__dirname, `libroVentas/libroVentas.html`),
             protocol: 'file',
@@ -1242,14 +1241,13 @@ function abrirVentana(texto,numeroVenta){
     }else if(texto.includes("conexion")){
         nuevaVentana = new BrowserWindow({
             parent:ventanaPrincipal,
-            width: 200,
-            height: 100,
+            width: 300,
+            height: 200,
             webPreferences: {
                 contextIsolation: false,
                 nodeIntegration: true
             }
         })
-        nuevaVentana.maximize()
         nuevaVentana.loadURL(url.format({
             pathname: path.join(__dirname, `./conexion.html`),
             protocol: 'file',
@@ -1268,7 +1266,6 @@ async function descargas() {
     ventas((await axios.get(`${URL}ventas`)).data)
 }
 const validarUsuario = (texto)=>{
-    console.log("object")
     ventanaPrincipal.webContents.send('validarUsuario',JSON.stringify(texto))
 }
 

@@ -441,6 +441,7 @@ const tamanioVentas = async()=>{
 function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
     let numero
     let tipoFactura
+    console.log(comprobante)
     let [n1,n2] = comprobante.split('-')
     if (comprobante.split('-').length === 2) {
     n2 = parseFloat(n2)+1
@@ -503,24 +504,23 @@ presupuesto.addEventListener('click',async (e)=>{
     }
     sacarIdentificadorTabla(venta.productos);
     if (venta.tipo_pago !== "PP") {
-        //venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
+        venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
        for (let producto of venta.productos){
-           // sacarStock(producto.cantidad,producto.objeto)
-            //await movimientoProducto(producto.cantidad,producto.objeto)
+            sacarStock(producto.cantidad,producto.objeto)
+            await movimientoProducto(producto.cantidad,producto.objeto)
         }
     }
-    //actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-    //ipcRenderer.send('nueva-venta',venta);
+    actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+    ipcRenderer.send('nueva-venta',venta);
     if (impresion.checked) {
         if (venta.tipo_pago === "CC") {
-            //ipcRenderer.send('imprimir-venta',[venta,cliente,true,2])
-            // ipcRenderer.send('imprimir-venta',[venta,cliente,true,1])
+            ipcRenderer.send('imprimir-venta',[venta,cliente,true,2])
+             ipcRenderer.send('imprimir-venta',[venta,cliente,true,1])
         }else{
-            //ipcRenderer.send('imprimir-venta',[venta,cliente,false,2])
+            ipcRenderer.send('imprimir-venta',[venta,cliente,false,2])
         }
     }
-    console.log(venta)
-    //location.reload()
+    location.reload()
 })
 
 //Aca mandamos la venta con tikect Factura

@@ -14,7 +14,7 @@ const fs = require('fs')
 
 privada.addEventListener('click',async()=>{
     tipoConexion = `a=2;module.exports = a`;
-    fs.writeFile('src/config.js',tipoConexion,()=>{
+    fs.writeFile(__dirname + '/config.js',tipoConexion,()=>{
         console.log("hola")
         ipcRenderer.send('recargar-Ventana')
     })
@@ -22,7 +22,7 @@ privada.addEventListener('click',async()=>{
 
 publica.addEventListener('click',async()=>{
     tipoConexion = `a=1;module.exports = a`;
-    fs.writeFile('src/config.js',tipoConexion,()=>{
+    fs.writeFile(__dirname+'/config.js',tipoConexion,()=>{
         console.log("hola")
         ipcRenderer.send('recargar-Ventana')
     })

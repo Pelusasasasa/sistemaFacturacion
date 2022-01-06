@@ -1,4 +1,4 @@
-function getParameterByName(name) {
+    function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
     results = regex.exec(location.search);
@@ -151,7 +151,7 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
             }
             let venta
             nuevaLista.forEach(e =>{
-                if(e._id === trSeleccionado.id){    
+                if(e.nro_comp === trSeleccionado.id){    
                     venta = e
                 }
             });
@@ -169,6 +169,7 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
                 (inputSeleccionado.value !== "")  && arregloParaImprimir.push(objeto);
 
             }
+            console.log(venta)
             venta.abonado = parseFloat(venta.abonado) + parseFloat(inputSeleccionado.value);
             (venta.abonado === venta.precioFinal) && (venta.pagado = true);
             if(a === inputSeleccionado.id){
