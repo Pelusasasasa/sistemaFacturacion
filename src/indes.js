@@ -1,4 +1,6 @@
 const { ipcRenderer } = require("electron")
+const tipoConexion = require('./config.js')
+
 const Dialogs = require("dialogs");
 const Driver = require("driver.js");
 const dialogs = Dialogs()
@@ -87,7 +89,7 @@ function validacionUsuario(texto) {
 }
 
 ipcRenderer.on("validarUsuario",(e,args)=>{
-    if ((JSON.parse(args) === "Validar")) {
+
         dialogs.promptPassword("Contraseña",value=>{
             if (value === undefined) {
                 location.reload();
@@ -98,13 +100,16 @@ ipcRenderer.on("validarUsuario",(e,args)=>{
                     
                 })
                 if(vendedor !== undefined){ 
-                    ipcRenderer.send('abrir-ventana',`usuarios?${acceso}?${vendedor}`)
+                    if (JSON.parse(args) === "ValidarUsuario") {
+                        ipcRenderer.send('abrir-ventana',`usuarios?${acceso}?${vendedor}`)
+                    }else if (JSON.parse(args) === "Conexion" ) {
+                        (acceso === "0") ? ipcRenderer.send('abrir-ventana',`conexion?${acceso}`) : alert("No tiene permisos")
+                    }
+
                 }else{
                     alert("Contraseña incorrecta").then(()=>{
                         validacionUsuario(texto)
                     })
             }}
         })
-
-    }
 })

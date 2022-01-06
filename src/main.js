@@ -1,5 +1,13 @@
-//const URL = "http://192.168.1.108:4000/api/";
-const URL = "http://192.168.0.123:4000/api/";
+const a = require('./config')
+let URL
+if (a === 1) {
+    console.log(a)
+    URL = "http://179.62.24.12/api/";
+}else if(a === 2){
+    URL = "http://192.168.0.123:4000/api/";
+}
+
+// const URL = "http://192.168.1.108:4000/api/";
 //const URL = "http://179.62.24.12/api/";
 
 const axios = require("axios")
@@ -725,8 +733,7 @@ const templateMenu = [
             },{
                 label: "Vendedores",
                 click(){
-                    validarUsuario()
-                    // abrirVentana("usuarios")
+                    validarUsuario("ValidarUsuario")
                 }
             }
         ]
@@ -776,6 +783,12 @@ const templateMenu = [
                 }
             }
         ]
+    },
+    {
+        label: "Conexion",
+        click(){
+            validarUsuario("Conexion")
+        }
     }
 ]
 
@@ -1219,6 +1232,27 @@ function abrirVentana(texto,numeroVenta){
             nuevaVentana = null;
             ventanaPrincipal.reload()
         })  
+    }else if(texto.includes("conexion")){
+        nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
+            width: 200,
+            height: 100,
+            webPreferences: {
+                contextIsolation: false,
+                nodeIntegration: true
+            }
+        })
+        nuevaVentana.maximize()
+        nuevaVentana.loadURL(url.format({
+            pathname: path.join(__dirname, `./conexion.html`),
+            protocol: 'file',
+            slashes: true
+        }));
+        nuevaVentana.setMenuBarVisibility(false)
+        nuevaVentana.on('close',e=>{
+            nuevaVentana = null;
+            ventanaPrincipal.reload()
+        })  
     }
 }
 
@@ -1226,8 +1260,9 @@ async function descargas() {
     pedidos((await axios.get(`${URL}pedidos`)).data)
     ventas((await axios.get(`${URL}ventas`)).data)
 }
-const validarUsuario = ()=>{
-    ventanaPrincipal.webContents.send('validarUsuario',JSON.stringify("Validar"))
+const validarUsuario = (texto)=>{
+    console.log("object")
+    ventanaPrincipal.webContents.send('validarUsuario',JSON.stringify(texto))
 }
 
 
