@@ -10,7 +10,6 @@ function getParameterByName(name) {
 const vendedor = getParameterByName('vendedor')
 
 const Dialogs = require("dialogs");
-const dialog = require("dialogs");
 const dialogs = Dialogs()
 
 
@@ -31,11 +30,12 @@ const total = document.querySelector('#total');
 const original = document.querySelector('#original')
 const factura = document.querySelector('.factura');
 const cancelar = document.querySelector('.cancelar');
-
+const borrarProducto = document.querySelector('.borrarProducto')
 
 let cliente = {};
 let venta = {};
 let listaProductos = [];
+let yaSeleccionado;
 precioFinal = 0;
 
 codigoC.addEventListener('keypress',e=>{
@@ -209,8 +209,7 @@ factura.addEventListener('click',async e=>{
     venta.abonado = "0";
     venta.descuento = parseFloat(descuentoN.value);
     venta.precioFinal = parseFloat(total.value);
-    venta.vendedor = vendedor
-    console.log(venta)
+    venta.vendedor = vendedo
     actualizarNroCom(venta.nro_comp,venta.cod_comp)
     ipcRenderer.send('nueva-venta',venta)
     imprimirTikectFactura(venta,cliente)
@@ -352,3 +351,32 @@ const imprimirItem = async(venta,cliente)=>{
     ipcRenderer.send('item',{fieldDescriptors,datosAGuardar})
 
 }
+
+resultado.addEventListener('click',e=>{
+    inputseleccionado(e.path[1])
+    if (yaSeleccionado) {
+        borrarProducto.classList.remove('none')
+    }
+})
+
+const inputseleccionado = (e) =>{
+    yaSeleccionado && yaSeleccionado.classList.remove('seleccionado')
+   e.classList.toggle('seleccionado')
+   yaSeleccionado = document.querySelector('.seleccionado')
+}
+
+ //lo usamos para borrar un producto de la tabla
+ borrarProducto.addEventListener('click',e=>{
+    if (yaSeleccionado) {
+        producto = listaProductos.find(e=>e.objeto.identificadorTabla === yaSeleccionado.id);
+        total.value = (parseFloat(total.value)-(parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta))).toFixed(2)
+        precioFinal = (precioFinal - (parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)).toFixed(2)) 
+        listaProductos.forEach(e=>{
+            if (yaSeleccionado.id === e.objeto.identificadorTabla) {
+                    listaProductos = listaProductos.filter(e=>e.objeto.identificadorTabla !== yaSeleccionado.id)
+            }
+        })
+        const a = yaSeleccionado
+        a.parentNode.removeChild(a)
+    }
+})

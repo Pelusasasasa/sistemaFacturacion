@@ -1,5 +1,43 @@
-.conexion{
-    display: flex;
-    justify-content: space-between;
-    padding-top: 1rem;
+.bodyConexion{
+    margin-top: 1rem;
+    .conexion{
+        display: flex;
+        justify-content: space-between;
+        padding-top: 1rem;
+    }
+    
+    .flecha {
+        display: flex;
+        float: left;
+        position: relative;
+        height: 20px;
+        width: 50px;
+        top: 3rem;
+        left: 3rem;
+        transform: rotate(270deg);
+        border: solid 1px #ccc;
+        border-right: none;
+        background: #eee linear-gradient(white, #f1f1f1 37%, #e1e1e1 57%, #f6f6f6);
+        &.flechaBlanca{
+            background: white;
+            border: solid 1px white;
+        }
+      }
+      
+      .flecha:after {
+        position: absolute;
+        top: 3px;
+        right: -8px;
+        width: 15px;
+        height: 13px;
+        border-left: solid 1px #ccc;
+        border-top: solid 1px #ccc;
+        transform: rotate(134deg) skewX(-10deg) skewY(-10deg);
+        background: #eee linear-gradient(45deg, white, #f1f1f1 37%, #e1e1e1 57%, #f6f6f6);
+        content: '';
+      }
+      .flechaBlanca:after{
+          background: white;
+          border: white;
+      }
 }

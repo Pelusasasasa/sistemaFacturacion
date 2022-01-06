@@ -7,6 +7,7 @@ if (a === 1) {
     URL = "http://192.168.0.123:4000/api/";
 }
 
+
 // const URL = "http://192.168.1.108:4000/api/";
 //const URL = "http://179.62.24.12/api/";
 
@@ -44,6 +45,12 @@ function crearVentanaPrincipal() {
 //abrir ventana agregar cliente
 ipcMain.on('abrir-ventana-agregar-cliente',e=>{
     abrirVentana('agregarCliente')
+})
+
+
+ipcMain.on('recargar-Ventana',(e,args)=>{
+    app.relaunch();
+    app.exit();
 })
 
 
