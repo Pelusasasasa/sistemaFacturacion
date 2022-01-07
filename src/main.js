@@ -3,7 +3,7 @@ let URL
 if (a === 1) {
     URL = "http://179.62.24.12/api/";
 }else if(a === 2){
-    URL = "http://192.168.0.123:4000/api/";
+    URL = "http://192.168.0.124:4000/api/";
 }
 
 
@@ -296,27 +296,25 @@ ipcMain.handle('tamanioVentas',async(e,args)=>{
 ipcMain.on('nueva-venta', async (e, args) => {
     let nuevaVenta = await axios.post(`${URL}ventas`,args)
     nuevaVenta = nuevaVenta.data
-    const _id = nuevaVenta.cliente
-    let cliente = await axios.get(`${URL}clientes/id/${_id}`)
-    cliente = cliente.data
-    let listaVentas = cliente.listaVentas
-    listaVentas[0] === "" ? (listaVentas[0] = nuevaVenta.nro_comp) : (listaVentas.push(nuevaVenta.nro_comp))
-    cliente.listaVentas = listaVentas;
-    await axios.put(`${URL}clientes/${_id}`,cliente)
+    if (nuevaVenta.tipo_pago !== "PP") {    
+        const _id = nuevaVenta.cliente;
+        let cliente = await axios.get(`${URL}clientes/id/${_id}`);
+        cliente = cliente.data;
+        let listaVentas = cliente.listaVentas;
+        listaVentas[0] === "" ? (listaVentas[0] = nuevaVenta.nro_comp) : (listaVentas.push(nuevaVenta.nro_comp));
+        cliente.listaVentas = listaVentas;
+        await axios.put(`${URL}clientes/${_id}`,cliente);
+    }
 })
 
 ipcMain.on('imprimir-venta',async(e,args)=>{
-    const [venta,cliente,condicion,tipo] = args;
+    const [,,condicion,cantidad,tipo] = args;
     const options = {
         silent: condicion,
+        copies: cantidad
     };
-
     (tipo === "Recibo") ? abrirVentana("imprimir-recibo") : abrirVentana("imprimir-comprobante");
-
     await imprimir(options,args)
-    if (tipo === 2) {
-        //imprimir(options,args)
-    }
 })
 
 const imprimir = (opciones,args)=>{
@@ -406,7 +404,7 @@ ipcMain.on('ventaModificada',async (e,[args,id,saldo])=>{
      venta = venta.data[0]
      venta.precioFinal = args.precioFinal;
      venta.productos = args.productos;
-     await axios.put(`${URL}ventas/${id}`,venta)
+     await axios.put(`${URL}ventas/${venta._id}`,venta)
     let cliente = await axios.get(`${URL}clientes/id/${args.cliente}`)
     cliente = cliente.data
     let total = 0

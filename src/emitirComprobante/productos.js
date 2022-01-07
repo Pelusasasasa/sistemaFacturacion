@@ -75,9 +75,9 @@ ipcRenderer.on('get-productos', (e,args) =>{
                 <tr id="${producto._id}">
                     <th scope="row">${producto._id}</th>
                     <td class ="descripcion" >${producto.descripcion}</td>
-                    <td>${producto.precio_venta}</td>
+                    <td>${(parseFloat(producto.precio_venta)).toFixed(2)}</td>
                     <td>${producto.marca}</td>
-                    <td>${producto.stock}</td>
+                    <td>${parseFloat(producto.stock).toFixed(2)}</td>
                     <td>${producto.cod_fabrica}</td>
                 </tr>
             `

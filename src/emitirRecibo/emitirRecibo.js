@@ -190,12 +190,29 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
 
         }
 })
-
-saldoAfavor.addEventListener('blur',()=>{
-    (saldoAfavor.value !== "") && (total.value = parseFloat(total.value) + parseFloat(saldoAfavor.value))
+let saldoAFavorAnterior = "0"
+saldoAfavor.addEventListener('keydown',e=>{
+    
+    if (e.key === "Enter" && saldoAfavor.value !== "") {
+        (total.value = (parseFloat(total.value) + parseFloat(saldoAfavor.value) - parseFloat(saldoAFavorAnterior)).toFixed(2));
+        (saldoAfavor.value = (parseFloat(saldoAfavor.value)).toFixed(2));
+        saldoAFavorAnterior = saldoAfavor.value 
+    }
 })
 
-imprimir.addEventListener('click',async e=>{
+imprimir.addEventListener('click', e=>{
+    e.preventDefault;
+    hacerRecibo();
+})
+imprimir.addEventListener('keydown',e=>{
+    e.preventDefault()
+    if (e.key === "Enter") {
+        hacerRecibo();
+    }
+})
+
+
+const hacerRecibo = async()=>{
     const nrmComp = await traerUltimoNroRecibo()
     modifcarNroRecibo(nrmComp)
     const recibo = {}
@@ -213,11 +230,11 @@ imprimir.addEventListener('click',async e=>{
     ipcRenderer.send('modificarSaldo',[cliente._id,aux,saldoNuevo])
     ipcRenderer.send('modificamosLasVentas',nuevaLista)
     ipcRenderer.send('nueva-venta',recibo)
-    ipcRenderer.send('imprimir-venta',[cliente,recibo,false,"Recibo",arregloParaImprimir,total.value])
+    ipcRenderer.send('imprimir-venta',[cliente,recibo,false,1,"Recibo",arregloParaImprimir,total.value])
     location.reload()
-})
+}
 
-const traerUltimoNroRecibo =async ()=>{
+const traerUltimoNroRecibo = async ()=>{
     let retornar
     await ipcRenderer.invoke('traerUltimoNumero',"Ultimo Recibo").then((args)=>{
         retornar = JSON.parse(args)

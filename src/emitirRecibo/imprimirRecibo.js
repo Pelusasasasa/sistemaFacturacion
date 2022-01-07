@@ -2,7 +2,7 @@ const {ipcRenderer} = require('electron')
 
 ipcRenderer.on('imprimir',(e,args)=>{
     console.log(JSON.parse(args))
-    const [Cliente,Venta,,,arreglo,total] = JSON.parse(args)
+    const [Cliente,Venta,,,,arreglo,total] = JSON.parse(args)
     listar(Venta,Cliente,arreglo,total)
 })
 
@@ -17,9 +17,12 @@ const iva = document.querySelector('.cond_iva')
 const total = document.querySelector('#total')
 const tbody = document.querySelector('.tbody')
 const tomarFecha = new Date();
-const hoy = tomarFecha.getDate()
-const mes = tomarFecha.getMonth() + 1;
-const anio = tomarFecha.getFullYear();
+let hoy = tomarFecha.getDate()
+let mes = tomarFecha.getMonth() + 1;
+let anio = tomarFecha.getFullYear();
+
+mes = (mes<10) ? `0${mes}` : mes;
+hoy = (hoy<10) ? `0${hoy}` : hoy;
 
 const cond_iva = (Cliente.iva === undefined) && "Consumidor Final";
 
@@ -42,11 +45,11 @@ lista.forEach(objeto => {
         </tr>
     `
 })
-total.value = precio
+total.value = precio;
 }
 
 document.addEventListener('keydown',e=>{
     if (e.key=== "Escape") {
-        window.close()
+        window.close();
     }
 })

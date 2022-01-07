@@ -164,12 +164,12 @@ const mostrarVentas = (objeto,cantidad)=>{
     total.value = (parseFloat(precioFinal)).toFixed(2)
     resultado.innerHTML += `
         <tr id=${id}>
+        <td class="tdEnd">${(parseFloat(cantidad)).toFixed(2)}</td>
         <td>${objeto._id}</td>
-        <td>${(parseFloat(cantidad)).toFixed(2)}</td>
         <td>${objeto.descripcion}</td>
-        <td>${objeto.tasaIva === "normal" ? "10.50" : "21"}</td>
-        <td>${parseFloat(objeto.precio_venta).toFixed(2)}</td>
-        <td>${(parseFloat(objeto.precio_venta)*(cantidad)).toFixed(2)}</td>
+        <td class="tdEnd" >${(objeto.tasaIva !== "N" ? 10.50 : 21).toFixed(2)}</td>
+        <td class="tdEnd">${parseFloat(objeto.precio_venta).toFixed(2)}</td>
+        <td class="tdEnd">${(parseFloat(objeto.precio_venta)*(cantidad)).toFixed(2)}</td>
         </tr>
     `
     objeto.identificadorTabla = `${id}`

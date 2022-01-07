@@ -193,16 +193,23 @@ ipcRenderer.on('mando-el-producto',(e,args) => {
 })
 let id = 1 //id de la tabla de ventas
 function mostrarVentas(objeto,cantidad) {
+
+    const alertaStock = document.querySelector('.alertaStock')
+
+    if (objeto.stock <= 0) {
+        alert("Stock En Negativo")
+    }
+
     Preciofinal += (parseFloat(objeto.precio_venta)*cantidad);
     total.value = (parseFloat(Preciofinal)).toFixed(2)
     resultado.innerHTML += `
         <tr id=${id}>
+        <td class="tdEnd">${(parseFloat(cantidad)).toFixed(2)}</td>
         <td>${objeto._id}</td>
-        <td>${(parseFloat(cantidad)).toFixed(2)}</td>
         <td>${objeto.descripcion}</td>
-        <td>${objeto.tasaIva === "normal" ? "10.50" : "21"}</td>
-        <td class="precioU">${parseFloat(objeto.precio_venta).toFixed(2)}</td>
-        <td class="totalP">${(parseFloat(objeto.precio_venta)*(cantidad)).toFixed(2)}</td>
+        <td class="tdEnd">${(objeto.iva !== "N" ? 10.50 : 21).toFixed(2)}</td>
+        <td class="tdEnd">${parseFloat(objeto.precio_venta).toFixed(2)}</td>
+        <td class="tdEnd">${(parseFloat(objeto.precio_venta)*(cantidad)).toFixed(2)}</td>
         </tr>
     `
     objeto.identificadorTabla = `${id}`
@@ -515,9 +522,8 @@ presupuesto.addEventListener('click',async (e)=>{
     if (impresion.checked) {
         if (venta.tipo_pago === "CC") {
             ipcRenderer.send('imprimir-venta',[venta,cliente,true,2])
-             ipcRenderer.send('imprimir-venta',[venta,cliente,true,1])
         }else{
-            ipcRenderer.send('imprimir-venta',[venta,cliente,false,2])
+            ipcRenderer.send('imprimir-venta',[venta,cliente,false,1])
         }
     }
     location.reload()
@@ -657,9 +663,10 @@ borrarProducto.addEventListener('click',e=>{
 
 const cancelar = document.querySelector('.cancelar')
 cancelar.addEventListener('click',async e=>{
-    if (("Cancelar Presupuesto?")) {
-        e.preventDefault()
+    e.preventDefault()
+    if (listaProductos.length !== 0) {
         const ventaCancelada = {}
+        console.log(listaProductos)
         if (cliente._id) {
             ventaCancelada.cliente = cliente._id
         }
@@ -667,8 +674,9 @@ cancelar.addEventListener('click',async e=>{
         ventaCancelada._id = await tamanioCancelados()
         ventaCancelada.vendedor = vendedor
         ipcRenderer.send('ventaCancelada',ventaCancelada)
-        window.location = "../index.html"
     }
+        window.location = "../index.html"
+    
         
 })
 

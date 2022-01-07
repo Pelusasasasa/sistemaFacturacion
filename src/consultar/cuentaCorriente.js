@@ -32,9 +32,8 @@ document.addEventListener('keydown',(event) =>{
        document.addEventListener('keydown',(e) =>{
            if (e.key === "F9" && situacion === "blanco") {
                mostrarNegro();
-               situacion = 'negro'
-
-               listarLista(nuevaLista,situacion)
+               situacion = 'negro';
+               listarLista(nuevaLista,situacion);
            }
        })
    }
@@ -45,8 +44,8 @@ document.addEventListener('keydown',(event) =>{
       document.addEventListener('keydown',(e) =>{
           if (e.key === "F3" && situacion === "negro") {
               ocultarNegro();
-              situacion = 'blanco'
-              listarLista(nuevaLista,situacion)
+              situacion = 'blanco';
+              listarLista(nuevaLista,situacion);
           }
       })
   }
@@ -104,8 +103,9 @@ listar.addEventListener('click',e=>{
     sacarSeleccion && sacarSeleccion.classList.remove('seleccionado')
     seleccionado.classList.toggle('seleccionado')
     if (seleccionado) {
+        console.log(lista)
         lista.forEach(listar=>{
-            listar._id === seleccionado.id && mostrarDetalles(listar.productos,seleccionado._id)
+            listar.nro_comp === seleccionado.id && mostrarDetalles(listar.productos,listar.vendedor);
         })
     }
 })
@@ -126,7 +126,7 @@ const listarLista = (lista,situacion)=>{
         if (venta.length !== 0) {
             let fecha = new Date(venta.fecha) 
             listar.innerHTML += `
-                <tr id="${venta._id}">
+                <tr id="${venta.nro_comp}">
                 <td>${fecha.getUTCDate()}/${fecha.getUTCMonth()+1}/${fecha.getUTCFullYear()}</td>
                     <td>${venta.tipo_comp}</td>
                     <td>${venta.nro_comp}</td>
@@ -141,8 +141,11 @@ const listarLista = (lista,situacion)=>{
 }
 
 const detalle = document.querySelector('.detalle')
-function mostrarDetalles(lista) {
+function mostrarDetalles(lista,vendedor) {
     detalle.innerHTML = ''
+    if ((lista.length === 0)) {
+        detalle.innerHTML = `<h3>Vendedor del recibo: ${vendedor}</h3>`
+    }else{
     lista.forEach((producto) =>{
         let {objeto,cantidad} = producto 
         detalle.innerHTML += `
@@ -155,8 +158,9 @@ function mostrarDetalles(lista) {
             <td>${vendedor}</td>
         </tr>
         
-    `
-    })
+        `
+        })
+    }
 }
 
 let ventaAModificar
@@ -167,7 +171,7 @@ const actualizar = document.querySelector('.actualizar')
     actualizar.addEventListener('click',e=>{
         if (seleccionado) {
         nuevaLista.find(e=>{
-            if (e._id === seleccionado.id) {
+            if (e.nro_comp === seleccionado.id) {
                 ventaAModificar=e;
             }
         })
