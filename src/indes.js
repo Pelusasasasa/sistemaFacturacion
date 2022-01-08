@@ -65,6 +65,7 @@ body.addEventListener('keydown',e=>{
 
 let vendedor
 let acceso
+let empresa
 function validacionUsuario(texto) {
     dialogs.promptPassword("Contraseña").then(value=>{
         if (value === undefined) {
@@ -73,9 +74,10 @@ function validacionUsuario(texto) {
             vendedores.forEach(e=>{
                 value === e._id && (vendedor=e.nombre)
                 value === e._id && (acceso = e.acceso)
+                value === e._id && (empresa = e.empresa)
             })
             if(vendedor !== undefined){ 
-                window.location = `${texto}?vendedor=${vendedor}&acceso=${acceso}`
+                window.location = `${texto}?vendedor=${vendedor}&acceso=${acceso}&empresa=${empresa}`
             }else{
                 alert("Contraseña incorrecta").then(()=>{
                     validacionUsuario(texto)

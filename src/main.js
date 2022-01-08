@@ -296,6 +296,7 @@ ipcMain.handle('tamanioVentas',async(e,args)=>{
 ipcMain.on('nueva-venta', async (e, args) => {
     let nuevaVenta = await axios.post(`${URL}ventas`,args)
     nuevaVenta = nuevaVenta.data
+    console.log(nuevaVenta)
     if (nuevaVenta.tipo_pago !== "PP") {    
         const _id = nuevaVenta.cliente;
         let cliente = await axios.get(`${URL}clientes/id/${_id}`);
@@ -395,6 +396,16 @@ ipcMain.on('traerVentasEntreFechas',async(e,args)=>{
     let ventas = await axios.get(`${URL}ventas/${desde}/${hasta}`)
     ventas = ventas.data
     e.reply('traerVentasEntreFechas',JSON.stringify(ventas))
+})
+
+//traerVentas entre fechas de un cliente
+ipcMain.handle('traerVentasClienteEntreFechas',async(e,args)=>{
+    let [cliente,desde,hasta] = args
+    desde = new Date(desde)
+    hasta = DateTime.fromISO(hasta).endOf('day')
+    let ventas = await axios.get(`${URL}ventas/cliente/${cliente}/${desde}/${hasta}`)
+    ventas = ventas.data;
+    return JSON.stringify(ventas)
 })
 
 

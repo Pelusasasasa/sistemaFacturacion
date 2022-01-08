@@ -55,7 +55,7 @@
   }
 }
 .disable {
-  display: none;
+  display: none  !important;
 }
 .ayuda{
   display: flex;

@@ -79,6 +79,19 @@
     .parteBuscar{
       display: flex;
       justify-content: flex-start;
+
+      .empresa{
+        label{
+          text-align: start;
+          font-size: 2rem;
+        }
+        select{
+          padding: 1rem;
+        }
+        margin-left: 40rem;
+        display: flex;
+        flex-direction: column;
+      }
     }
   }
   .table {

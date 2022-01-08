@@ -7,6 +7,23 @@ const buscador = document.querySelector('#buscador');
 const tbody = document.querySelector('.tbody');
 const saldoActual = document.querySelector('#saldoActual');
 const imprimir = document.querySelector('.imprimir')
+const desde = document.querySelector('#desde')
+const hasta = document.querySelector('#hasta')
+const ocultar = document.querySelector('.seccion-buscador')
+const volver = document.querySelector('.volver');
+
+const dateNow = new Date()
+let day = dateNow.getDate()
+let month = dateNow.getMonth() + 1 
+let year = dateNow.getFullYear()
+
+day = day < 10 ? `0${day}`: day;
+month = month < 10 ? `0${month}`: month;
+
+const date = `${year}-${month}-${day}`
+
+desde.value = date;
+hasta.value = date
 
 let situacion = "blanco";
 let listaVentas = [];
@@ -54,6 +71,9 @@ const ocultarNegro = ()=>{
 const mostrarNegro = ()=>{
     const body = document.querySelector('.seccionResumeCuenta') 
     body.classList.add('mostrarNegro')
+    ocultar.classList.add('mostrarNegro')
+    volver.classList.add('mostrarNegro')
+    
 }
 
 
@@ -62,9 +82,7 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
     nombre.innerHTML = cliente.cliente
     direccion.innerHTML = `${cliente.direccion}-${cliente.localidad}`;
     telefono.innerHTML = cliente.telefono;
-
-
-    await ipcRenderer.invoke('traerVentas',cliente.listaVentas).then((args)=>{
+    await ipcRenderer.invoke('traerVentasClienteEntreFechas',[cliente._id,desde.value,hasta.value]).then((args)=>{
         nuevaLista = []
         listaVentas = JSON.parse(args)
     })
@@ -93,8 +111,20 @@ function listarVentas(ventas,situacion) {
             return (e.tipo_comp === aux)
         })
     }
-        
+    let saldoAnterior = 0
+
+    listaAux.forEach(venta =>{
+        saldoAnterior += (venta.tipo_comp === "Presupuesto") ? venta.precioFinal - parseFloat(venta.abonado) : 0
+    })
+        saldoAnterior = (cliente.saldo_p - saldoAnterior).toFixed(2);
+        tbody.innerHTML += `<tr><td></td><td></td><td></td><td></td><td>Saldo Anterior</td><td>${saldoAnterior}</td></tr>`
         listaAux.forEach(venta => {
+            let haber = 0;
+            let debe = 0
+            haber = (venta.tipo_comp === "Presupuesto") ? (parseFloat(venta.precioFinal)) : 0;
+            debe = (venta.tipo_comp === "Recibos") ? (parseFloat(venta.precioFinal)) : 0;
+            let saldito = parseFloat(saldoAnterior) + haber - debe;
+            saldoAnterior = parseFloat(saldoAnterior) + haber - debe;
             const fecha = new Date(venta.fecha);
             const dia = fecha.getDate();
             const mes = fecha.getMonth() + 1;
@@ -105,9 +135,9 @@ function listarVentas(ventas,situacion) {
                     <td>${dia}/${mes}/${anio}</td>
                     <td>${venta.tipo_comp}</td>
                     <td>${venta.nro_comp}</td>
-                    <td></td>
-                    <td></td>
-                    <td>${(venta.precioFinal-parseFloat(venta.abonado)).toFixed(2)}</td>
+                    <td>${(haber === 0.00) ?  "" : haber.toFixed(2)}</td>
+                    <td>${(debe === 0.00) ? "" : debe.toFixed(2)}</td>
+                    <td>${(saldito).toFixed(2)}</td>
                 </tr>
             `
 
@@ -116,8 +146,11 @@ function listarVentas(ventas,situacion) {
 }
 
 imprimir.addEventListener('click',e=>{
-    const ocultar = document.querySelector('.buscador')
+
+    volver.classList.add('disable')
     ocultar.classList.add('disable')
+    header.classList.add('m-0')
+    header.classList.add('p-0')
     window.print()
-    history.go(-1)
+    //history.go(-1)
 })

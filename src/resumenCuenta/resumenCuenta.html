@@ -9,16 +9,33 @@
 </head>
 <body class="seccionResumeCuenta">
     <header>
-        <div class="buscador">
-            <label for="buscador">Buscar Cliente</label>
-            <input type="text" autofocus id="buscador" name="buscador">
+        <div class="seccion-buscador">
+            <div class="fechas">
+                <div class="divFecha">
+                    <label for="Desde">Desde</label>
+                    <input type="date" name="desde" id="desde" autofocus>
+                </div>
+                <div class="divFecha">
+                    <label for="hasta">Hasta</label>
+                    <input type="date" name=hasta id=hasta>
+                </div>
+            </div>
+            <div class="buscador">
+                <label for="buscador">Buscar Cliente</label>
+                <input type="text"  id="buscador" name="buscador">
+            </div>
+
 
             <button class="imprimir">Imprimir</button>
         </div>
-        <img src="" alt="">
-        <h1>Resumen De Cuenta Corriente</h1>
+        <div class="imagen">
+            <img src="../imagenes/Logo.jpeg" alt="Electro Avenida">
+            <p>Av. 9 de Julio 3380 - Tel: 03456-421421 / 3456478657</p>
+            <h3>Resumen De Cuenta Corriente</h3>
+        </div>
+
         <div class="cliente">
-            Sr: <span class="nombre"></span>
+            <p>Sr: <span class="nombre"></span></p>
             <div class=informacionCliente>
                 <p class="direccion"></p>
                 <p class="telefono"></p>
@@ -30,12 +47,12 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Fecha</th>
-                        <th>Tipo Comprobante</th>
-                        <th>Nº Comprob</th>
-                        <th>Debe</th>
-                        <th>Haber</th>
-                        <th>Saldo</th>
+                        <td>Fecha</td>
+                        <td>Tipo Comprobante</td>
+                        <td>Nº Comprob</td>
+                        <td>Debe</td>
+                        <td>Haber</td>
+                        <td>Saldo</td>
                     </tr>
                 </thead>
                 <tbody class="tbody">
@@ -52,6 +69,10 @@
             <p>Este Resumen debe ser cancenlado antes del dia 10, de lo contrario los precios seran actualizados al dia de efectivo el pago</p>
         </div>
     </main>
+    <div class="volver">
+        <a href="../index.html">Volver</a>
+    </div>
+
 </body>
 <script src="./resumenCuenta.js"></script>
 </html>

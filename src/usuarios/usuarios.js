@@ -7,13 +7,15 @@ ipcRenderer.on('acceso',(e,args)=>{
 const nombre = document.querySelector('#nombre')
 const codigo = document.querySelector('#codigo')
 const acceso = document.querySelector('#acceso')
+const empresa = document.querySelector('#empresa')
 const enviar = document.querySelector('#enviar')
 
 enviar.addEventListener('click', e =>{
     const Usuario = {
         _id: codigo.value,
         nombre: nombre.value,
-        acceso: acceso.value
+        acceso: acceso.value,
+        empresa:empresa.value
     }
     ipcRenderer.send('agregarUsuario',Usuario)
     location.reload()
@@ -48,6 +50,7 @@ const ponerValoresInputs = (id)=>{
             nombre.value = usuario.nombre
             codigo.value = usuario._id
             acceso.value = usuario.acceso
+            empresa.value = usuario.empresa
         }
     })
 }
@@ -57,7 +60,8 @@ guardar.addEventListener('click',e=>{
     const nuevoUsuario = {
         nombre:nombre.value,
         _id:codigo.value,
-        acceso:acceso.value
+        acceso:acceso.value,
+        empresa:empresa.value
     }
     
     ipcRenderer.invoke('modificarUsuario',nuevoUsuario)

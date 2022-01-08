@@ -11,6 +11,7 @@ function getParameterByName(name) {
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
 let vendedor = getParameterByName('vendedor')
+let empresa = getParameterByName('empresa')
 const { ipcRenderer, Main } = require("electron");
 const { CLIENT_RENEG_LIMIT } = require('tls');
 const usuario = document.querySelector(".usuario")
@@ -36,6 +37,8 @@ const observaciones = document.querySelector('#observaciones')
 const codigo = document.querySelector('#codigo')
 const tiposVentas = document.querySelectorAll('input[name="tipoVenta"]')
 const borrarProducto = document.querySelector('.borrarProducto')
+const inputEmpresa = document.querySelector('#empresa')
+inputEmpresa.value = empresa;
 
 let situacion = "blanco"//para teclas alt y F9
 let Numeros = [];
@@ -448,7 +451,6 @@ const tamanioVentas = async()=>{
 function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
     let numero
     let tipoFactura
-    console.log(comprobante)
     let [n1,n2] = comprobante.split('-')
     if (comprobante.split('-').length === 2) {
     n2 = parseFloat(n2)+1
@@ -505,6 +507,7 @@ presupuesto.addEventListener('click',async (e)=>{
     venta.tipo_comp = tipoVenta
     venta.tipo_pago = tipopago(tipoPago)
     venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.Cod_comp,venta.tipo_pago);
+    venta.empresa = inputEmpresa.value;
     venta.pagado = verSiPagoONo(venta.tipo_pago);//Ejecutamos para ver si la venta se pago o no
     if (!valorizado.checked && venta.tipo_pago === "CC") {
        venta.precioFinal = "0.1" 
@@ -526,7 +529,7 @@ presupuesto.addEventListener('click',async (e)=>{
             ipcRenderer.send('imprimir-venta',[venta,cliente,false,1])
         }
     }
-    location.reload()
+    //  location.reload()
 })
 
 //Aca mandamos la venta con tikect Factura
@@ -548,6 +551,7 @@ ticketFactura.addEventListener('click',async (e) =>{
      venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
      venta.comprob = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp);
      venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,cliente._id);
+     venta.empresa = inputEmpresa.value;
     for(let producto of venta.productos){
         sacarStock(producto.cantidad,producto.objeto)
         await movimientoProducto(producto.cantidad,producto.objeto)
@@ -643,10 +647,10 @@ async function generarQR(texto) {
  //lo usamos para borrar un producto de la tabla
 borrarProducto.addEventListener('click',e=>{
     if (yaSeleccionado) {
-        console.log(yaSeleccionado.id)
-        console.log(listaProductos)
+
+
         producto = listaProductos.find(e=>e.objeto.identificadorTabla === yaSeleccionado.id);
-        console.log(producto)
+
         total.value = (parseFloat(total.value)-(parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta))).toFixed(2)
         Preciofinal = (Preciofinal - (parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)).toFixed(2)) 
         listaProductos.forEach(e=>{
@@ -655,7 +659,7 @@ borrarProducto.addEventListener('click',e=>{
             }
         })
         const a = yaSeleccionado
-        console.log(a);
+
         a.parentNode.removeChild(a)
     }
 })
@@ -666,7 +670,7 @@ cancelar.addEventListener('click',async e=>{
     e.preventDefault()
     if (listaProductos.length !== 0) {
         const ventaCancelada = {}
-        console.log(listaProductos)
+
         if (cliente._id) {
             ventaCancelada.cliente = cliente._id
         }
@@ -808,7 +812,7 @@ const imprimirTikectFactura = async(venta,cliente)=>{
           Descuento:(parseFloat(venta.descuento)),
           Tipo_pago: tipo_pago,
           Vendedor:venta.vendedor,
-          Empresa: "ELECTRO AVENIDA"
+          Empresa: venta.empresa
         },
     ];
     ipcRenderer.send('fiscal',{fieldDescriptors,records})
