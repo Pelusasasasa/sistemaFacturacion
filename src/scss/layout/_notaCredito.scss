@@ -67,7 +67,6 @@
                         background-color: #ffdfdf;
                     }
                     td{
-                        font-size: 2rem;
                         border: .1rem solid black;
                     }
                 }
@@ -99,12 +98,14 @@
             padding-bottom: 1rem;
 
             button{
+                background-color: lightgreen;
                 border: none;
-                border-radius: 7.5rem;
-                padding: 1.5rem;
                 &:hover{
                     transform: scale(1.2);
                     cursor: pointer;
+                }
+                p{
+                    margin: 0;
                 }
             }
         }

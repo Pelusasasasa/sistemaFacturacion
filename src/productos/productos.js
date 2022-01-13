@@ -10,7 +10,6 @@ function getParameterByName(name) {
 }
 
 const acceso = getParameterByName('acceso')
-console.log(acceso)
 
 const resultado = document.querySelector('#resultado');
 const select = document.querySelector('#seleccion');
@@ -66,13 +65,13 @@ function recorrerConFlechas(e) {
 }
 
 function filtrar(){
-    resultado.innerHTML = '';
     //obtenemos lo que se escribe en el input
     texto = buscarProducto.value.toLowerCase();
     ipcRenderer.send('get-productos',[texto,seleccion]);
 }
 
 ipcRenderer.on('get-productos', (e,args) =>{
+    resultado.innerHTML = '';
     const productos = JSON.parse(args);
     for(let producto of productos){
             resultado.innerHTML += `
@@ -115,12 +114,19 @@ function mostrarImagen(id) {
     <img class="imagenProducto" src=../Fotos/${id}.jpg>`
 }
 
+ipcRenderer.once('Historial',async(e,args)=>{
+    const [textoA,seleccionA] = JSON.parse(args)
+    buscarProducto.value = await textoA;
+    select.value = await seleccionA;
+    filtrar()
+})
+
 
 //modificar el producto
 const modificar = document.querySelector('.modificar')
 modificar.addEventListener('click',e=>{
     if(seleccionado){
-        ipcRenderer.send('abrir-ventana-modificar-producto',[seleccionado.id,acceso])
+        ipcRenderer.send('abrir-ventana-modificar-producto',[seleccionado.id,acceso,texto,seleccion])
     }else{
             alert('Producto no seleccionado')
     }
@@ -171,7 +177,6 @@ eliminar.addEventListener('click',e=>{
 
 })
  buscarProducto.addEventListener('keyup',filtrar);
-
 filtrar();
 
 

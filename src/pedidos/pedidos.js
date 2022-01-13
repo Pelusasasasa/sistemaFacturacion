@@ -14,6 +14,8 @@ const vendedor = getParameterByName('vendedor')
 const nombre = document.querySelector("#nombre");
 const numero = document.querySelector("#telefono");
 const codigo = document.querySelector("#codigo");
+const cantidad = document.querySelector('#cantidad');
+const descripcion = document.querySelector('#descripcion')
 const Pedido = {}
 
 
@@ -49,14 +51,16 @@ codigo.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         if (codigo.value === "") {
             ipcRenderer.send('abrir-ventana',"productos")
+        }else if(codigo.value === "9999"){
+            cantidad.classList.remove('none')
+            descripcion.classList.remove('none')
         }else{
-            
             ipcRenderer.send('get-producto',codigo.value)
             ipcRenderer.once('get-producto',(e,args)=>{
                 if (JSON.parse(args) !== "") {
                     dialogs.prompt('Cantidad',async valor=>{
                         await mostrarVentas(JSON.parse(args),valor)
-                        codigo.value=""
+                        codigo.value="";
                         codigo.focus()
                     })
                 }else{
@@ -66,6 +70,17 @@ codigo.addEventListener('keypress', (e) => {
         }
 
     }
+})
+
+cantidad.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        const producto = {
+            _id: "9999",
+            descripcion:descripcion.value,
+        }
+        mostrarVentas(producto,cantidad.value)
+    }
+    
 })
 
 ipcRenderer.on('mando-el-producto',(e,args) => {

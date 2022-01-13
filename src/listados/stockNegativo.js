@@ -25,6 +25,15 @@ const promesaStockNegativo = new Promise((resolve,reject)=>{
 })
 
 promesaStockNegativo.then((productos)=>{
+    productos.sort((a,b)=>{
+        if (a.descripcion > b.descripcion) {
+            return 1
+        }else if(a.descripcion < b.descripcion){
+            return -1
+        }
+
+        return 0
+    })
     listarProductos(productos)
 })
 

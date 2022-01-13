@@ -18,11 +18,36 @@
       background-color: white;
     }
     .cliente {
+      div{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        input{
+          margin-right: 2rem;
+        }
+      }
       input {
         padding: 1.5rem;
       }
       display: flex;
       justify-content: space-around;
+    }
+
+    fieldset{
+      width: 100%;
+
+      .contenedorPedidos{
+        display: flex;
+        input{
+          margin-right: 10rem;
+        }
+        #descripcion{
+          width: 50rem;
+        }
+        #precio{
+          width: 5rem;
+        }
+      }
     }
   }
 

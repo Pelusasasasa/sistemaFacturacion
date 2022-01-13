@@ -79,9 +79,8 @@ function validacionUsuario(texto) {
             if(vendedor !== undefined){ 
                 window.location = `${texto}?vendedor=${vendedor}&acceso=${acceso}&empresa=${empresa}`
             }else{
-                alert("Contraseña incorrecta").then(()=>{
-                    validacionUsuario(texto)
-                })
+                alert("Contraseña incorrecta")
+                validacionUsuario(texto)
             }
         }
        })

@@ -124,7 +124,6 @@ modificar.addEventListener('click',e=>{
     descripcion.removeAttribute("disabled") 
     provedor.removeAttribute("disabled")
     marca.removeAttribute("disabled") 
-    stock.removeAttribute("disabled") 
     tasaIva.removeAttribute("disabled") 
     costoPesos.removeAttribute("disabled") 
     costoDolares.removeAttribute("disabled") 

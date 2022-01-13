@@ -1,4 +1,4 @@
-const { ipcRenderer } = require("electron");
+const { ipcRenderer, ipcMain } = require("electron");
 
 const nombre = document.querySelector('.nombre')
 const direccion = document.querySelector('.direccion')
@@ -30,11 +30,34 @@ let listaVentas = [];
 let saldo = "saldo";
 let cliente = {};
 
+
+//Imprimir todos
+
+// ipcRenderer.on('datosAImprimir',async(e,args)=>{
+//     cliente = JSON.parse(args);
+//     nombre.innerHTML = cliente.cliente;
+//     direccion.innerHTML = `${cliente.direccion}-${cliente.localidad}`;
+//     telefono.innerHTML = cliente.telefono;
+//     await ipcRenderer.invoke('traerVentasClienteEntreFechas',[cliente._id,desde.value,hasta.value]).then((args)=>{
+//         nuevaLista = []
+//         listaVentas = JSON.parse(args)
+//     })
+
+//     await listarVentas(listaVentas,situacion);
+//     // volver.classList.add('disable');
+//     // ocultar.classList.add('disable');
+//     // header.classList.add('m-0');
+//     // header.classList.add('p-0');
+//     // window.print();
+// })
+
 buscador.addEventListener('keypress',e=>{
     if (buscador.value === "" && e.key === "Enter") {
-        ipcRenderer.send('abrir-ventana','clientes')
+        ipcRenderer.send('abrir-ventana-clientesConSaldo',situacion)
     }
 })
+
+
 
 document.addEventListener('keydown',(event) =>{
     if (event.key === "Alt") {
@@ -65,6 +88,8 @@ document.addEventListener('keydown',(event) =>{
 const ocultarNegro = ()=>{
     const body = document.querySelector('.seccionResumeCuenta')
     body.classList.remove('mostrarNegro')
+    ocultar.classList.remove('mostrarNegro')
+    volver.classList.remove('mostrarNegro')
 
 }
 
@@ -114,35 +139,58 @@ function listarVentas(ventas,situacion) {
     let saldoAnterior = 0
 
     listaAux.forEach(venta =>{
-        saldoAnterior += (venta.tipo_comp === "Presupuesto") ? venta.precioFinal - parseFloat(venta.abonado) : 0
+        if (situacion === "negro") {
+            saldoAnterior += (venta.tipo_comp === "Presupuesto") ? venta.precioFinal - parseFloat(venta.abonado) : 0    
+        }else{
+            saldoAnterior += (venta.tipo_comp === "Ticket Factura") ? venta.precioFinal - parseFloat(venta.abonado) : 0
+        }
+       
     })
+    if (situacion === "negro") {
         saldoAnterior = (cliente.saldo_p - saldoAnterior).toFixed(2);
+    }else{
+        saldoAnterior = (cliente.saldo - saldoAnterior).toFixed(2);
+    }
+    
+
         tbody.innerHTML += `<tr><td></td><td></td><td></td><td></td><td>Saldo Anterior</td><td>${saldoAnterior}</td></tr>`
         listaAux.forEach(venta => {
             let haber = 0;
             let debe = 0
-            haber = (venta.tipo_comp === "Presupuesto") ? (parseFloat(venta.precioFinal)) : 0;
-            debe = (venta.tipo_comp === "Recibos") ? (parseFloat(venta.precioFinal)) : 0;
-            let saldito = parseFloat(saldoAnterior) + haber - debe;
-            saldoAnterior = parseFloat(saldoAnterior) + haber - debe;
+            if (situacion === "negro") {
+                debe = (venta.tipo_comp === "Presupuesto") ? (parseFloat(venta.precioFinal)) : 0;
+                haber = (venta.tipo_comp === "Recibos") ? (parseFloat(venta.precioFinal)) : 0;
+            }else{
+                console.log(venta.tipo_comp)
+                debe = (venta.tipo_comp === "Ticket Factura") ? (parseFloat(venta.precioFinal)) : 0
+                haber =  (venta.tipo_comp === "Reciboss") ? (parseFloat(venta.precioFinal)) : 0
+            }
+
+            let saldito = parseFloat(saldoAnterior) - haber + debe;
+            saldoAnterior = parseFloat(saldoAnterior) - haber + debe;
             const fecha = new Date(venta.fecha);
             const dia = fecha.getDate();
             const mes = fecha.getMonth() + 1;
             const anio = fecha.getUTCFullYear();
+           
             
             tbody.innerHTML += `
                 <tr>
                     <td>${dia}/${mes}/${anio}</td>
                     <td>${venta.tipo_comp}</td>
                     <td>${venta.nro_comp}</td>
-                    <td>${(haber === 0.00) ?  "" : haber.toFixed(2)}</td>
-                    <td>${(debe === 0.00) ? "" : debe.toFixed(2)}</td>
+                    <td>${(debe === 0.00) ?  "" : debe.toFixed(2)}</td>
+                    <td>${(haber === 0.00) ? "" : haber.toFixed(2)}</td>
                     <td>${(saldito).toFixed(2)}</td>
                 </tr>
             `
 
         });
-        saldoActual.value = cliente[saldo]
+        if (cliente[saldo] === undefined) {
+            saldoActual.value === "0";
+        }else{
+            saldoActual.value = cliente[saldo];
+        }
 }
 
 imprimir.addEventListener('click',e=>{

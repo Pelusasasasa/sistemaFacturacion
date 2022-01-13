@@ -284,7 +284,7 @@ function inputCobrado(numero) {
 let texto =""
 
 //Vemos si la venta es cc, contando, presupuesto
-let tipoPago
+let tipoPago = "Ninguno"
 function verElTipoDeVenta(tipo) {
     tipo.forEach(e => {
         if (e.checked) {
@@ -498,38 +498,42 @@ const sacarIdentificadorTabla = (arreglo)=>{
 //Aca mandamos la venta en presupuesto
 const presupuesto = document.querySelector('.presupuesto')
 presupuesto.addEventListener('click',async (e)=>{
-    e.preventDefault() 
-    tipoVenta="Presupuesto"
-    venta._id = await tamanioVentas()
-    venta.descuento = (descuentoN.value);
-    venta.precioFinal = redondear(total.value)
+    e.preventDefault()
     verElTipoDeVenta(tiposVentas) //vemos si es contado,cuenta corriente o presupuesto en el input[radio]
-    venta.tipo_comp = tipoVenta
-    venta.tipo_pago = tipopago(tipoPago)
-    venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.Cod_comp,venta.tipo_pago);
-    venta.empresa = inputEmpresa.value;
-    venta.pagado = verSiPagoONo(venta.tipo_pago);//Ejecutamos para ver si la venta se pago o no
-    if (!valorizado.checked && venta.tipo_pago === "CC") {
-       venta.precioFinal = "0.1" 
-    }
-    sacarIdentificadorTabla(venta.productos);
-    if (venta.tipo_pago !== "PP") {
-        venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
-       for (let producto of venta.productos){
-            sacarStock(producto.cantidad,producto.objeto)
-            await movimientoProducto(producto.cantidad,producto.objeto)
-        }
-    }
-    actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-    ipcRenderer.send('nueva-venta',venta);
-    if (impresion.checked) {
-        if (venta.tipo_pago === "CC") {
-            ipcRenderer.send('imprimir-venta',[venta,cliente,true,2])
+    if (tipoPago === "Ninguno") {
+        alert("Seleccionar un modo de venta")
         }else{
-            ipcRenderer.send('imprimir-venta',[venta,cliente,false,1])
+        tipoVenta="Presupuesto"
+        venta._id = await tamanioVentas()
+        venta.descuento = (descuentoN.value);
+        venta.precioFinal = redondear(total.value)
+        venta.tipo_comp = tipoVenta
+        venta.tipo_pago = tipopago(tipoPago)
+        venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.Cod_comp,venta.tipo_pago);
+        venta.empresa = inputEmpresa.value;
+        venta.pagado = verSiPagoONo(venta.tipo_pago);//Ejecutamos para ver si la venta se pago o no
+        if (!valorizado.checked && venta.tipo_pago === "CC") {
+        venta.precioFinal = "0.1" 
         }
+        sacarIdentificadorTabla(venta.productos);
+        if (venta.tipo_pago !== "PP") {
+            venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
+        for (let producto of venta.productos){
+                sacarStock(producto.cantidad,producto.objeto)
+                await movimientoProducto(producto.cantidad,producto.objeto)
+            }
+        }
+        actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+        ipcRenderer.send('nueva-venta',venta);
+        if (impresion.checked) {
+            if (venta.tipo_pago === "CC") {
+                ipcRenderer.send('imprimir-venta',[venta,cliente,true,2])
+            }else{
+                ipcRenderer.send('imprimir-venta',[venta,cliente,false,1])
+            }
+        }
+        location.reload()
     }
-    //  location.reload()
 })
 
 //Aca mandamos la venta con tikect Factura
@@ -537,38 +541,52 @@ const ticketFactura = document.querySelector('.ticketFactura')
 ticketFactura.addEventListener('click',async (e) =>{
     e.preventDefault()
      tipoVenta = "Ticket Factura"
-     venta._id = await tamanioVentas();
-     venta.observacion = observaciones.value
      verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
-     venta.descuento = (descuentoN.value);
-     venta.precioFinal = redondear(total.value);
-     venta.tipo_comp = tipoVenta;
-     numeroComprobante(tipoVenta);
-     venta.cod_comp = verCodComprobante(tipoVenta)
-     venta.nro_comp = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp)
-     venta.pagado = verSiPagoONo(venta.tipo_pago)
-     venta.tipo_pago = tipopago(tipoPago)   
-     venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
-     venta.comprob = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp);
-     venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,cliente._id);
-     venta.empresa = inputEmpresa.value;
-    for(let producto of venta.productos){
-        sacarStock(producto.cantidad,producto.objeto)
-        await movimientoProducto(producto.cantidad,producto.objeto)
-    };
-    actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-    
-    //subirAAfip(venta)
-    
-    ipcRenderer.send('nueva-venta',venta);
-    imprimirTikectFactura(venta,cliente)
-    imprimirItem(venta,cliente)
+     if (tipoPago === "Ninguno") {
+        alert("Seleccionar un modo de venta")
+        }else{
+        venta._id = await tamanioVentas();
+        venta.observacion = observaciones.value
+
+        venta.descuento = (descuentoN.value);
+        venta.precioFinal = redondear(total.value);
+        venta.tipo_comp = tipoVenta;
+        numeroComprobante(tipoVenta);
+        venta.cod_comp = verCodComprobante(tipoVenta)
+        venta.nro_comp = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp)
+        venta.pagado = verSiPagoONo(venta.tipo_pago)
+        venta.tipo_pago = tipopago(tipoPago)   
+        venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
+        venta.comprob = venta.nro_comp;
+
+        if (venta.precioFinal >=10000) {
+            alert("Factura mayor a 10000, poner datos cliente")
+        }else{
+        venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente);
+        venta.empresa = inputEmpresa.value;
+        for(let producto of venta.productos){
+            sacarStock(producto.cantidad,producto.objeto)
+            await movimientoProducto(producto.cantidad,producto.objeto)
+        };
+        actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+        
+        //subirAAfip(venta)
+        
+        await ipcRenderer.send('nueva-venta',venta);
+        //imprimirTikectFactura(venta,cliente)
+        //imprimirItem(venta,cliente)
 
 
-    if (borraNegro) {
-        borrarCuentaCorriente(ventaDeCtaCte)
-    };
-    borraNegro ? window.close() : location.reload();
+        if (borraNegro) {
+            ipcRenderer.on('clienteModificado',(e,args)=>{
+                borrarCuentaCorriente(ventaDeCtaCte)
+            })
+
+        };
+
+            borraNegro ? window.close() : location.reload();
+        }
+    }
  })
 
 
@@ -736,7 +754,6 @@ function ponerInputsClientes(cliente) {
 
 ipcRenderer.once('venta',(e,args)=>{
     borraNegro = true;
-
     const [usuario,numero] = JSON.parse(args)
     ventaDeCtaCte = numero
     textoUsuario.innerHTML = usuario
@@ -753,8 +770,9 @@ ipcRenderer.once('venta',(e,args)=>{
     })
 })
 
-const borrarCuentaCorriente = (numero)=>{
-    ipcRenderer.send('borrarVentaACliente',[venta.cliente,numero])
+const borrarCuentaCorriente = async (numero)=>{
+    await ipcRenderer.send('borrarVentaACliente',[venta.cliente,numero])
+    //ipcRenderer.send('eliminar-venta',numero)
 }   
 
 const {DBFFile} = require ('dbffile')

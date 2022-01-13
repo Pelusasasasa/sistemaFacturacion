@@ -1,14 +1,20 @@
 const a = require('./config')
+const fs = require('fs')
 let URL
 if (a === 1) {
     URL = "http://179.62.24.12/api/";
 }else if(a === 2){
-    URL = "http://192.168.0.124:4000/api/";
+    //URL = "http://192.168.0.124:4000/api/";
+    URL = "http://192.168.1.101:4000/api/";
+}
+let conexion;
+let tipoConexion;
+if (a === 2) {
+    conexion = "Privada";
+}else{
+    conexion = "Publica"
 }
 
-
-// const URL = "http://192.168.1.108:4000/api/";
-//const URL = "http://179.62.24.12/api/";
 
 const axios = require("axios")
 const path = require('path');
@@ -24,7 +30,6 @@ if (process.env.NODE_ENV !== 'production') {
     })
 };
 global.nuevaVentana = null;
-global.nuevaVentana2 = null;
 global.ventanaPrincipal = null
 function crearVentanaPrincipal() {
     ventanaPrincipal = new BrowserWindow({  
@@ -255,6 +260,7 @@ ipcMain.on('sumarSaldoNegro', async (e, args) => {
 
 ipcMain.on('sumarSaldo',async (e,args)=>{
     const [precio,id] = args;
+
     let cliente = await axios.get(`${URL}clientes/id/${id}`)
     cliente = cliente.data;
     let saldo = (parseFloat(precio)+parseFloat(cliente.saldo)).toFixed(2)
@@ -264,12 +270,16 @@ ipcMain.on('sumarSaldo',async (e,args)=>{
 
 ipcMain.on('borrarVentaACliente',async (e,args)=>{
     const [id,numero] = args;
+
     let cliente = await axios.get(`${URL}clientes/id/${id}`)
     cliente = cliente.data;
     let venta = await axios.get(`${URL}ventas/${numero}`)
     venta = venta.data[0]
+
     cliente.saldo_p = (parseFloat(cliente.saldo_p)-venta.precioFinal).toFixed(2);
+
     cliente.listaVentas = cliente.listaVentas.filter(num=>(numero!== num))
+
     await axios.put(`${URL}clientes/${id}`,cliente)
     await axios.delete(`${URL}ventas/${numero}`)
 })
@@ -281,6 +291,14 @@ ipcMain.on('traerSaldo',async (e,args)=>{
      e.reply('traerSaldo',JSON.stringify(clientes))
 })
 
+
+ipcMain.on('abrir-ventana-clientesConSaldo',async(e,args)=>{
+    abrirVentana("abrir-ventana-clientesConSaldo");
+    nuevaVentana.on('ready-to-show',()=>{
+        nuevaVentana.webContents.send('situacion',JSON.stringify(args))
+    })
+})
+
 //FIN CLIENTES
 
 //INICIO VENTAS
@@ -289,14 +307,13 @@ ipcMain.on('traerSaldo',async (e,args)=>{
 ipcMain.handle('tamanioVentas',async(e,args)=>{
     let tamanio = await axios.get(`${URL}ventas`)
     tamanio = tamanio.data;
-    return(JSON.stringify(tamanio))
+    return(JSON.stringify(parseFloat(tamanio) + 1))
 })
 
 //Obtenemos la venta
 ipcMain.on('nueva-venta', async (e, args) => {
     let nuevaVenta = await axios.post(`${URL}ventas`,args)
     nuevaVenta = nuevaVenta.data
-    console.log(nuevaVenta)
     if (nuevaVenta.tipo_pago !== "PP") {    
         const _id = nuevaVenta.cliente;
         let cliente = await axios.get(`${URL}clientes/id/${_id}`);
@@ -304,7 +321,9 @@ ipcMain.on('nueva-venta', async (e, args) => {
         let listaVentas = cliente.listaVentas;
         listaVentas[0] === "" ? (listaVentas[0] = nuevaVenta.nro_comp) : (listaVentas.push(nuevaVenta.nro_comp));
         cliente.listaVentas = listaVentas;
-        await axios.put(`${URL}clientes/${_id}`,cliente);
+        let clienteModificado = await axios.put(`${URL}clientes/${_id}`,cliente);
+        clienteModificado = clienteModificado.data;
+        e.reply('clienteModificado',clienteModificado)
     }
 })
 
@@ -410,18 +429,18 @@ ipcMain.handle('traerVentasClienteEntreFechas',async(e,args)=>{
 
 
 //Mandamos la modificacion de la venta
-ipcMain.on('ventaModificada',async (e,[args,id,saldo])=>{
+ipcMain.on('ventaModificada',async (e,[args,id])=>{
      let venta = await axios.get(`${URL}ventas/${id}`)
      venta = venta.data[0]
+     let saldoABorrar = venta.precioFinal
      venta.precioFinal = args.precioFinal;
      venta.productos = args.productos;
      await axios.put(`${URL}ventas/${venta._id}`,venta)
     let cliente = await axios.get(`${URL}clientes/id/${args.cliente}`)
-    cliente = cliente.data
+    cliente = cliente.data;
     let total = 0
     total = args.precioFinal
-   
-    total = (parseFloat(total) - parseFloat(saldo) + parseFloat(cliente.saldo_p)).toFixed(2)
+    total = (parseFloat(total) - parseFloat(saldoABorrar) + parseFloat(cliente.saldo_p)).toFixed(2)
     cliente.saldo_p = total
 
      await axios.put(`${URL}clientes/${args.cliente}`,cliente)
@@ -433,6 +452,10 @@ ipcMain.on('ventaModificada',async (e,[args,id,saldo])=>{
         nuevaVentana.on('ready-to-show',async ()=>{
             nuevaVentana.webContents.send('venta',JSON.stringify([vendedor,numeroVenta]))
         })
+    })
+
+
+    ipcMain.on('eliminar-venta',async(e,id)=>{
     })
 //FIN VENTAS
 
@@ -578,7 +601,7 @@ ipcMain.on('eliminarPedido', async (e, id) => {
 
 //Abrir ventana para modificar un producto
 ipcMain.on('abrir-ventana-modificar-producto',  (e, args) => {
-    const [id,acceso] = args
+    const [id,acceso,texto,seleccion] = args
     abrirVentana('abrir-ventana-modificar-producto')
     nuevaVentana.on('ready-to-show',async ()=>{
         let Producto = await axios.get(`${URL}productos/${id}`)
@@ -586,8 +609,12 @@ ipcMain.on('abrir-ventana-modificar-producto',  (e, args) => {
     nuevaVentana.webContents.send('datos-productos', JSON.stringify(Producto))
     nuevaVentana.webContents.send('acceso', JSON.stringify(acceso))
     })
-    nuevaVentana.on('close', ()=> {
-        ventanaPrincipal.reload()
+    nuevaVentana.on('close', async()=> {
+        await ventanaPrincipal.reload()
+        ventanaPrincipal.once('ready-to-show',async ()=>{
+        ventanaPrincipal.webContents.send("Historial",JSON.stringify([texto,seleccion]))
+        })
+        
         nuevaVentana = null
     })
 })
@@ -637,13 +664,6 @@ ipcMain.on('abrir-ventana-info-movimiento-producto',async (e,args)=>{
 })
 
 //FIN MOVIMIENTO DE PRODUCTOS
-
-
-
-
-
-
-
 
 //INICIO CANCELADOS
 
@@ -698,12 +718,12 @@ const templateMenu = [
             }
         ]
     },
-    {
-        label: "Emitir Nota De Credito",
-        click(){
-            abrirVentana("EmitirNotaCredito")
-        }
-    },
+    // {
+    //     label: "Emitir Nota De Credito",
+    //     click(){
+    //         abrirVentana("EmitirNotaCredito")
+    //     }
+    // },
     {
         label: "Datos",
         submenu: [
@@ -716,11 +736,6 @@ const templateMenu = [
                             abrirVentana("listadoSaldo")
                         }
                     },
-                    {
-                        label:"Resumen de Cuent",
-                        click(){
-                        }
-                    }
                 ]
             },
             {
@@ -801,11 +816,37 @@ const templateMenu = [
         ]
     },
     {
-        label: "Conexion",
+        label: `${conexion}`,
         click(){
-            validarUsuario("Conexion")
+            if (a === 2) {
+                tipoConexion = `a=1;module.exports = a`;
+                fs.writeFile(__dirname + '/config.js',tipoConexion,()=>{
+                    app.relaunch();
+                    app.exit(0);
+                })
+            }else{
+                tipoConexion = `a=2;module.exports = a`;
+                fs.writeFile(__dirname + '/config.js',tipoConexion,()=>{
+                    app.relaunch();
+                    app.exit(0);
+                })
+            }
         }
-    }
+    }//,{
+    //     label: "Resumenes de cuentas",
+    //     async click(){
+    //         let clientes = await axios.get(`${URL}clientes`)
+    //         clientes = clientes.data
+    //         clientes.forEach(async cliente =>{
+    //             abrirVentana("resumenCuenta")
+    //             console.log(cliente)
+    //             await nuevaVentana.on('ready-to-show',()=>{
+    //                 nuevaVentana.webContents.send('datosAImprimir',JSON.stringify(cliente))
+    //             })
+    //             // await imprimir(options,args)
+    //         })
+    //     }
+    // }
 ]
 
 //AbrirVentanaParaBuscarUnCliente
@@ -816,7 +857,47 @@ ipcMain.on('abrir-ventana', (e, args) => {
 
 //Para abrir todas las ventanas
 function abrirVentana(texto,numeroVenta){
-    if(texto==="movProducto"){
+    if (texto === "resumenCuenta") {
+        nuevaVentana = new BrowserWindow({
+            parent:ventanaPrincipal,
+            width: 800,
+            height: 500,
+            parent:ventanaPrincipal,
+            webPreferences: {
+                contextIsolation: false,
+                nodeIntegration: true
+            }
+        })
+        nuevaVentana.loadURL(url.format({
+            pathname: path.join(__dirname, `resumenCuenta/resumenCuenta.html`),
+            protocol: 'file',
+            slashes: true
+        }));
+        nuevaVentana.setMenuBarVisibility(false)
+        nuevaVentana.on('close', function (event) {
+            nuevaVentana = null
+        })
+    }else if(texto === "abrir-ventana-clientesConSaldo"){
+        nuevaVentana = new BrowserWindow({
+            width: 1200,
+            height: 500,
+            parent:ventanaPrincipal,
+            webPreferences: {
+                contextIsolation: false,
+                nodeIntegration: true
+            }
+        })
+        nuevaVentana.loadURL(url.format({
+
+            pathname: path.join(__dirname, `resumenCuenta/clientes.html`),
+            protocol: 'file',
+            slashes: true
+        }));
+        nuevaVentana.setMenuBarVisibility(false)
+        nuevaVentana.on('close', function (event) {
+            nuevaVentana = null
+        })
+    }else if(texto==="movProducto"){
         nuevaVentana = new BrowserWindow({
             width: 800,
             height: 500,

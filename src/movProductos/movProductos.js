@@ -20,6 +20,12 @@ ipcRenderer.invoke('movimiento-producto-abrir').then((args)=>{
     vendedor = usuario
 })
 
+cantidad.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        aceptar.focus()
+    }
+})
+
 ipcRenderer.invoke("traerTamanioMovProductos").then((tamanio)=>{
     movProducto._id = (tamanio + 1).toFixed(0)
 })
@@ -61,6 +67,8 @@ aceptar.addEventListener('click', (e) => {
       ipcRenderer.send('cambiarStock',[movProducto.codProd,movProducto.stock]);
       window.close()
 })
+
+
 
 volver.addEventListener('click',e=>{
     window.close()

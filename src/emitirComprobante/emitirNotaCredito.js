@@ -80,7 +80,6 @@ ipcRenderer.on('mando-el-cliente',(e,args)=>{
     dnicuit.value = cliente.cuit;
     telefono.value = cliente.telefono;
     conIva.value = iva;
-    venta.cliente = cliente._id;
     if (cliente.condicion==="M") {
         alert(`${cliente.observacion}`)
     }
@@ -192,8 +191,8 @@ descuento.addEventListener('blur',e=>{
 factura.addEventListener('click',async e=>{
     e.preventDefault();
     const venta = {};
+    venta.cliente = codigoC.value;
     venta._id = await tamanioVentas();
-    venta.cliente = cliente._id;
     venta.tipo_comp = "Nota Credito";
     venta.observaciones = observaciones.value;
     venta.descuento = descuentoN.value;
@@ -209,11 +208,16 @@ factura.addEventListener('click',async e=>{
     venta.abonado = "0";
     venta.descuento = parseFloat(descuentoN.value);
     venta.precioFinal = parseFloat(total.value);
-    venta.vendedor = vendedo
+    venta.vendedor = vendedor
+    if (parseFloat(precioFinal)>10000) {
+        alert("Factura mayor a 10000, poner valores clientes")
+    }else{
     actualizarNroCom(venta.nro_comp,venta.cod_comp)
     ipcRenderer.send('nueva-venta',venta)
     imprimirTikectFactura(venta,cliente)
     imprimirItem(venta,cliente)
+    //location.reload();
+    }
 })
 
 

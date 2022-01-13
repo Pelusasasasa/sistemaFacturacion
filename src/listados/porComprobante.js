@@ -2,19 +2,25 @@ const { ipcRenderer } = require("electron");
 
 const hoy = new Date();
 let dia = hoy.getDate()
+
 if (dia<10) {
     dia = `0${dia}`
 }
-let mes = hoy.getMonth()
+let mes = hoy.getMonth() + 1
+console.log(mes)
+
+mes = (mes === 0) ? 1 : mes
+
 if (mes<10) {
     mes = `0${mes}`
 }
-const fechaDeHoy = (`${hoy.getFullYear()}-${mes + 1}-${dia}`)
+const fechaDeHoy = (`${hoy.getFullYear()}-${mes}-${dia}`)
 const buscar = document.querySelector('.buscar');
 const contado = document.querySelector('.contado');
 const cteCorriente = document.querySelector('.cteCorriente');
 const desde =  document.querySelector('#desde')
 const hasta =  document.querySelector('#hasta')
+console.log(fechaDeHoy)
 desde.value = fechaDeHoy
 hasta.value = fechaDeHoy
 const tbody =  document.querySelector('.tbody')

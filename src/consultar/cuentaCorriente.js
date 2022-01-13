@@ -7,6 +7,7 @@ const saldo = document.querySelector('#saldo')
 const listar = document.querySelector('.listar')
 const compensada = document.querySelector('.compensada')
 const historica = document.querySelector('.historica')
+const actualizar = document.querySelector('.actualizar')
 
 let nuevaLista=[]
 let lista=[]
@@ -60,6 +61,7 @@ const ocultarNegro = ()=>{
     saldo_p.classList.add('none')
     botonFacturar.classList.add('none')
     body.classList.remove('mostrarNegro')
+    actualizar.classList.add('none')
 }
 
 const mostrarNegro = ()=>{
@@ -71,6 +73,7 @@ const mostrarNegro = ()=>{
     botonFacturar.classList.remove('none')
     saldo_p.classList.remove('none')
     body.classList.add('mostrarNegro')
+    actualizar.classList.remove('none')
 }
 
 cliente.addEventListener('keypress', e =>{
@@ -166,7 +169,7 @@ function mostrarDetalles(lista,vendedor) {
 let ventaAModificar
 let total = 0
 let saldoABorrar = 0
-const actualizar = document.querySelector('.actualizar')
+
 
     actualizar.addEventListener('click',e=>{
         if (seleccionado) {
@@ -186,7 +189,7 @@ const actualizar = document.querySelector('.actualizar')
                     total=sacarTotal(ventaAModificar.productos)
                     ventaAModificar.precioFinal = total.toFixed(2)
             }
-            ipcRenderer.send('ventaModificada',[ventaAModificar,ventaAModificar.nro_comp,saldoABorrar])
+            ipcRenderer.send('ventaModificada',[ventaAModificar,ventaAModificar.nro_comp,situacion])
             location.reload()
             })
         })
@@ -210,7 +213,7 @@ botonFacturar.addEventListener('click',() =>{
     if (seleccionado) {
         dialogs.promptPassword("Contraseña").then(value=>{
         ipcRenderer.invoke('traerUsuario',value).then((args)=>{
-            if (args) {
+            if (JSON.parse(args) !== "") {
                 ipcRenderer.send('abrir-ventana-emitir-comprobante',[JSON.parse(args).nombre,seleccionado.id])   
             }
         })
