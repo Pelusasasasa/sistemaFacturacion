@@ -19,10 +19,12 @@ const resumenCuenta = document.querySelector('.resumenCuenta')
 const notaCredito = document.querySelector('.notaCredito')
 const productos = document.querySelector('.productos')
 
-
+const flecha = document.querySelector('.flecha')
 listaPedidos.addEventListener('click', (e) =>{
     const handlePedidos = document.querySelector('.handlePedidos')
     handlePedidos.classList.toggle('disable')
+    flecha.classList.toggle('abajo')
+    flecha.classList.toggle('arriba')
 })
 
 

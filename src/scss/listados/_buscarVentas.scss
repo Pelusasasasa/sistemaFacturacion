@@ -41,6 +41,7 @@
 
   .listar {
     table {
+      border-collapse: collapse;
       .titulo{
         font-weight: bold;
       }
@@ -55,6 +56,15 @@
         font-weight: bold;
       }
       .tbody {
+        tr:not(.total):not(.titulo){
+          td{
+            white-space: nowrap;
+            resize: both;
+            text-overflow: clip;
+            padding: 0;
+            border: .1rem solid black
+          }
+        }
         h2 {
           margin: 0 auto;
         }

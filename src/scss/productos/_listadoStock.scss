@@ -1,13 +1,29 @@
 .listadoStock {
   margin: 2rem auto;
   .buscador {
+    padding-top: 2rem;
+    background-color: lightgreen;
     display: flex;
     justify-content: space-evenly;
+    input{
+      width: 40%;
+    }
   }
   .botones {
-    margin: 2rem auto;
+    background-color: lightgreen;
+    padding: 2rem 0;
     display: flex;
     justify-content: space-around;
+    button{
+      border: none;
+      border-radius: 7.5rem;
+      padding: 1rem;
+
+      &:hover{
+        cursor: pointer;
+        transform: scale(1.2);
+      }
+    }
   }
 
   .listar {

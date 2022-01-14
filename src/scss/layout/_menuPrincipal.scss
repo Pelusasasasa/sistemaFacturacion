@@ -26,6 +26,11 @@
 }
 
 .listaPedidos {
+  p{
+    margin-right: .5rem;
+    display: inline;
+    font-size: 2rem;
+  }
   padding-top: 1rem;
   padding: 0;
   button {
@@ -67,4 +72,21 @@
       font-weight: normal;
     }
   }
+}
+
+.flecha{
+  display: inline-block;
+  width: 1rem;
+  height: 1rem;
+  margin-bottom: .45rem;
+  border-top: solid .5rem;
+  border-right: solid .5rem;
+}
+
+.flecha.abajo{
+  transform: rotate(135deg);
+}
+
+.flecha.arriba{
+  transform: rotate(315deg);
 }

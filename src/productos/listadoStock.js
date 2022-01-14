@@ -7,6 +7,25 @@ const desde = document.querySelector('#desde')
 const hasta = document.querySelector('#hasta')
 const listar = document.querySelector('.listar')
 let productos =[]
+
+
+desde.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        hasta.focus()
+    }else if((desde.value.length === 3 || desde.value.length === 7)&& e.key !== "-"){
+        desde.value = desde.value + "-";
+}
+})
+
+hasta.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        buscar.focus()
+    }else if((hasta.value.length === 3 || hasta.value.length === 7) && e.key !== "-"){
+        hasta.value = hasta.value + "-";
+}
+})
+
+
 buscar.addEventListener('click',e=>{
         ipcRenderer.send('traerProductosPorRango',[desde.value,hasta.value])
         ipcRenderer.on('traerProductosPorRango',(e,args)=>{
@@ -17,13 +36,13 @@ buscar.addEventListener('click',e=>{
 
     function listarProductos() {
         tbody.innerHTML = ""
-        productos.forEach(({_id,descripcion,cod_fabrica,precio_venta}) => {
+        productos.forEach(({_id,descripcion,cod_fabrica,stock}) => {
             tbody.innerHTML += `
                 <tr>
                 <td>${_id}</td>
                 <td>${descripcion}</td>
                 <td>${cod_fabrica}</td>
-                <td>${precio_venta}</td>
+                <td>${stock}</td>
                 </tr>
             `
         });

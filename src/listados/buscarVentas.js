@@ -15,11 +15,11 @@ let dia = hoy.getDate()
 if (dia<10) {
     dia = `0${dia}`
 }
-let mes = hoy.getMonth()
+let mes = hoy.getMonth() +1
 if (mes<10) {
     mes = `0${mes}`
 }
-const fechaDeHoy = (`${hoy.getFullYear()}-${mes + 1}-${dia}`)
+const fechaDeHoy = (`${hoy.getFullYear()}-${mes}-${dia}`)
 
 
 seleccionar.addEventListener('click',e=>{
@@ -52,7 +52,7 @@ buscar.addEventListener('click',e=>{
          const idVenta = (primerNumero.value + "-" + segundoNumero.value)
          ipcRenderer.send('traerVenta',idVenta)
      }else{
-         ipcRenderer.send('get-clientes',razon.value)
+         ipcRenderer.send('get-clientes',(razon.value).toUpperCase())
      }
 })
 
@@ -72,6 +72,7 @@ ipcRenderer.on('traerVenta',async (e,args)=>{
 
 function listarVentas(venta) {
         tbody.innerHTML += `<tr class="titulo"><td>${cliente.cliente}</td></tr>`
+        let total = 0;
         venta.productos.forEach(({objeto,cantidad})=>{
             const fecha = mostrarFecha(venta.fecha)
             tbody.innerHTML += `
@@ -82,9 +83,10 @@ function listarVentas(venta) {
                 <td>${venta.nro_comp}</td>
                 <td>${cantidad}</td>
                 <td>${objeto.precio_venta}</td>
-                <td>${objeto.precio_venta*cantidad}</td>
+                <td>${(objeto.precio_venta*cantidad).toFixed(2)}</td>
             </tr>
         `
+        total += (objeto.precio_venta*cantidad)
         })
         tbody.innerHTML += `
         <tr class="total">
@@ -94,7 +96,7 @@ function listarVentas(venta) {
         <td></td>
         <td></td>
         <td></td>
-        <td class=tdTotal>${venta.precioFinal}</td>
+        <td class=tdTotal>${total.toFixed(2)}</td>
         </tr>`
 }
 

@@ -116,6 +116,13 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
 })
 
 function listarVentas(ventas,situacion) {
+    ventas = ventas.filter(venta => {
+        if ((venta.tipo_pago === "CC" && (venta.tipo_comp === "Presupuesto" || venta.tipo_comp === "Ticket Factura"))) {
+            return venta
+        }else if((venta.tipo_pago === "CD") && (venta.tipo_comp === "Recibos")){
+            return venta
+        }
+    })
     tbody.innerHTML = ""
     const aux = (situacion === "blanco") ? "Ticket Factura" : "Presupuesto";
     let listaAux = []
@@ -158,11 +165,11 @@ function listarVentas(ventas,situacion) {
             let haber = 0;
             let debe = 0
             if (situacion === "negro") {
-                debe = (venta.tipo_comp === "Presupuesto") ? (parseFloat(venta.precioFinal)) : 0;
+                debe = (venta.tipo_comp === "Presupuesto" && venta.tipo_pago === "CC") ? (parseFloat(venta.precioFinal)) : 0;
                 haber = (venta.tipo_comp === "Recibos") ? (parseFloat(venta.precioFinal)) : 0;
             }else{
                 console.log(venta.tipo_comp)
-                debe = (venta.tipo_comp === "Ticket Factura") ? (parseFloat(venta.precioFinal)) : 0
+                debe = (venta.tipo_comp === "Ticket Factura" && venta.tipo_pago === "CC") ? (parseFloat(venta.precioFinal)) : 0
                 haber =  (venta.tipo_comp === "Reciboss") ? (parseFloat(venta.precioFinal)) : 0
             }
 

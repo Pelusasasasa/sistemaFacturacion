@@ -15,6 +15,7 @@ ipcRenderer.on('traerPedidos',(e,args)=>{
 
     for(let [index,pedido] of pedidos.entries()){
         let fecha = new Date(pedido.fecha)
+        const stock =(pedido.stock !== undefined) ? pedido.stock : 0; 
         tbody.innerHTML += `
         <tr id="${pedido._id}">
             <td>${fecha.getUTCDate()}/${fecha.getUTCMonth()+1}/${fecha.getUTCFullYear()}</td>
@@ -24,7 +25,7 @@ ipcRenderer.on('traerPedidos',(e,args)=>{
             <td>${pedido.cliente}</td>
             <td>${pedido.telefono}</td>
             <td>${pedido.vendedor}</td>
-            <td>${pedido.stock}</td>
+            <td>${stock}</td>
             <td class="estado"><input disabled name="estadoPedido" id="estadoPedido${index}" value="${pedido.estadoPedido}"></input></td>
         </tr>
         `
