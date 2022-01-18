@@ -18,7 +18,7 @@ body.addEventListener('keypress',e=>{
         if(seleccionado){
             cantidad(seleccionado)
         }else{
-            dialogs.alert("Producto no seleccionado")
+            alert("Producto no seleccionado")
             document.querySelector('.ok').focus()
         } ; 
     }})
@@ -106,7 +106,7 @@ const inputseleccionado = (e) =>{
 
 seleccionarTBody.addEventListener('dblclick',(e) =>{
     seleccionado = document.querySelector('.seleccionado')
-    seleccionado ? cantidad(seleccionado) : dialogs.alert("Producto no seleccionado");
+    seleccionado ? cantidad(seleccionado) : alert("Producto no seleccionado");
 })
 
 filtrar();

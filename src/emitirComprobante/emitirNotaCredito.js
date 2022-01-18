@@ -113,7 +113,7 @@ observaciones.addEventListener('keypress',(e)=>{
 
 //Cuando buscamos un producto
 codigo.addEventListener('keypress',(e) => {
-    if((codigo.value.length===3 || codigo.value.length===7) && e.key != "Backspace" && e.key !== "-"){
+    if((codigo.value.length===3 || codigo.value.length===7) && e.key != "Backspace" && e.key !== "-" && e.key !== "Enter"){
         codigo.value = codigo.value + "-"
     }
     if (e.key === 'Enter') {

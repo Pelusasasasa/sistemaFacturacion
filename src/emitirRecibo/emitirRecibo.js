@@ -226,12 +226,16 @@ const hacerRecibo = async()=>{
     const aux = (situacion === "negro") ? "saldo_p" : "saldo"
     let saldoFavor = 0;
     saldoFavor = (saldoAfavor.value !== "") && parseFloat(saldoAFavor.value);
-    const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2)) - saldoFavor
+    console.log(aux)
+    console.log(cliente[aux])
+    console.log(total.value)
+    const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2));
+    console.log(saldoNuevo)
     ipcRenderer.send('modificarSaldo',[cliente._id,aux,saldoNuevo])
     ipcRenderer.send('modificamosLasVentas',nuevaLista)
     ipcRenderer.send('nueva-venta',recibo)
-    ipcRenderer.send('imprimir-venta',[cliente,recibo,false,1,"Recibo",arregloParaImprimir,total.value])
-    location.reload()
+    //ipcRenderer.send('imprimir-venta',[cliente,recibo,false,1,"Recibo",arregloParaImprimir,total.value])
+    //location.reload()
 }
 
 const traerUltimoNroRecibo = async ()=>{

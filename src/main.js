@@ -5,7 +5,7 @@ if (a === 1) {
     URL = "http://179.62.24.12/api/";
 }else if(a === 2){
     //URL = "http://192.168.0.124:4000/api/";
-    URL = "http://192.168.1.101:4000/api/";
+    URL = "http://192.168.1.104:4000/api/";
 }
 let conexion;
 let tipoConexion;
@@ -31,6 +31,10 @@ if (process.env.NODE_ENV !== 'production') {
 };
 global.nuevaVentana = null;
 global.ventanaPrincipal = null
+
+app.on('window-all-closed',()=>{
+    app.quit()
+})
 function crearVentanaPrincipal() {
     ventanaPrincipal = new BrowserWindow({  
         //width: 7000,
@@ -68,9 +72,9 @@ ipcMain.on('get-productos', async (e, args=["","descripcion"]) => {
         texto = args[0]
         let condicion = args[1]
         condicion === "codigo" && (condicion = "_id")
-        productos = await axios.get(`${URL}productos/${texto}/${condicion}`)
+        productos = await axios.get(`${URL}productos/buscarProducto/${texto}/${condicion}`)
     }else{
-        productos = await axios.get(`${URL}productos/textoVacio/descripcion`)
+        productos = await axios.get(`${URL}productos/buscarProducto/textoVacio/descripcion`)
     }
     productos = productos.data
     e.reply('get-productos', JSON.stringify(productos))
@@ -163,7 +167,7 @@ ipcMain.on('mando-el-producto', async (e, args) => {
 
 //cambiamos el precio de los productos con dolares
 ipcMain.on('CambiarPrecios',async(e,args)=>{
-    let productos = await axios.get(`${URL}productos/textoVacio/dolar`)
+    let productos = await axios.get(`${URL}productos/buscarProducto/textoVacio/dolar`)
     let dolar = await axios.get(`${URL}tipoVenta`);
     dolar = dolar.data.dolar
     productos = productos.data;
@@ -171,6 +175,35 @@ ipcMain.on('CambiarPrecios',async(e,args)=>{
     productos.forEach(producto => {
         (producto.precio_venta) = (parseFloat(producto.utilidad)+(dolar*(parseFloat(producto.impuestos) + parseFloat(producto.costodolar)))).toFixed(2);
     });
+})
+
+
+//modificamos el precio de los prodcutos por porcentaje
+ipcMain.on('modficarPrecioPorcentaje',async(e,args)=>{
+    let [marca,porcentaje] = args
+    porcentaje = parseFloat(porcentaje);
+    let productos = await axios.get(`${URL}productos/marcas/${marca}`)
+    productos = productos.data;
+    console.log(productos[0])
+    await productos.forEach(async producto=>{
+        if (producto.costodolar === "0") {
+            producto.costo = (parseFloat(producto.costo) + parseFloat(producto.costo)*5/100).toFixed(2);
+            producto.impuestos = (producto.iva === "N") ? (parseFloat(producto.costo) * 26 / 100) : (parseFloat(producto.costo) * 15 / 100);
+            producto.precio_venta = ((parseFloat(producto.costo) + parseFloat(producto.impuestos))*parseFloat(producto.utilidad)/100) +(parseFloat(producto.costo) + parseFloat(producto.impuestos))
+            producto.impuestos = (producto.impuestos).toFixed(2)
+            producto.precio_venta = (producto.precio_venta).toFixed(2)
+        }else{
+            producto.costodolar = (parseFloat(producto.costodolar) + parseFloat(producto.costodolar)*5/100).toFixed(2);
+            producto.impuestos = (producto.iva === "N") ? (parseFloat(producto.costodolar) * 26 / 100) : (parseFloat(producto.costodolar) * 15 / 100);
+            producto.precio_venta = ((parseFloat(producto.costo) + parseFloat(producto.impuestos))*parseFloat(producto.utilidad)) + (parseFloat(producto.costo) + parseFloat(producto.impuestos))
+            producto.impuestos = (producto.impuestos).toFixed(2)
+            producto.precio_venta = (producto.precio_venta).toFixed(2)
+        }
+        await axios.put(`${URL}productos/${producto._id}`,producto)
+
+    })
+    nuevaVentana.webContents.send('avisoModificacion')
+    
 })
 
 //FIN PRODUCTOS
@@ -753,6 +786,15 @@ const templateMenu = [
                         click(){
                             abrirVentana("cambioCodigo")
                         }
+                    },{
+                        label: "Aum porcentaje",
+                        click(){
+                            abrirVentana("AumentoPorPorcentaje");
+                            nuevaVentana.on('ready-to-show',async()=>{
+                                const marcas = await axios(`${URL}productos`)
+                                nuevaVentana.webContents.send("mandarMarcas",JSON.stringify(marcas.data))
+                            })
+                        }
                     }
                 ]
             },
@@ -1328,10 +1370,11 @@ function abrirVentana(texto,numeroVenta){
             nuevaVentana = null;
             ventanaPrincipal.reload()
         })  
-    }else if(texto.includes("conexion")){
+    }else if(texto === "AumentoPorPorcentaje"){
+
         nuevaVentana = new BrowserWindow({
             parent:ventanaPrincipal,
-            width: 300,
+            width: 600,
             height: 200,
             webPreferences: {
                 contextIsolation: false,
@@ -1339,7 +1382,7 @@ function abrirVentana(texto,numeroVenta){
             }
         })
         nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, `./conexion.html`),
+            pathname: path.join(__dirname, `./productos/aumPorcentaje.html`),
             protocol: 'file',
             slashes: true
         }));
@@ -1347,7 +1390,7 @@ function abrirVentana(texto,numeroVenta){
         nuevaVentana.on('close',e=>{
             nuevaVentana = null;
             ventanaPrincipal.reload()
-        })  
+        })
     }
 }
 

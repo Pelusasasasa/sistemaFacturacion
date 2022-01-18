@@ -41,7 +41,7 @@ const inputEmpresa = document.querySelector('#empresa')
 inputEmpresa.value = empresa;
 
 let situacion = "blanco"//para teclas alt y F9
-let Numeros = [];
+let totalPrecioProducos = 0;
 let yaSeleccionado;
 let tipoVenta;
 let borraNegro = false;
@@ -153,7 +153,8 @@ observaciones.addEventListener('keypress',e=>{
 
 //Cuando buscamos un producto
 codigo.addEventListener('keypress',(e) => {
-    if((codigo.value.length===3 || codigo.value.length===7) && e.key != "Backspace" && e.key !== "-"){
+
+    if((codigo.value.length===3 || codigo.value.length===7) && e.key != "Backspace" && e.key !== "-" && e.key !== "Enter"){
         codigo.value = codigo.value + "-"
     }
     if (e.key === 'Enter') {
@@ -215,11 +216,11 @@ function mostrarVentas(objeto,cantidad) {
         <td class="tdEnd">${(parseFloat(objeto.precio_venta)*(cantidad)).toFixed(2)}</td>
         </tr>
     `
-    objeto.identificadorTabla = `${id}`
-    id++
-
+    objeto.identificadorTabla = `${id}`;
+    id++;
+    totalPrecioProducos += (objeto.precio_venta * cantidad);
     listaProductos.push({objeto,cantidad});
-    venta.productos = listaProductos
+    venta.productos = listaProductos;
 }
 
 resultado.addEventListener('click',e=>{
@@ -263,14 +264,14 @@ cobrado.addEventListener('keypress',e=>{
 //ver si hay un descuento 
 let Total = 0
 function verDescuento() {
-     Total = total.value
+     Total = totalPrecioProducos
     descuentoN.value = redondear(descuento.value*Total/100);
     total.value=redondear(Total - descuentoN.value);
 }
 
 //si se sobra menos que se muestre cuanto es la diferencia
 function inputCobrado(numero) {
-    Total=total.value
+    Total=totalPrecioProducos
     descuentoN.value =  redondear(Total-numero)
     descuento.value = redondear(descuentoN.value*100/Total)
     total.value = numero;
@@ -665,15 +666,13 @@ async function generarQR(texto) {
  //lo usamos para borrar un producto de la tabla
 borrarProducto.addEventListener('click',e=>{
     if (yaSeleccionado) {
-
-
         producto = listaProductos.find(e=>e.objeto.identificadorTabla === yaSeleccionado.id);
-
         total.value = (parseFloat(total.value)-(parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta))).toFixed(2)
         Preciofinal = (Preciofinal - (parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)).toFixed(2)) 
         listaProductos.forEach(e=>{
             if (yaSeleccionado.id === e.objeto.identificadorTabla) {
                     listaProductos = listaProductos.filter(e=>e.objeto.identificadorTabla !== yaSeleccionado.id)
+                    totalPrecioProducos -= (e.objeto.precio_venta*e.cantidad);
             }
         })
         const a = yaSeleccionado

@@ -105,7 +105,7 @@ ipcRenderer.on("validarUsuario",(e,args)=>{
                 if(vendedor !== undefined){ 
                     if (JSON.parse(args) === "ValidarUsuario") {
                         ipcRenderer.send('abrir-ventana',`usuarios?${acceso}?${vendedor}`)
-                    }else if (JSON.parse(args) === "Conexion" ) {
+                    }else if (JSON.parse(args) === "aumPorPorcentaje" ) {
                         (acceso === "0") ? ipcRenderer.send('abrir-ventana',`conexion?${acceso}`) : alert("No tiene permisos")
                     }
 
