@@ -571,7 +571,7 @@ ticketFactura.addEventListener('click',async (e) =>{
         }else{
         venta._id = await tamanioVentas();
         venta.observacion = observaciones.value
-
+        venta.fecha = new Date()
         venta.descuento = (descuentoN.value);
         venta.precioFinal = redondear(total.value);
         venta.tipo_comp = tipoVenta;

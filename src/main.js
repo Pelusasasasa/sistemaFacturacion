@@ -367,7 +367,10 @@ ipcMain.on('imprimir-venta',async(e,args)=>{
     const options = {
         silent: condicion,
         copies: cantidad,
-        deviceName: name
+        deviceName: name,
+        margins:{
+            marginType: "none"
+        }
     };
     if (tipo === "Recibo") {
         abrirVentana("imprimir-recibo")
@@ -382,12 +385,12 @@ ipcMain.on('imprimir-venta',async(e,args)=>{
 const imprimir = (opciones,args)=>{
     nuevaVentana.webContents.on('did-finish-load', function() {
         nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
-            nuevaVentana.webContents.print(opciones,(success, errorType) => {
-                    if (success) {
-                        ventanaPrincipal.focus()
-                        nuevaVentana.close();
-                    }
-              })
+            // nuevaVentana.webContents.print(opciones,(success, errorType) => {
+            //         if (success) {
+            //             ventanaPrincipal.focus()
+            //             nuevaVentana.close();
+            //         }
+            //   })
     });
 }
 
