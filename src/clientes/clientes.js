@@ -22,7 +22,6 @@ ipcRenderer.on('get-clientes',(e,args) =>{
     for(let cliente of clientes){
         let nombre = cliente.cliente.toLowerCase();
         if(nombre.indexOf(texto) !== -1){
-
            resultado.innerHTML += `
            <tr id="${cliente._id}">
                 <th id="nombre">${cliente.cliente}</th>
@@ -31,7 +30,7 @@ ipcRenderer.on('get-clientes',(e,args) =>{
                 <td>${cliente.telefono}</td>
                 <td>${cliente.cond_iva}</td>
                 <td>${cliente.cuit}</td>
-                <td>${cliente.saldo}</td>
+                <td>${(parseFloat(cliente.saldo)).toFixed(2)}</td>
             </tr>
            ` 
         }

@@ -24,7 +24,7 @@ const fecha = document.querySelector('.fecha')
         const minuto = tomarFecha.getMinutes()
         const segundo = tomarFecha.getSeconds()
 
-        const listar = (venta,cliente)=>{
+        const listar = (venta,cliente,cd)=>{
             const lista = venta.productos
             numero.innerHTML=venta.nro_comp
             clientes.innerHTML = cliente.cliente
@@ -40,7 +40,7 @@ const fecha = document.querySelector('.fecha')
             tipoPago.innerHTML= venta.tipo_pago
             tipoFactura.innerHTML = "R"
     
-            if (venta.tipo_pago === "CC") {
+            if (venta.tipo_pago === "CC" && cd !== "CD") {
                 precioFinal.innerHTML = ""
                 subtotal.innerHTML=""
             }
@@ -83,6 +83,7 @@ const fecha = document.querySelector('.fecha')
         })
 
     ipcRenderer.on('imprimir',(e,args)=>{
-        [venta,cliente] = JSON.parse(args)
-        listar(venta,cliente)
+        [venta,cliente,,,cd] = JSON.parse(args)
+        console.log(cd);
+        listar(venta,cliente,cd)
     })

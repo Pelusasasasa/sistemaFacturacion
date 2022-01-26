@@ -1,8 +1,9 @@
-const {ipcRenderer,remote} = require('electron');
+const {ipcRenderer} = require('electron');
 const buscarCliente = document.querySelector('#buscarCliente')
 const resultado = document.querySelector('#resultado')
 let clientes = ''
-let texto
+let texto;
+console.log("HOLA");
 
 const body = document.querySelector('body')
 body.addEventListener('keypress',e=>{
@@ -45,7 +46,7 @@ ipcRenderer.on('traerSaldo',async(e,args) =>{
                 <td>${cliente.telefono}</td>
                 <td>${cliente.cond_iva}</td>
                 <td>${cliente.cuit}</td>
-                <td>${cliente.saldo}</td>
+                <td>${(parseFloat(cliente.saldo)).toFixed(2)}</td>
             </tr>
            ` 
         }

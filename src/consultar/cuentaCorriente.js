@@ -11,21 +11,25 @@ const actualizar = document.querySelector('.actualizar')
 
 let nuevaLista=[]
 let lista=[]
+let clienteTraido = {}
 let listaGlobal=[]
 vendedor = ""
 let seleccionado
 let situacion = "blanco";
+let tipo = "compensada"
 
 historica.addEventListener('click',e=>{
     historica.classList.add("disable")
     compensada.classList.remove('disable')
-    listarLista(lista,situacion)
+    tipo = "historica"
+    listarLista(lista,situacion,tipo)
 })
 
 compensada.addEventListener('click',e=>{
     compensada.classList.add("disable")
     historica.classList.remove('disable')
-    listarLista(nuevaLista,situacion)
+    tipo = "compensada"
+    listarLista(nuevaLista,situacion,tipo)
 })
 
 document.addEventListener('keydown',(event) =>{
@@ -34,7 +38,7 @@ document.addEventListener('keydown',(event) =>{
            if (e.key === "F9" && situacion === "blanco") {
                mostrarNegro();
                situacion = 'negro';
-               listarLista(nuevaLista,situacion);
+               listarLista(nuevaLista,situacion,tipo);
            }
        })
    }
@@ -46,7 +50,7 @@ document.addEventListener('keydown',(event) =>{
           if (e.key === "F3" && situacion === "negro") {
               ocultarNegro();
               situacion = 'blanco';
-              listarLista(nuevaLista,situacion);
+              listarLista(nuevaLista,situacion,tipo);
           }
       })
   }
@@ -106,39 +110,72 @@ listar.addEventListener('click',e=>{
     sacarSeleccion && sacarSeleccion.classList.remove('seleccionado')
     seleccionado.classList.toggle('seleccionado')
     if (seleccionado) {
-        console.log(lista)
         lista.forEach(listar=>{
             listar.nro_comp === seleccionado.id && mostrarDetalles(listar.productos,listar.vendedor);
         })
     }
 })
 
-const listarLista = (lista,situacion)=>{
+const listarLista = (lista,situacion,tipo)=>{
     let aux
     (situacion === "negro") ? (aux = "Presupuesto") : (aux = "Ticket Factura")
     listaGlobal = lista.filter(e=>{
         if (aux === "Presupuesto") {
-            return  (e.tipo_comp === aux ||  e.tipo_comp=== "Recibos")   
+            return  (e.tipo_comp === aux ||  e.tipo_comp === "Recibos")   
         }else{
             return (e.tipo_comp === aux)
         }
     })
-    listar.innerHTML = ''
+    listar.innerHTML = '';
+    let saldoAcumulativo = 0;
     listaGlobal.forEach(venta => {
         vendedor = venta.vendedor
+        let importe = 0.0;
+        let saldo = 0;
+        let pagado = 0;
+        if (venta.tipo_comp !== "Recibos") {
+            importe = (venta.precioFinal).toFixed(2);
+            saldo = ((venta.precioFinal - venta.abonado).toFixed(2))
+        }else if(tipo === "Recibos"){
+            importe = (venta.precioFinal).toFixed(2);
+            saldo = ((venta.precioFinal - venta.abonado).toFixed(2))
+        }
+        if ((venta.tipo_comp === "Presupuesto" || venta.tipo_comp === "Ticket Factura") && tipo === "historica") {
+            pagado = "0.00";
+        }else if (((venta.tipo_comp === "Ticket Factura" || venta.tipo_comp === "Presupuesto") && tipo === "compensada")) {
+            pagado = (parseFloat(venta.abonado)).toFixed(2)
+        }else{
+            pagado = parseFloat(venta.precioFinal).toFixed(2)
+        }
+
+        saldoAcumulativo = (venta.tipo_comp === "Presupuesto" || venta.tipo_comp === "Ticket Factura" ) ? saldoAcumulativo + venta.precioFinal : saldoAcumulativo-venta.precioFinal
         if (venta.length !== 0) {
             let fecha = new Date(venta.fecha) 
-            listar.innerHTML += `
+            if (tipo === "compensada") {
+                listar.innerHTML += `
                 <tr id="${venta.nro_comp}">
                 <td>${fecha.getUTCDate()}/${fecha.getUTCMonth()+1}/${fecha.getUTCFullYear()}</td>
                     <td>${venta.tipo_comp}</td>
                     <td>${venta.nro_comp}</td>
-                    <td>${(venta.precioFinal).toFixed(2)}</td>
-                    <td>${(parseFloat((venta.abonado))).toFixed(2)}</td>
-                    <td>${(venta.precioFinal-venta.abonado).toFixed(2)}</td>
+                    <td class = "importe">${importe}</td>
+                    <td class = "pagado">${pagado}</td>
+                    <td class = "saldo">${(saldo)}</td>
                     <td>${venta.observaciones}</td>
                 </tr>
             `
+            }else{
+                listar.innerHTML += `
+                <tr id="${venta.nro_comp}">
+                <td>${fecha.getUTCDate()}/${fecha.getUTCMonth()+1}/${fecha.getUTCFullYear()}</td>
+                    <td>${venta.tipo_comp}</td>
+                    <td>${venta.nro_comp}</td>
+                    <td class = "importe">${importe}</td>
+                    <td class = "pagado">${pagado}</td>
+                    <td class = "saldo">${(saldoAcumulativo).toFixed(2)}</td>
+                    <td>${venta.observaciones}</td>
+                </tr>
+            `
+            }
         }
     });
 }
@@ -173,6 +210,7 @@ let saldoABorrar = 0
 
     actualizar.addEventListener('click',e=>{
         if (seleccionado) {
+
         nuevaLista.find(e=>{
             if (e.nro_comp === seleccionado.id) {
                 ventaAModificar=e;
@@ -189,8 +227,16 @@ let saldoABorrar = 0
                     total=sacarTotal(ventaAModificar.productos)
                     ventaAModificar.precioFinal = total.toFixed(2)
             }
+            // if (confirm("Imprimir")) {
+            //     
+            // }
             ipcRenderer.send('ventaModificada',[ventaAModificar,ventaAModificar.nro_comp,situacion])
-            location.reload()
+            ipcRenderer.on('devolverVenta',(e,args)=>{
+                let [venta,cliente ] = JSON.parse(args)
+                console.log(venta);
+                ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"CD"])
+            })
+            //location.reload()
             })
         })
         }else{
@@ -232,17 +278,17 @@ document.addEventListener('keydown',e=>{
 })
 
 const ponerDatosCliente = async (Cliente)=>{
-
+    clienteTraido = Cliente
     cliente.value = Cliente.cliente
-    saldo.value = Cliente.saldo
-    saldo_p.value = Cliente.saldo_p
+    saldo.value = (parseFloat(Cliente.saldo)).toFixed(2)
+    saldo_p.value = (parseFloat(Cliente.saldo_p)).toFixed(2)
     listaVentas=Cliente.listaVentas
 
     await ipcRenderer.invoke('traerVentas',listaVentas).then((args)=>{
         lista = JSON.parse(args)
     })
         lista.forEach(venta =>{
-            (venta.pagado === false) && nuevaLista.push(venta);
+            (venta.pagado === false || (venta.tipo_comp === "Recibos" && (venta.precioFinal < 0 || parseFloat(venta.abonado) > 0 ))) && nuevaLista.push(venta);
         })
-        listarLista(nuevaLista,situacion)
+        listarLista(nuevaLista,situacion,tipo)
 }

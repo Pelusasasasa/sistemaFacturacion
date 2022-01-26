@@ -10,7 +10,9 @@
     background-color: lightgreen;
     padding: 1rem;
     padding-bottom: 2rem;
-
+    #buscador{
+      width: 40%;
+    }
     label {
       font-size: 2.4rem;
       display: flex;
@@ -18,7 +20,7 @@
       font-weight: bold;
     }
 
-    button {
+    button,a {
       border-radius: 7.5rem;
       border: none;
       padding: 1rem;
@@ -61,6 +63,9 @@
         tr {
           td {
             border: 0.1rem solid black;
+          }
+          .saldo,.importe,.pagado{
+            text-align: end;
           }
         }
         tr:hover {
@@ -114,6 +119,7 @@
   .seccion_botones {
     background-color: lightgreen;
     padding-top: 2rem;
+    padding-bottom: 2rem;
     .botones {
       background-color: lightgray;
       border-radius: 7.5rem;

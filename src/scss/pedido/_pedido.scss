@@ -137,6 +137,9 @@
             border: 0.1rem solid black;
             padding: 1rem;
           }
+          .stock,.cantidad{
+            text-align: end;
+          }
           &:hover {
             cursor: pointer;
             background-color: lightgray;

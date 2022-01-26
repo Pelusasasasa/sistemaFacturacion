@@ -11,7 +11,7 @@ const volver = document.querySelector('.volver')
 let movProducto = {}
 let vendedor
 
-ipcRenderer.invoke('movimiento-producto-abrir').then((args)=>{
+ipcRenderer.on('movimiento-producto-abrir',(e,args)=>{
     console.log(JSON.parse(args))
     const [producto,usuario] = JSON.parse(args)
     codigo.value = producto._id

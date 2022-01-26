@@ -21,11 +21,11 @@ ipcRenderer.on('traerPedidos',(e,args)=>{
             <td>${fecha.getUTCDate()}/${fecha.getUTCMonth()+1}/${fecha.getUTCFullYear()}</td>
             <td>${pedido.codigo}</td>
             <td>${pedido.producto}</td>
-            <td>${pedido.cantidad}</td>
+            <td class = "cantidad">${(pedido.cantidad).toFixed(2)}</td>
             <td>${pedido.cliente}</td>
             <td>${pedido.telefono}</td>
             <td>${pedido.vendedor}</td>
-            <td>${stock}</td>
+            <td class = "stock">${(stock).toFixed(2)}</td>
             <td class="estado"><input disabled name="estadoPedido" id="estadoPedido${index}" value="${pedido.estadoPedido}"></input></td>
         </tr>
         `

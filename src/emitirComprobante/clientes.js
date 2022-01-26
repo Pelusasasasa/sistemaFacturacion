@@ -41,7 +41,7 @@ ipcRenderer.on('get-clientes',(e,args) =>{
                 <td>${cliente.telefono}</td>
                 <td>${cliente.cond_iva}</td>
                 <td>${cliente.cuit}</td>
-                <td>${cliente.saldo}</td>
+                <td>${(parseFloat(cliente.saldo)).toFixed(2)}</td>
             </tr>
            ` 
         }

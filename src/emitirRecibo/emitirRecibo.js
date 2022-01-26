@@ -145,10 +145,11 @@ let a;
     })
 inputSeleccionado.addEventListener('keydown',(e)=>{
     if (e.key==="Tab" || e.key === "Enter") {
+        const aux = trSeleccionado.children[6].innerHTML
         const aDescontar = parseFloat(trSeleccionado.children[3].innerHTML) - parseFloat(trSeleccionado.children[4].innerHTML) - parseFloat(trSeleccionado.children[6].innerHTML)
-            if (inputSeleccionado.value !== "") {
-                trSeleccionado.children[6].innerHTML = (parseFloat(trSeleccionado.children[3].innerHTML)-parseFloat(trSeleccionado.children[4].innerHTML) - parseFloat(inputSeleccionado.value)).toFixed(2)
-            }
+        if (inputSeleccionado.value !== "") {
+            trSeleccionado.children[6].innerHTML = (parseFloat(trSeleccionado.children[3].innerHTML)-parseFloat(trSeleccionado.children[4].innerHTML) - parseFloat(inputSeleccionado.value)).toFixed(2)
+        }
             let venta
             nuevaLista.forEach(e =>{
                 if(e.nro_comp === trSeleccionado.id){    
@@ -165,28 +166,36 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
                     pagado: renglon[5].children[0].value,
                     saldo: renglon[6].innerHTML
                 };
-
                 (inputSeleccionado.value !== "")  && arregloParaImprimir.push(objeto);
+            }
 
-            }
-            console.log(venta)
-            venta.abonado = parseFloat(venta.abonado) + parseFloat(inputSeleccionado.value);
-            (venta.abonado === venta.precioFinal) && (venta.pagado = true);
-            if(a === inputSeleccionado.id){
-                total.value = (parseFloat(inputSeleccionado.value) + parseFloat(total.value) - parseFloat(aDescontar).toFixed(2))
-            }else{
-                if (inputSeleccionado.value !== "") {
-                    total.value = ((parseFloat(inputSeleccionado.value) + parseFloat(total.value)) - parseFloat(aDescontar)).toFixed(2)
+            console.log(trSeleccionado.children[5].children[0]);
+            if ((trSeleccionado.children[6].innerHTML < 0)) {
+                alert("El monto abonado es mayor al de la venta")
+                trSeleccionado.children[6].innerHTML = aux;
+                trSeleccionado.children[5].children[0].value = "";
+                trSeleccionado.children[5].children[0].focus();
+             }else{
+                
+                console.log(aDescontar);
+                venta.abonado = parseFloat(venta.abonado) + parseFloat(inputSeleccionado.value);
+                (venta.abonado === venta.precioFinal) && (venta.pagado = true);
+                if(a === inputSeleccionado.id){
+                    total.value = (parseFloat(inputSeleccionado.value) + parseFloat(total.value) - parseFloat(aDescontar).toFixed(2))
+                }else{
+                    if (inputSeleccionado.value !== "") {
+                        total.value = ((parseFloat(inputSeleccionado.value) + parseFloat(total.value)) - parseFloat(aDescontar)).toFixed(2)
+                    }
                 }
-            }
-            a=trSeleccionado.id
-            if(trSeleccionado.nextElementSibling){
-                trSeleccionado = trSeleccionado.nextElementSibling
-                inputSeleccionado = trSeleccionado.children[5].children[0] 
-                trSeleccionado.children[5].children[0].focus()
-            }else{
-                saldoAfavor.focus()
-            }
+                a=trSeleccionado.id
+                if(trSeleccionado.nextElementSibling){
+                    trSeleccionado = trSeleccionado.nextElementSibling
+                    inputSeleccionado = trSeleccionado.children[5].children[0] 
+                    trSeleccionado.children[5].children[0].focus()
+                }else{
+                    saldoAfavor.focus()
+                }
+        }
 
         }
 })
@@ -226,16 +235,15 @@ const hacerRecibo = async()=>{
     const aux = (situacion === "negro") ? "saldo_p" : "saldo"
     let saldoFavor = 0;
     saldoFavor = (saldoAfavor.value !== "") && parseFloat(saldoAFavor.value);
-    console.log(aux)
-    console.log(cliente[aux])
-    console.log(total.value)
+    recibo.abonado = saldoAfavor.value
     const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2));
     console.log(saldoNuevo)
     ipcRenderer.send('modificarSaldo',[cliente._id,aux,saldoNuevo])
     ipcRenderer.send('modificamosLasVentas',nuevaLista)
+    console.log(recibo)
     ipcRenderer.send('nueva-venta',recibo)
-    //ipcRenderer.send('imprimir-venta',[cliente,recibo,false,1,"Recibo",arregloParaImprimir,total.value])
-    //location.reload()
+    ipcRenderer.send('imprimir-venta',[cliente,recibo,false,1,"Recibo",arregloParaImprimir,total.value])
+    location.reload()
 }
 
 const traerUltimoNroRecibo = async ()=>{

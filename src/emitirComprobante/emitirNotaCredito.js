@@ -48,12 +48,12 @@ codigoC.addEventListener('keypress',e=>{
                 }else{
                     cliente = JSON.parse(args)
                     ponerInputsClientes(cliente)
-                    observaciones.focus()
+                    codigoC.value === "9999" ? buscarCliente.focus() : observaciones.focus()
                 }
             })
         }else{
             ipcRenderer.send('abrir-ventana',"clientes")
-            observaciones.focus()
+            codigoC.value === "9999" ? buscarCliente.focus() : observaciones.focus()
         }
     }
 })
@@ -126,7 +126,7 @@ codigo.addEventListener('keypress',(e) => {
                         codigo.focus()
                 }else{
                     dialogs.prompt("Cantidad",async valor=>{
-                        if (valor === undefined) {
+                        if (valor === undefined || valor === "") {
                             e.target.value = await "";
                             codigo.focus()
                         }else{
@@ -383,4 +383,89 @@ const inputseleccionado = (e) =>{
         const a = yaSeleccionado
         a.parentNode.removeChild(a)
     }
+    codigo.focus()
 })
+
+
+buscarCliente.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        telefono.focus()
+    }
+})
+
+telefono.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        direccion.focus()
+    }
+})
+
+direccion.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        localidad.focus()
+    }
+})
+
+localidad.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        provincia.focus()
+    }
+})
+
+provincia.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        conIva.focus()
+    }
+})
+
+conIva.addEventListener('keypress',e=>{
+    e.preventDefault()
+    if (e.key === "Enter") {
+        dnicuit.focus()
+    }
+})
+
+dnicuit.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        observaciones.focus()
+    }
+})
+
+
+telefono.addEventListener('focus',e=>{
+    selecciona_value(telefono.id)
+})
+
+buscarCliente.addEventListener('focus',e=>{
+    selecciona_value(buscarCliente.id)
+})
+localidad.addEventListener('focus',e=>{
+    selecciona_value(localidad.id)
+})
+provincia.addEventListener('focus',e=>{
+    selecciona_value(provincia.id)
+})
+direccion.addEventListener('focus',e=>{
+    selecciona_value(direccion.id)
+})
+dnicuit.addEventListener('focus',e=>{
+    selecciona_value(dnicuit.id)
+})
+
+
+//Sirve para selecccionar todo un input
+function selecciona_value(idInput) {
+    valor_input = document.getElementById(idInput).value;
+    longitud = valor_input.length;
+    var selectionEnd = 0 + 1;
+    if (document.getElementById(idInput).setSelectionRange) {
+    document.getElementById(idInput).focus();
+    document.getElementById(idInput).setSelectionRange (0, longitud);
+    }
+    else if (input.createTextRange) {
+    var range = document.getElementById(idInput).createTextRange() ;
+    range.collapse(true);
+    range.moveEnd('character', 0);
+    range.moveStart('character', longitud);
+    range.select();
+    }
+    }

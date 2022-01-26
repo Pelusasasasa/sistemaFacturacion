@@ -28,6 +28,14 @@
   .formulario-verde {
     background-color: lightgreen;
   }
+  .formulario-negro{
+    background-color: black;
+    color: white;
+
+    button{
+      color: white;
+    }
+  }
 
   .formularioFactura {
     #codigo {
@@ -132,6 +140,8 @@
     }
     .total__input {
       margin-left: auto;
+      display: flex;
+      justify-content: flex-end;
     }
 
     .usuario p {
@@ -142,7 +152,9 @@
     }
 
     #total {
-      padding: 0.9rem;
+      font-weight: 900;
+      font-size: 2.4rem;
+      width: 70%;
     }
   }
 

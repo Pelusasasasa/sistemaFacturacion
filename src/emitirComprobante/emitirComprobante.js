@@ -80,7 +80,18 @@ function mostrarNegro() {
     const saldo = document.querySelector(".saldo")
     const ventaNegro = document.querySelector(".ventaNegro")
     const ticketFactura = document.querySelector('.ticketFactura')
-
+    const parteNegra = document.querySelector('.parteNegra')
+        parteNegra.classList.add('formulario-negro')
+        parteNegra.classList.remove('formulario-verde')
+        const total = document.querySelector('.total')
+        total.classList.add('formulario-negro')
+        total.classList.remove('formulario-verde')
+        const tipoVenta = document.querySelector('.tipoVenta')
+        tipoVenta.classList.add('formulario-negro')
+        tipoVenta.classList.remove('formulario-verde')
+        const partefinal = document.querySelector('.partefinal')
+        partefinal.classList.add('formulario-negro')
+        partefinal.classList.remove('formulario-verde')
         saldoNegro.classList.remove('none')
         saldo.classList.add('none')
         bodyNegro.classList.add('mostrarNegro')
@@ -96,6 +107,18 @@ function ocultarNegro() {
     const saldo = document.querySelector(".saldo")
     const ventaNegro = document.querySelector(".ventaNegro")
     const ticketFactura = document.querySelector('.ticketFactura')
+    const parteNegra = document.querySelector('.parteNegra')
+    parteNegra.classList.remove('formulario-negro')
+    parteNegra.classList.add('formulario-verde')
+    const tipoVenta = document.querySelector('.tipoVenta')
+    tipoVenta.classList.remove('formulario-negro')
+    tipoVenta.classList.add('formulario-verde')
+    const total = document.querySelector('.total')
+    total.classList.remove('formulario-negro')
+    total.classList.add('formulario-verde')
+    const partefinal = document.querySelector('.partefinal')
+    partefinal.classList.remove('formulario-negro')
+    partefinal.classList.add('formulario-verde')
 
         saldoNegro.classList.add('none')
         saldo.classList.remove('none')
@@ -124,7 +147,7 @@ codigoC.addEventListener('keypress', (e) =>{
                     codigoC.value = ""
                 }else{
                     ponerInputsClientes(JSON.parse(args))
-                    observaciones.focus()
+                    codigoC.value === "9999" ? buscarCliente.focus() : observaciones.focus()
                 }
             })
         }else{
@@ -141,7 +164,7 @@ codigoC.addEventListener('focus',e=>{
 ipcRenderer.on('mando-el-cliente',(e,args)=>{ 
     cliente = JSON.parse(args)
     ponerInputsClientes(cliente);//ponemos en los inputs los valores del cliente
-    observaciones.focus()
+    codigoC.value === "9999" ? buscarCliente.focus() : observaciones.focus()
 })
 
 observaciones.addEventListener('keypress',e=>{
@@ -167,7 +190,7 @@ codigo.addEventListener('keypress',(e) => {
                         codigo.focus()
                 }else{
                     dialogs.prompt("Cantidad",async valor=>{
-                        if (valor === undefined) {
+                        if (valor === undefined || valor === "") {
                             e.target.value = await "";
                             codigo.focus()
                         }else{
@@ -579,13 +602,16 @@ ticketFactura.addEventListener('click',async (e) =>{
 
 
         if (borraNegro) {
-            ipcRenderer.on('clienteModificado',(e,args)=>{
-                borrarCuentaCorriente(ventaDeCtaCte)
+            ipcRenderer.on('clienteModificado',async(e,args)=>{
+                console.log("A");
+                await borrarCuentaCorriente(ventaDeCtaCte)
+
+                borraNegro && window.close();
             })
 
         };
+        !borraNegro && location.reload();
 
-            borraNegro ? window.close() : location.reload();
         }
     }
  })
@@ -679,6 +705,7 @@ borrarProducto.addEventListener('click',e=>{
 
         a.parentNode.removeChild(a)
     }
+    codigo.focus()
 })
 
 
@@ -729,7 +756,7 @@ function ponerInputsClientes(cliente) {
         alert(`${cliente.observacion}`)
     }
     const cuentaC = document.querySelector('.cuentaC');
-    (cliente.cond_fact === "4") && cuentaC.classList.add('none');
+    (cliente.cond_fact === "4") ? cuentaC.classList.add('none') : cuentaC.classList.remove('none');
     if (codigoC.value === "9999") {
         buscarCliente.removeAttribute('disabled');
         telefono.removeAttribute('disabled');
@@ -771,7 +798,7 @@ ipcRenderer.once('venta',(e,args)=>{
 
 const borrarCuentaCorriente = async (numero)=>{
     await ipcRenderer.send('borrarVentaACliente',[venta.cliente,numero])
-    //ipcRenderer.send('eliminar-venta',numero)
+    ipcRenderer.send('eliminar-venta',numero)
 }   
 
 const {DBFFile} = require ('dbffile')
@@ -960,6 +987,50 @@ direccion.addEventListener('focus',e=>{
 dnicuit.addEventListener('focus',e=>{
     selecciona_value(dnicuit.id)
 })
+
+buscarCliente.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        telefono.focus()
+    }
+})
+
+telefono.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        direccion.focus()
+    }
+})
+
+direccion.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        localidad.focus()
+    }
+})
+
+localidad.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        provincia.focus()
+    }
+})
+
+provincia.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        conIva.focus()
+    }
+})
+
+conIva.addEventListener('keypress',e=>{
+    e.preventDefault()
+    if (e.key === "Enter") {
+        dnicuit.focus()
+    }
+})
+
+dnicuit.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        observaciones.focus()
+    }
+})
+
 
 function selecciona_value(idInput) {
     valor_input = document.getElementById(idInput).value;

@@ -82,6 +82,7 @@ ipcRenderer.on('get-productos', (e,args) =>{
                     <td>${producto.marca}</td>
                     <td class="stock">${(parseFloat(producto.stock)).toFixed(2)}</td>
                     <td>${producto.cod_fabrica}</td>
+                    <td>${producto.observacion}</td>
                 </tr>
             `
     }
@@ -153,6 +154,7 @@ movimiento.addEventListener('click',()=>{
 const ingresarMov = document.querySelector('.ingresar')
 ingresarMov.addEventListener('click', e => {
    if (seleccionado) {
+    console.log(seleccionado);
        dialogs.promptPassword("Contraseña",async valor=>{
         let vendedor
         await ipcRenderer.invoke('traerUsuario',valor).then((args)=>{
@@ -169,8 +171,10 @@ ingresarMov.addEventListener('click', e => {
 const eliminar = document.querySelector('.eliminar')
 eliminar.addEventListener('click',e=>{
     if (seleccionado) {
+       if ( confirm('Quieres eliminar producto')) {
         ipcRenderer.send('eliminar-producto',seleccionado.id)
         location.reload()
+       }
     }else{
             alert('Producto no seleccionado')
     }

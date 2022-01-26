@@ -4,8 +4,8 @@ let URL
 if (a === 1) {
     URL = "http://179.62.24.12/api/";
 }else if(a === 2){
-    //URL = "http://192.168.0.124:4000/api/";
-    URL = "http://192.168.1.104:4000/api/";
+    //URL = "http://192.168.1.108:4000/api/";
+    URL = "http://192.168.0.124:4000/api/";
 }
 let conexion;
 let tipoConexion;
@@ -41,10 +41,12 @@ function crearVentanaPrincipal() {
         //height: 7000,
         icon: path.join(__dirname,'./imagenes/electro.ico'),
         fullscreen: false,
+        closable: false,
         webPreferences: {
             contextIsolation: false,
-            nodeIntegration: true
+            nodeIntegration: true,
         }
+        
     });
     ventanaPrincipal.loadFile('src/index.html')
     ventanaPrincipal.maximize()
@@ -356,7 +358,7 @@ ipcMain.on('nueva-venta', async (e, args) => {
         cliente.listaVentas = listaVentas;
         let clienteModificado = await axios.put(`${URL}clientes/${_id}`,cliente);
         clienteModificado = clienteModificado.data;
-        e.reply('clienteModificado',clienteModificado)
+        e.reply('clienteModificado',JSON.stringify(clienteModificado))
     }
 })
 
@@ -468,6 +470,7 @@ ipcMain.on('ventaModificada',async (e,[args,id])=>{
      let saldoABorrar = venta.precioFinal
      venta.precioFinal = args.precioFinal;
      venta.productos = args.productos;
+     //ipcRenderer.send('imprimir-venta',[venta,args.cliente,false,1])
      await axios.put(`${URL}ventas/${venta._id}`,venta)
     let cliente = await axios.get(`${URL}clientes/id/${args.cliente}`)
     cliente = cliente.data;
@@ -475,8 +478,8 @@ ipcMain.on('ventaModificada',async (e,[args,id])=>{
     total = args.precioFinal
     total = (parseFloat(total) - parseFloat(saldoABorrar) + parseFloat(cliente.saldo_p)).toFixed(2)
     cliente.saldo_p = total
-
      await axios.put(`${URL}clientes/${args.cliente}`,cliente)
+     e.reply('devolverVenta',JSON.stringify([venta,cliente]))
 })
 
     ipcMain.on('abrir-ventana-emitir-comprobante',(e,args)=>{
@@ -664,13 +667,13 @@ ipcMain.on('abrir-ventana-agregar-producto',async(e,args)=>{
 //Abrir ventana de movimiento de producto
 ipcMain.on('abrir-ventana-movimiento-producto',async (e,arreglo)=>{
     const [id,vendedor] = arreglo
+    console.log(id);
     abrirVentana('movProducto')
-    ipcMain.handle('movimiento-producto-abrir',async e =>{
-        let producto = await axios.get(`${URL}productos/${id}`);
-        producto = producto.data
-        return (JSON.stringify([producto,vendedor]))
+    let producto = await axios.get(`${URL}productos/${id}`);
+    producto = producto.data
+    nuevaVentana.on('ready-to-show',()=>{
+        nuevaVentana.webContents.send('movimiento-producto-abrir',(JSON.stringify([producto,vendedor])) )
     })
-
 })
 
 //llevamos el tamanio de la bd de Mov Producto
@@ -935,7 +938,7 @@ function abrirVentana(texto,numeroVenta){
             protocol: 'file',
             slashes: true
         }));
-        nuevaVentana.setMenuBarVisibility(false)
+        //nuevaVentana.setMenuBarVisibility(false)
         nuevaVentana.on('close', function (event) {
             nuevaVentana = null
         })
