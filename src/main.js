@@ -363,12 +363,19 @@ ipcMain.on('nueva-venta', async (e, args) => {
 })
 
 ipcMain.on('imprimir-venta',async(e,args)=>{
-    const [,,condicion,cantidad,tipo] = args;
+    const [,,condicion,cantidad,tipo,name] = args;
     const options = {
         silent: condicion,
-        copies: cantidad
+        copies: cantidad,
+        deviceName: name
     };
-    (tipo === "Recibo") ? abrirVentana("imprimir-recibo") : abrirVentana("imprimir-comprobante");
+    if (tipo === "Recibo") {
+        abrirVentana("imprimir-recibo")
+    }else if(tipo === "ticket-factura"){
+        abrirVentana("imprimir-factura")
+    }else{
+        abrirVentana("imprimir-comprobante")
+    }
     await imprimir(options,args)
 })
 
@@ -981,6 +988,25 @@ function abrirVentana(texto,numeroVenta){
                 nuevaVentana = null
             })
             nuevaVentana.setMenuBarVisibility(false)
+        }else if(texto === "imprimir-factura"){
+            nuevaVentana = new BrowserWindow({
+                parent:ventanaPrincipal,
+                width: 1000,
+                height: 500,
+                webPreferences: {
+                    contextIsolation: false,
+                    nodeIntegration: true
+                }
+            })
+            nuevaVentana.loadURL(url.format({
+                pathname: path.join(__dirname, `emitirComprobante/imprimirTicket.html`),
+                protocol: 'file',
+                slashes: true
+            }));
+            nuevaVentana.on('close', ()=> {
+                nuevaVentana = null
+            })
+            nuevaVentana.setMenuBarVisibility(false);
         }else if(texto === "imprimir-recibo"){
             nuevaVentana = new BrowserWindow({
                 parent:ventanaPrincipal,

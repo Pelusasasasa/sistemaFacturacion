@@ -597,6 +597,7 @@ ticketFactura.addEventListener('click',async (e) =>{
         //subirAAfip(venta)
         
         await ipcRenderer.send('nueva-venta',venta);
+        ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100"])
         //imprimirTikectFactura(venta,cliente)
         //imprimirItem(venta,cliente)
 

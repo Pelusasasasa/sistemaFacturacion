@@ -1,0 +1,1 @@
+{"version":3,"sources":["imprimir/imprimir-ticket.scss","imprimir/imprimir-ticket.css"],"names":[],"mappings":"AACI,4BAEI,eAAA,CADA,SCCR","file":"imprimir-ticket.css","sourcesContent":[".seccion-imprimir-ticket{\n    ul{\n        padding: 0%;\n        list-style: none;\n    }\n}",".seccion-imprimir-ticket ul {\n  padding: 0%;\n  list-style: none;\n}"]}
