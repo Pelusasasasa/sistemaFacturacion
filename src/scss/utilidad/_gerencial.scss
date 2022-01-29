@@ -6,6 +6,7 @@
   }
 
   .listar {
+    height: 50rem;
     border: 0.1rem solid black;
     table {
       border-collapse: collapse;
@@ -19,6 +20,12 @@
       .tbody {
         margin-top: 0.5rem;
         tr {
+          .total,.cliente{
+            font-weight: 900;
+          }
+          .vendedor{
+            text-align: center;
+          }
           &:hover {
             border-bottom: 0.1rem solid black;
             cursor: pointer;

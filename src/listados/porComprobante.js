@@ -71,7 +71,7 @@ function listarVentas(lista) {
                 <td>${venta.cliente}</td>
                 <td>${objeto._id}</td>
                 <td>${objeto.descripcion}</td>
-                <td>${cantidad}</td>
+                <td class= "egreso">${(parseFloat(cantidad)).toFixed(2)}</td>
                 <td>${objeto.precio_venta}</td>
                 <td>${(objeto.precio_venta*cantidad).toFixed(2)}</td>
             </tr>

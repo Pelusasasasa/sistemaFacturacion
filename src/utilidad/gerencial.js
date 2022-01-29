@@ -59,12 +59,12 @@ const listarVentasCanceladas = async (venta)=>{
         tbody.innerHTML += `
             <tr>
                 <td>${dia}/${mes}/${anio}</td>
-                <td>${cliente}</td>
+                <td class = "cliente">${cliente}</td>
                 <td>${objeto._id}</td>
                 <td>${objeto.descripcion}</td>
                 <td>${cantidad}</td>
-                <td>${cantidad*objeto.precio_venta}</td>
-                <td>${vendedor[0]}</td>
+                <td class = "total">${(cantidad*objeto.precio_venta).toFixed(2)}</td>
+                <td class="vendedor">${vendedor[0]}</td>
                 <td>${hora}:${minutos}:${segundos}</td>
 
             </tr>

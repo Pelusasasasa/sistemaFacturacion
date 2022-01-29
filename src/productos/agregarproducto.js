@@ -41,6 +41,20 @@ ipcRenderer.on('traerDolar',(e,args)=>{
     dolar = parseFloat(args)
 })
 
+codigo.addEventListener('blur',e=>{
+    if(codigo.value !== ""){
+        ipcRenderer.send('get-producto',codigo.value);
+        ipcRenderer.on('get-producto',(e,args)=>{
+            const producto = JSON.parse(args)
+            if(producto !== ""){
+                alert("El codigo ya es utilizador por " + producto.descripcion)
+                codigo.value = "";
+                codigo.focus(); 
+            }
+        })
+    }
+})
+
 tasaIva.addEventListener('blur  ', (e) =>{
     letraIva = devolverIva(e.target.value)
     valorTasaIva = tasaIvas(e.target.value);

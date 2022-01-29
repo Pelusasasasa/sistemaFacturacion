@@ -157,13 +157,28 @@
           </fieldset>
 
           <fieldset class="parteBuscar">
-            <div>
-              <legend>Producto</legend>
-              <input type="text" placeholder="codigo" id="codigo" name="codigo" />
+            <div class="parte-producto">
+              <div class="parte-producto_codigo ">
+                <input type="text" placeholder="codigo" id="codigo" name="codigo" />
+              </div>
+  
+              <div class="parte-producto_descripcion none">
+                <input type="text" placeholder="descripcion" id="descripcion" name="descripcion" />
+              </div>
+
+
+  
+              <div class="parte-producto_precio none">
+                <input type="text" placeholder="precio" id="precio" name="precio" />
+              </div>
+
+              <div class="parte-producto_cambioPrecio none">
+                <label for="cambioPrecio">Cambio Precio</label>
+                <input type="text" placeholder="cambioPrecio" id="cambioPrecio" name="cambioPrecio" />
+              </div>
             </div>
 
             <div class="empresa">
-              <label for="empresa">Empresa:</label>
               <select name="empresa" id="empresa">
                 <option value="Electro Avenida">Electro Avenida</option>
                 <option value="Seguridad">Seguridad</option>

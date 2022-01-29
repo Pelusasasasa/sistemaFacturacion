@@ -41,6 +41,15 @@
       border-collapse: collapse;
       width: 100%;
       .tbody {
+        tr{
+          .egreso{
+            text-align: center;
+          }
+        }
+        tr:hover{
+          background-color: gray;
+          cursor: pointer;
+        }
         .total {
           width: 100%;
           .tdTotal {

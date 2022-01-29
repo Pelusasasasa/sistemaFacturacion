@@ -121,9 +121,9 @@ const listarLista = (lista,situacion,tipo)=>{
     (situacion === "negro") ? (aux = "Presupuesto") : (aux = "Ticket Factura")
     listaGlobal = lista.filter(e=>{
         if (aux === "Presupuesto") {
-            return  (e.tipo_comp === aux ||  e.tipo_comp === "Recibos")   
+            return  (e.tipo_comp === aux ||  e.tipo_comp === "Recibos_P")   
         }else{
-            return (e.tipo_comp === aux)
+            return (e.tipo_comp === aux) || e.tipo_comp === "Recibos"
         }
     })
     listar.innerHTML = '';
@@ -150,7 +150,8 @@ const listarLista = (lista,situacion,tipo)=>{
 
         saldoAcumulativo = (venta.tipo_comp === "Presupuesto" || venta.tipo_comp === "Ticket Factura" ) ? saldoAcumulativo + venta.precioFinal : saldoAcumulativo-venta.precioFinal
         if (venta.length !== 0) {
-            let fecha = new Date(venta.fecha) 
+            let fecha = new Date(venta.fecha)
+            console.log(listaGlobal);
             if (tipo === "compensada") {
                 listar.innerHTML += `
                 <tr id="${venta.nro_comp}">
@@ -227,16 +228,12 @@ let saldoABorrar = 0
                     total=sacarTotal(ventaAModificar.productos)
                     ventaAModificar.precioFinal = total.toFixed(2)
             }
-            // if (confirm("Imprimir")) {
-            //     
-            // }
             ipcRenderer.send('ventaModificada',[ventaAModificar,ventaAModificar.nro_comp,situacion])
             ipcRenderer.on('devolverVenta',(e,args)=>{
                 let [venta,cliente ] = JSON.parse(args)
-                console.log(venta);
                 ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"CD"])
             })
-            //location.reload()
+            location.reload()
             })
         })
         }else{

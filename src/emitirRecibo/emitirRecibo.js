@@ -26,7 +26,8 @@ document.addEventListener('keydown',(event) =>{
        document.addEventListener('keydown',(e) =>{
            if (e.key === "F9" && situacion === "blanco") {
                mostrarNegro();
-               situacion = 'negro'
+               situacion = 'negro';
+               (parseFloat(cliente.saldo_p)>0) && saldoAfavor.setAttribute('disabled',"")
             listarLista(nuevaLista,situacion)
            }
        })
@@ -39,6 +40,7 @@ document.addEventListener('keydown',(event) =>{
           if (e.key === "F3" && situacion === "negro") {
               ocultarNegro();
               situacion = 'blanco'
+              (parseFloat(cliente.saldo)>0) && saldoAfavor.setAttribute('disabled',"")
             listarLista(nuevaLista,situacion)
           }
       })
@@ -106,6 +108,7 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
 })
 
 const listarLista = (lista,situacion)=>{
+    console.log(lista);
     let aux
     (situacion === "negro") ? (aux = "Presupuesto") : (aux = "Ticket Factura")
     listaGlobal = lista.filter(e=>e.tipo_comp === aux)
@@ -139,6 +142,7 @@ const listarLista = (lista,situacion)=>{
     });
 }
 let a;
+//Vemos que tr se selecciono y lo guardamos en una varaible
     listar.addEventListener('click',e=>{
         trSeleccionado = e.path[2]
         inputSeleccionado = e.path[0]
@@ -157,27 +161,26 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
                 }
             });
 
-            if (!arregloParaImprimir.includes(trSeleccionado.id)) {
-                const renglon = trSeleccionado.children
-                let objeto = {
-                    fecha: renglon[0].innerHTML,
-                    comprobante: renglon[1].innerHTML,
-                    numero: renglon[2].innerHTML,
-                    pagado: renglon[5].children[0].value,
-                    saldo: renglon[6].innerHTML
-                };
-                (inputSeleccionado.value !== "")  && arregloParaImprimir.push(objeto);
-            }
-
-            console.log(trSeleccionado.children[5].children[0]);
             if ((trSeleccionado.children[6].innerHTML < 0)) {
                 alert("El monto abonado es mayor al de la venta")
                 trSeleccionado.children[6].innerHTML = aux;
                 trSeleccionado.children[5].children[0].value = "";
                 trSeleccionado.children[5].children[0].focus();
              }else{
-                
-                console.log(aDescontar);
+                if (!arregloParaImprimir.some(objeto => objeto.numero === trSeleccionado.id)) {
+                    const renglon = trSeleccionado.children
+                    let objeto = {
+                        fecha: renglon[0].innerHTML.trim(),
+                        comprobante: renglon[1].innerHTML.trim(),
+                        numero: renglon[2].innerHTML.trim(),
+                        pagado: renglon[5].children[0].value.trim(),
+                        saldo: renglon[6].innerHTML.trim()
+
+                    };
+                    let saldo = objeto.pagado;
+                    console.log(saldo === cliente.saldo_p);
+                    (inputSeleccionado.value !== "")  && arregloParaImprimir.push(objeto);
+                }
                 venta.abonado = parseFloat(venta.abonado) + parseFloat(inputSeleccionado.value);
                 (venta.abonado === venta.precioFinal) && (venta.pagado = true);
                 if(a === inputSeleccionado.id){
@@ -195,6 +198,7 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
                 }else{
                     saldoAfavor.focus()
                 }
+                console.log(arregloParaImprimir);
         }
 
         }
@@ -231,16 +235,14 @@ const hacerRecibo = async()=>{
     recibo.cliente = cliente._id
     recibo.vendedor = Vendedor
     recibo.precioFinal = parseFloat(total.value).toFixed(2);
-    recibo.tipo_comp = "Recibos";
+    recibo.tipo_comp = (situacion === "blanco" ? "Recibos" : "Recibos_P" );
     const aux = (situacion === "negro") ? "saldo_p" : "saldo"
     let saldoFavor = 0;
     saldoFavor = (saldoAfavor.value !== "") && parseFloat(saldoAFavor.value);
     recibo.abonado = saldoAfavor.value
     const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2));
-    console.log(saldoNuevo)
     ipcRenderer.send('modificarSaldo',[cliente._id,aux,saldoNuevo])
     ipcRenderer.send('modificamosLasVentas',nuevaLista)
-    console.log(recibo)
     ipcRenderer.send('nueva-venta',recibo)
     ipcRenderer.send('imprimir-venta',[cliente,recibo,false,1,"Recibo",arregloParaImprimir,total.value])
     location.reload()
@@ -287,6 +289,12 @@ const inputsCliente = async (cliente)=>{
     localidad.value = cliente.localidad;
     cuit.value = cliente.cuit;
     fecha.value = mostrarFecha;
+
+    if (situacion === "blanco" && parseFloat(cliente.saldo) > 0)  {
+        saldoAFavor.setAttribute("disabled","")
+    }else if(situacion === "negro" && parseFloat(cliente.saldo_p) > 0){
+        saldoAFavor.setAttribute("disabled","")
+    }
 
     await ipcRenderer.invoke('traerVentas',cliente.listaVentas).then((args)=>{
         nuevaLista = []

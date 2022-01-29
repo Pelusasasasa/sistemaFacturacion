@@ -18,6 +18,14 @@ const cantidad = document.querySelector('#cantidad');
 const descripcion = document.querySelector('#descripcion')
 const Pedido = {}
 
+codigo.addEventListener('keydown',e=>{
+    if(e.key === "Enter" || e.key === "Tab"){  
+        ipcRenderer.send('get-producto',e.target.value)
+    }else if((codigo.value.length === 3 || codigo.value.length === 7) && e.key !== "-" && e.key !== "Backspace"){
+        codigo.value = codigo.value + "-"
+    }
+
+})
 
 //asignamos a cliente un nombre
 let cliente = nombre.value
@@ -51,7 +59,7 @@ codigo.addEventListener('keypress', (e) => {
     if (e.key === 'Enter') {
         if (codigo.value === "") {
             ipcRenderer.send('abrir-ventana',"productos")
-        }else if(codigo.value === "9999"){
+        }else if(codigo.value === "999-999"){
             cantidad.classList.remove('none')
             descripcion.classList.remove('none')
         }else{
@@ -65,6 +73,7 @@ codigo.addEventListener('keypress', (e) => {
                     })
                 }else{
                     alert("El producto no existe")
+                    codigo.value = ""
                 }
             })
         }
@@ -75,7 +84,7 @@ codigo.addEventListener('keypress', (e) => {
 cantidad.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
         const producto = {
-            _id: "9999",
+            _id: "999-999",
             descripcion:descripcion.value,
         }
         mostrarVentas(producto,cantidad.value)

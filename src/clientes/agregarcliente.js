@@ -1,5 +1,8 @@
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
+
+
+
 const botonEnviar = document.querySelector('#boton-enviar')
 const nombre = document.querySelector('#nombre')
 const localidad = document.querySelector('#localidad')
@@ -14,13 +17,13 @@ const condicionFacturacion = document.querySelector('#conFac')
 const limite = document.querySelector('#limite')
 
 const moroso = document.querySelectorAll('input[name="moroso"]')
-console.log(moroso)
 const observaciones = document.querySelector('#observaciones')
 const salir = document.querySelector('.salir')
 const saldo = "0"
 const saldo_p = "0"
 const listaVenta = []
-const {ipcRenderer} = require('electron')
+const {ipcRenderer} = require('electron');
+const { default: cuitValidator } = require("cuit-validator");
 nombre.focus()
 let condicion = ""
 
@@ -52,7 +55,13 @@ direccion.addEventListener('keypress',e=>{
 })
 dnicuit.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        email.focus()
+        if(!cuitValidator(dnicuit.value)){
+            alert("El cuit no es valido");
+            dnicuit.value = "";
+            dnicuit.focus();
+        }else{
+            email.focus();
+        }
     }
 })
 

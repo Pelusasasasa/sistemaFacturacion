@@ -4,8 +4,8 @@ let URL
 if (a === 1) {
     URL = "http://179.62.24.12/api/";
 }else if(a === 2){
-    //URL = "http://192.168.1.108:4000/api/";
-    URL = "http://192.168.0.124:4000/api/";
+    URL = "http://192.168.1.11:4000/api/";
+    //URL = "http://192.168.0.124:4000/api/";
 }
 let conexion;
 let tipoConexion;

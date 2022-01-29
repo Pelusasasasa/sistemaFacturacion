@@ -182,6 +182,58 @@ codigo.addEventListener('keypress',(e) => {
     }
     if (e.key === 'Enter') {
         if (e.target.value !== "") {
+            if (codigo.value === "999-999") {
+                const descripcion = document.querySelector('.parte-producto_descripcion')
+                const precio = document.querySelector('.parte-producto_precio')
+                descripcion.classList.remove('none')
+                precio.classList.remove('none')
+                descripcion.children[0].focus()
+                precio.addEventListener('keypress',e=>{
+                    if (e.key === "Enter") {
+                        const product = {
+                            descripcion: descripcion.children[0].value,
+                            precio_venta: parseFloat(precio.children[0].value),
+                            _id:codigo.value
+                        }
+                        dialogs.prompt("Cantidad",async valor =>{
+                            await mostrarVentas(product,valor)
+                            codigo.value = "";
+                            codigo.focus()
+                            precio.classList.add('none')
+                            descripcion.classList.add('none')
+                        })
+                    }
+
+                })
+
+            }else if(codigo.value === "888-888"){
+                const precio = document.querySelector('.parte-producto_precio')
+                let descripcion = document.querySelector('.parte-producto_descripcion')
+                descripcion.classList.remove('none')
+                ipcRenderer.send('get-producto',"888-888");
+                ipcRenderer.on('get-producto',(e,args)=>{
+                    descripcion.children[0].value = JSON.parse(args).descripcion;
+                })
+                precio.classList.remove('none')
+                precio.children[0].focus()
+                precio.addEventListener('keypress',e=>{
+                    if (e.key === "Enter") {
+                        const product = {
+                            descripcion: descripcion.children[0].value,
+                            precio_venta: parseFloat(precio.children[0].value),
+                            _id:codigo.value
+                        }
+                        dialogs.prompt("Cantidad",async valor =>{
+                            await mostrarVentas(product,valor)
+                            codigo.value = "";
+                            codigo.focus()
+                            precio.classList.add('none')
+                            descripcion.classList.add('none')
+                        })
+                    }
+                })
+            }else{
+
             ipcRenderer.send('get-producto',e.target.value)
             ipcRenderer.once('get-producto',(a,args)=>{
                 if (JSON.parse(args).length === 0) {
@@ -207,6 +259,7 @@ codigo.addEventListener('keypress',(e) => {
                         })   
                 }
             })
+        }
         }else{
             ipcRenderer.send('abrir-ventana',"productos")
         }
@@ -220,8 +273,7 @@ ipcRenderer.on('mando-el-producto',(e,args) => {
 })
 let id = 1 //id de la tabla de ventas
 function mostrarVentas(objeto,cantidad) {
-
-    const alertaStock = document.querySelector('.alertaStock')
+    (objeto.precio_venta === "0.00" || objeto.precio_venta === "0.0" || objeto.precio_venta === "0") && alert("Precio del producto en 0")
 
     if (objeto.stock <= 0) {
         alert("Stock En Negativo")
@@ -243,13 +295,35 @@ function mostrarVentas(objeto,cantidad) {
     id++;
     totalPrecioProducos += (objeto.precio_venta * cantidad);
     listaProductos.push({objeto,cantidad});
-    venta.productos = listaProductos;
 }
+
+const cambioPrecio = document.querySelector('.parte-producto_cambioPrecio ')
 
 resultado.addEventListener('click',e=>{
     inputseleccionado(e.path[1])
     if (yaSeleccionado) {
         borrarProducto.classList.remove('none')
+        cambioPrecio.classList.remove('none')
+    }
+})
+
+
+//Para Cambiar el precio de un producto
+cambioPrecio.children[1].addEventListener('keypress',(e)=>{
+    if (e.key === "Enter") {
+        
+        const  producto = listaProductos.find(({objeto,cantidad})=> objeto.identificadorTabla === yaSeleccionado.id);
+        borrarUnProductoDeLaLista(yaSeleccionado)
+        if (producto) {
+            const index = listaProductos.indexOf(producto)
+            listaProductos.splice(index,1)
+        }
+        producto.objeto.precio_venta = parseFloat(cambioPrecio.children[1].value)
+        mostrarVentas(producto.objeto,producto.cantidad)
+        cambioPrecio.children[1].value = "";
+        cambioPrecio.classList.add('none');
+        codigo.focus()
+        
     }
 })
 
@@ -420,7 +494,7 @@ async function movimientoProducto(cantidad,objeto){
     movProducto.descripcion = objeto.descripcion
     movProducto.cliente = cliente.cliente
     movProducto.comprobante = tipoVenta
-    movProducto.tipo_comp = "C"
+    movProducto.tipo_comp = venta.tipo_comp
     movProducto.nro_comp=venta.nro_comp
     movProducto.egreso = cantidad
     movProducto.stock = objeto.stock
@@ -523,6 +597,7 @@ const sacarIdentificadorTabla = (arreglo)=>{
 const presupuesto = document.querySelector('.presupuesto')
 presupuesto.addEventListener('click',async (e)=>{
     e.preventDefault()
+    venta.productos = listaProductos
     verElTipoDeVenta(tiposVentas) //vemos si es contado,cuenta corriente o presupuesto en el input[radio]
     if (tipoPago === "Ninguno") {
         alert("Seleccionar un modo de venta")
@@ -536,27 +611,27 @@ presupuesto.addEventListener('click',async (e)=>{
         venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.Cod_comp,venta.tipo_pago);
         venta.empresa = inputEmpresa.value;
         venta.pagado = verSiPagoONo(venta.tipo_pago);//Ejecutamos para ver si la venta se pago o no
-        if (!valorizado.checked && venta.tipo_pago === "CC") {
-        venta.precioFinal = "0.1" 
-        }
-        sacarIdentificadorTabla(venta.productos);
-        if (venta.tipo_pago !== "PP") {
-            venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
-        for (let producto of venta.productos){
-                sacarStock(producto.cantidad,producto.objeto)
-                await movimientoProducto(producto.cantidad,producto.objeto)
-            }
-        }
-        actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-        ipcRenderer.send('nueva-venta',venta);
-        if (impresion.checked) {
-            if (venta.tipo_pago === "CC") {
-                ipcRenderer.send('imprimir-venta',[venta,cliente,true,2])
-            }else{
-                ipcRenderer.send('imprimir-venta',[venta,cliente,false,1])
-            }
-        }
-        location.reload()
+         if (!valorizado.checked && venta.tipo_pago === "CC") {
+         venta.precioFinal = "0.1" 
+         }
+         sacarIdentificadorTabla(venta.productos);
+         if (venta.tipo_pago !== "PP") {
+             venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
+         for (let producto of venta.productos){
+                 sacarStock(producto.cantidad,producto.objeto)
+                 await movimientoProducto(producto.cantidad,producto.objeto)
+             }
+         }
+         actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+         ipcRenderer.send('nueva-venta',venta);
+         if (impresion.checked) {
+             if (venta.tipo_pago === "CC") {
+                 ipcRenderer.send('imprimir-venta',[venta,cliente,true,2])
+             }else{
+                 ipcRenderer.send('imprimir-venta',[venta,cliente,false,1])
+             }
+         }
+         location.reload()
     }
 })
 
@@ -564,6 +639,7 @@ presupuesto.addEventListener('click',async (e)=>{
 const ticketFactura = document.querySelector('.ticketFactura')
 ticketFactura.addEventListener('click',async (e) =>{
     e.preventDefault()
+    venta.productos = listaProductos;
      tipoVenta = "Ticket Factura"
      verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
      if (tipoPago === "Ninguno") {
@@ -604,7 +680,6 @@ ticketFactura.addEventListener('click',async (e) =>{
 
         if (borraNegro) {
             ipcRenderer.on('clienteModificado',async(e,args)=>{
-                console.log("A");
                 await borrarCuentaCorriente(ventaDeCtaCte)
 
                 borraNegro && window.close();
@@ -692,21 +767,7 @@ async function generarQR(texto) {
  }
  //lo usamos para borrar un producto de la tabla
 borrarProducto.addEventListener('click',e=>{
-    if (yaSeleccionado) {
-        producto = listaProductos.find(e=>e.objeto.identificadorTabla === yaSeleccionado.id);
-        total.value = (parseFloat(total.value)-(parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta))).toFixed(2)
-        Preciofinal = (Preciofinal - (parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)).toFixed(2)) 
-        listaProductos.forEach(e=>{
-            if (yaSeleccionado.id === e.objeto.identificadorTabla) {
-                    listaProductos = listaProductos.filter(e=>e.objeto.identificadorTabla !== yaSeleccionado.id)
-                    totalPrecioProducos -= (e.objeto.precio_venta*e.cantidad);
-            }
-        })
-        const a = yaSeleccionado
-
-        a.parentNode.removeChild(a)
-    }
-    codigo.focus()
+    borrarUnProductoDeLaLista(yaSeleccionado)
 })
 
 
@@ -1032,6 +1093,13 @@ dnicuit.addEventListener('keypress',e=>{
     }
 })
 
+descuento.addEventListener('keypress',e=>{
+    if (e.key === "Enter" && situacion==="blanco") {
+        ticketFactura.focus()
+    }else if(e.key === "Enter" && situacion==="negro"){
+        presupuesto.focus()
+    }
+})
 
 function selecciona_value(idInput) {
     valor_input = document.getElementById(idInput).value;
@@ -1048,4 +1116,28 @@ function selecciona_value(idInput) {
     range.moveStart('character', longitud);
     range.select();
     }
+    }
+
+    const borrarUnProductoDeLaLista = (productoSeleccionado)=>{
+        if (productoSeleccionado) {
+            producto = listaProductos.find(e=>e.objeto.identificadorTabla === productoSeleccionado.id);
+            total.value = (parseFloat(total.value)-(parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta))).toFixed(2)
+            Preciofinal = (Preciofinal - (parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)).toFixed(2)) 
+            listaProductos.forEach(e=>{
+                if (productoSeleccionado.id === e.objeto.identificadorTabla) {
+                        listaProductos = listaProductos.filter(e=>e.objeto.identificadorTabla !== productoSeleccionado.id)
+                        totalPrecioProducos -= (e.objeto.precio_venta*e.cantidad);
+                }
+            })
+            const a = productoSeleccionado
+    
+            a.parentNode.removeChild(a)
+        }
+        let nuevoTotal = 0;
+        listaProductos.forEach(({objeto,cantidad})=>{
+            nuevoTotal += (objeto.precio_venta * cantidad);
+        })
+        total.value = (nuevoTotal - (nuevoTotal*parseFloat(descuento.value)/100)).toFixed(2)
+        descuentoN.value = (nuevoTotal*parseFloat(descuento.value)/100).toFixed(2)
+        codigo.focus()
     }

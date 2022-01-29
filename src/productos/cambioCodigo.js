@@ -10,6 +10,8 @@ const diescripcion = document.querySelector('#descripcion')
 codigo.addEventListener('keydown',e=>{
     if(e.key === "Enter" || e.key === "Tab"){  
         ipcRenderer.send('get-producto',e.target.value)
+    }else if((codigo.value.length === 3 || codigo.value.length === 7) && e.key !== "-" && e.key !== "Backspace"){
+        codigo.value = codigo.value + "-"
     }
 
 })
