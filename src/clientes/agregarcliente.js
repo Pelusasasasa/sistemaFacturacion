@@ -26,12 +26,20 @@ const {ipcRenderer} = require('electron');
 const { default: cuitValidator } = require("cuit-validator");
 nombre.focus()
 let condicion = ""
+const normal = document.querySelector('input[name=moroso]')
 
 nombre.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        localidad.focus()
+        conIva.focus()
     }
 })
+conIva.addEventListener('keypress',e=>{
+    e.preventDefault()
+    if (e.key === "Enter") {
+        direccion.focus()
+    }
+})
+
 localidad.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
         provincia.focus()
@@ -44,23 +52,28 @@ provincia.addEventListener('keypress',e=>{
 })
 cod_postal.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        direccion.focus()
+        dnicuit.focus()
     }
 })
 
 direccion.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        dnicuit.focus()
+        localidad.focus()
     }
 })
 dnicuit.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        if(!cuitValidator(dnicuit.value)){
-            alert("El cuit no es valido");
-            dnicuit.value = "";
-            dnicuit.focus();
+        console.log(conIva.value);
+        if((dnicuit.value.length !== 11 && conIva.value !== "Consumidor Final") || (dnicuit.value.length !== 8 && conIva.value === "Consumidor Final")){
+            alert("El dni o cuit no es Valido")
         }else{
-            email.focus();
+            if(!cuitValidator(dnicuit.value) && dnicuit.value.length === 11){
+                alert("El cuit no es valido");
+                dnicuit.value = "";
+                dnicuit.focus();
+            }else{
+                email.focus();
+            }
         }
     }
 })
@@ -87,6 +100,19 @@ telefono.addEventListener('keypress',e=>{
 limite.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
         condicionFacturacion.focus()
+    }
+})
+condicionFacturacion.addEventListener('keypress',e=>{
+    e.preventDefault()
+    if (e.key === "Enter") {
+        normal.focus()
+    }
+})
+
+normal.addEventListener('keypress',e=>{
+    e.preventDefault()
+    if (e.key === "Enter") {
+        observaciones.focus()
     }
 })
 

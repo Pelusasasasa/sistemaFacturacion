@@ -117,30 +117,30 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
 
 function listarVentas(ventas,situacion) {
     ventas = ventas.filter(venta => {
-        if ((venta.tipo_pago === "CC" && (venta.tipo_comp === "Presupuesto" || venta.tipo_comp === "Ticket Factura"))) {
+        if (((venta.tipo_comp === "Presupuesto" || venta.tipo_comp === "Ticket Factura"))) {
             return venta
-        }else if((venta.tipo_pago === "CD") && (venta.tipo_comp === "Recibos")){
+        }else if((venta.pagado === true) && (venta.tipo_comp === "Recibos" || venta.tipo_comp === "Recibos_P")){
             return venta
         }
     })
     tbody.innerHTML = ""
     const aux = (situacion === "blanco") ? "Ticket Factura" : "Presupuesto";
-    let listaAux = []
-    listaAux = ventas.filter(e=>{
-        if (e.tipo_comp === "Presupuesto") {
-            return (e.pagado === false)
-        }else{
-            return e
-        }
-    })
+    let listaAux = ventas
+    // listaAux = ventas.filter(e=>{
+    //     if (e.tipo_comp === "Presupuesto") {
+    //         return (e.pagado === false)
+    //     }else{
+    //         return e
+    //     }
+    // })
 
     if (aux === "Presupuesto") {
        listaAux = listaAux.filter(e=>{
-            return (e.tipo_comp === aux || e.tipo_comp === "Recibos")
+            return (e.tipo_comp === aux || e.tipo_comp === "Recibos_P")
         })
     }else{
         listaAux = listaAux.filter(e=>{
-            return (e.tipo_comp === aux)
+            return (e.tipo_comp === aux || e.tipo_comp === "Recibos")
         })
     }
     let saldoAnterior = 0
@@ -149,10 +149,15 @@ function listarVentas(ventas,situacion) {
         if (situacion === "negro") {
             saldoAnterior += (venta.tipo_comp === "Presupuesto") ? venta.precioFinal - parseFloat(venta.abonado) : 0    
         }else{
-            saldoAnterior += (venta.tipo_comp === "Ticket Factura") ? venta.precioFinal - parseFloat(venta.abonado) : 0
+            saldoAnterior += (venta.tipo_comp === "Ticket Factura") ? venta.precioFinal: 0
+            let abonado = venta.abonado !== "" ? parseFloat(venta.abonado) : 0
+            abonado = venta.precioFinal > parseFloat(venta.abonado) ? 0 : abonado
+            saldoAnterior -= (venta.tipo_comp === "Recibos") ? venta.precioFinal  - abonado: 0
+            console.log(saldoAnterior);
         }
-       
     })
+    console.log(saldoAnterior);
+    parseFloat(saldoAnterior.toFixed(2))
     if (situacion === "negro") {
         saldoAnterior = (cliente.saldo_p - saldoAnterior).toFixed(2);
     }else{
@@ -166,11 +171,10 @@ function listarVentas(ventas,situacion) {
             let debe = 0
             if (situacion === "negro") {
                 debe = (venta.tipo_comp === "Presupuesto" && venta.tipo_pago === "CC") ? (parseFloat(venta.precioFinal)) : 0;
-                haber = (venta.tipo_comp === "Recibos") ? (parseFloat(venta.precioFinal)) : 0;
+                haber = (venta.tipo_comp === "Recibos_P") ? (parseFloat(venta.precioFinal)) : 0;
             }else{
-                console.log(venta.tipo_comp)
                 debe = (venta.tipo_comp === "Ticket Factura" && venta.tipo_pago === "CC") ? (parseFloat(venta.precioFinal)) : 0
-                haber =  (venta.tipo_comp === "Reciboss") ? (parseFloat(venta.precioFinal)) : 0
+                haber =  (venta.tipo_comp === "Recibos") ? (parseFloat(venta.precioFinal)) : 0
             }
 
             let saldito = parseFloat(saldoAnterior) - haber + debe;

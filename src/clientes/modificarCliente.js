@@ -88,14 +88,6 @@ salir.addEventListener('click',()=>{
     window.close()
 })
 
-const eliminar = document.querySelector('.eliminar')
-
-eliminar.addEventListener('click',(e)=>{
-    e.preventDefault()
-    ipcRenderer.send('eliminar-cliente',_id)
-    window.close()
-})
-
 const doc = document
 doc.addEventListener('keydown',e=>{
     if (e.key==="Escape") {

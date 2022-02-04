@@ -103,21 +103,37 @@
   }
 
   .total {
+    p{
+      font-weight: 100;
+    }
     border: 0.1rem solid black;
     display: flex;
     justify-content: space-around;
-    .flex-center {
-      p {
-        margin: 0;
-      }
+    .flex-center{
       display: flex;
       justify-content: center;
+      margin-left: 20rem;
+      p{
+        display: inline-flex;
+      }
     }
-    .flex-end {
-      p,
-      h3 {
+    .flex-start {
+      p {
+        display: inline-flex;
         margin: 0;
       }
+      margin-left: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    .flex-end {
+      p{
+        margin: 0;
+        font-weight: 800;
+      }
+      align-items: center;
+      margin-right: 2rem;
       width: 75%;
       display: flex;
       justify-content: flex-end;

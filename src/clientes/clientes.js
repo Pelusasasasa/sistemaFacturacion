@@ -5,6 +5,7 @@ const dialogs = Dialogs()
 
 const buscarCliente = document.querySelector('#buscarCliente')
 const resultado = document.querySelector('#resultado')
+const eliminar = document.querySelector('.eliminar')
 
 
 ipcRenderer.on('get-clientes',(e,args) =>{
@@ -24,6 +25,7 @@ ipcRenderer.on('get-clientes',(e,args) =>{
         if(nombre.indexOf(texto) !== -1){
            resultado.innerHTML += `
            <tr id="${cliente._id}">
+                <td >${cliente._id}</td>
                 <th id="nombre">${cliente.cliente}</th>
                 <td >${cliente.localidad}</td>
                 <td>${cliente.direccion}</td>
@@ -83,10 +85,25 @@ ipcRenderer.on('pasandocliente',(e,args) =>{
 })
 
 const inputseleccionado = (e) =>{
-    const yaSeleccionado = document.querySelector('.seleccionado')
+    yaSeleccionado = document.querySelector('.seleccionado')
     yaSeleccionado && yaSeleccionado.classList.remove('seleccionado')
    e.classList.toggle('seleccionado')
 }
+
+
+eliminar.addEventListener('click',e=>{
+    e.preventDefault()
+    const clienteEliminar = document.querySelector('.seleccionado')
+    if (clienteEliminar ) {
+        const cliente = clienteEliminar.children[1].innerHTML;
+        if(confirm("Eliminar Cliente " + cliente)){
+            ipcRenderer.send('eliminar-cliente',clienteEliminar.id);
+            location.reload()
+        }
+    }else{
+        alert("Cliente no Seleccionado")
+    }
+})
 
 document.addEventListener('keydown',e=>{
     if(e.key === "Escape"){

@@ -71,14 +71,15 @@ costoDolares.addEventListener('blur', (e) =>{
 })
 
 ivaImp.addEventListener('focus' , (e) =>{
-    (costoPesos.value === "") ? (ivaImp.value = parseFloat((costoDolares.value * valorTasaIva / 100).toFixed(3))) : ivaImp.value = parseFloat(costoT.toFixed(2))
+    
+    console.log(ivaImp.value);
 
 })
 
 costoTotal.addEventListener('focus' , (e) =>{
+    (costoPesos.value === "") ? (ivaImp.value = parseFloat((costoDolares.value * valorTasaIva / 100).toFixed(2))) : ivaImp.value = parseFloat(costoT.toFixed(2))
     costoT = parseFloat(ivaImp.value)
     let costoP = 0;
-
     if ((costoPesos.value) === "") {
         costoP = parseFloat(costoDolares.value)*dolar
         const sumar = parseFloat((costoP*valorTasaIva/100).toFixed(3))

@@ -144,6 +144,8 @@ const listarLista = (lista,situacion,tipo)=>{
             pagado = "0.00";
         }else if (((venta.tipo_comp === "Ticket Factura" || venta.tipo_comp === "Presupuesto") && tipo === "compensada")) {
             pagado = (parseFloat(venta.abonado)).toFixed(2)
+        }else if((venta.tipo_comp === "Recibos" || venta.tipo_comp === "Recibos_P") && venta.abonado !== "0" && tipo === "compensada" ){
+            pagado = parseFloat(venta.abonado).toFixed(2)
         }else{
             pagado = parseFloat(venta.precioFinal).toFixed(2)
         }

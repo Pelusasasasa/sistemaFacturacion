@@ -602,6 +602,7 @@ presupuesto.addEventListener('click',async (e)=>{
     if (tipoPago === "Ninguno") {
         alert("Seleccionar un modo de venta")
         }else{
+        venta.nombreCliente = buscarCliente.value;
         tipoVenta="Presupuesto"
         venta._id = await tamanioVentas()
         venta.descuento = (descuentoN.value);
@@ -611,8 +612,10 @@ presupuesto.addEventListener('click',async (e)=>{
         venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.Cod_comp,venta.tipo_pago);
         venta.empresa = inputEmpresa.value;
         venta.pagado = verSiPagoONo(venta.tipo_pago);//Ejecutamos para ver si la venta se pago o no
+        let valorizadoImpresion = "valorizado"
          if (!valorizado.checked && venta.tipo_pago === "CC") {
          venta.precioFinal = "0.1" 
+         valorizadoImpresion="no valorizado"
          }
          sacarIdentificadorTabla(venta.productos);
          if (venta.tipo_pago !== "PP") {
@@ -626,9 +629,9 @@ presupuesto.addEventListener('click',async (e)=>{
          ipcRenderer.send('nueva-venta',venta);
          if (impresion.checked) {
              if (venta.tipo_pago === "CC") {
-                 ipcRenderer.send('imprimir-venta',[venta,cliente,true,2])
+                 ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion])
              }else{
-                 ipcRenderer.send('imprimir-venta',[venta,cliente,false,1])
+                 ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion])
              }
          }
          location.reload()
@@ -645,6 +648,7 @@ ticketFactura.addEventListener('click',async (e) =>{
      if (tipoPago === "Ninguno") {
         alert("Seleccionar un modo de venta")
         }else{
+        venta.nombreCliente = buscarCliente.value;
         venta._id = await tamanioVentas();
         venta.observacion = observaciones.value
         venta.fecha = new Date()
@@ -659,8 +663,10 @@ ticketFactura.addEventListener('click',async (e) =>{
         venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
         venta.comprob = venta.nro_comp;
 
-        if (venta.precioFinal >=10000) {
+
+        if (venta.precioFinal >=10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" && dnicuit.value === "00000000" && direccion.value === "CHAJARI")) {
             alert("Factura mayor a 10000, poner datos cliente")
+            console.log("a");
         }else{
         venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente);
         venta.empresa = inputEmpresa.value;

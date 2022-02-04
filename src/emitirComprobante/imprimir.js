@@ -16,6 +16,7 @@ const fecha = document.querySelector('.fecha')
         const tbody = document.querySelector('.tbody')
         const seccionQR = document.querySelector('.seccionQR')
         const tipoFactura = document.querySelector('.tipoFactura')
+        const descuento = document.querySelector('.descuento')
         const tomarFecha = new Date()
         const dia = tomarFecha.getDate() 
         const mes = tomarFecha.getMonth() + 1
@@ -24,7 +25,7 @@ const fecha = document.querySelector('.fecha')
         const minuto = tomarFecha.getMinutes()
         const segundo = tomarFecha.getSeconds()
 
-        const listar = (venta,cliente,cd)=>{
+        const listar = (venta,cliente,valorizado)=>{
             const lista = venta.productos
             numero.innerHTML=venta.nro_comp
             clientes.innerHTML = cliente.cliente
@@ -39,10 +40,12 @@ const fecha = document.querySelector('.fecha')
             precioFinal.innerHTML=venta.precioFinal
             tipoPago.innerHTML= venta.tipo_pago
             tipoFactura.innerHTML = "R"
+            descuento.innerHTML = venta.descuento
     
-            if (venta.tipo_pago === "CC" && cd !== "CD") {
+            if (venta.tipo_pago === "CC" && valorizado !== "valorizado") {
                 precioFinal.innerHTML = ""
                 subtotal.innerHTML=""
+                descuento.innerHTML= ""
             }
     
     
@@ -83,7 +86,7 @@ const fecha = document.querySelector('.fecha')
         })
 
     ipcRenderer.on('imprimir',(e,args)=>{
-        [venta,cliente,,,cd] = JSON.parse(args)
-        console.log(cd);
-        listar(venta,cliente,cd)
+        [venta,cliente,,,,valorizado] = JSON.parse(args)
+        console.log(valorizado);
+        listar(venta,cliente,valorizado)
     })

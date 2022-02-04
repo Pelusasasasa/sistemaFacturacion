@@ -108,7 +108,6 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
 })
 
 const listarLista = (lista,situacion)=>{
-    console.log(lista);
     let aux
     (situacion === "negro") ? (aux = "Presupuesto") : (aux = "Ticket Factura")
     listaGlobal = lista.filter(e=>e.tipo_comp === aux)
@@ -140,6 +139,7 @@ const listarLista = (lista,situacion)=>{
             `
         }
     });
+
 }
 let a;
 //Vemos que tr se selecciono y lo guardamos en una varaible
@@ -147,6 +147,7 @@ let a;
         trSeleccionado = e.path[2]
         inputSeleccionado = e.path[0]
     })
+
 inputSeleccionado.addEventListener('keydown',(e)=>{
     if (e.key==="Tab" || e.key === "Enter") {
         const aux = trSeleccionado.children[6].innerHTML
@@ -155,9 +156,12 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
             trSeleccionado.children[6].innerHTML = (parseFloat(trSeleccionado.children[3].innerHTML)-parseFloat(trSeleccionado.children[4].innerHTML) - parseFloat(inputSeleccionado.value)).toFixed(2)
         }
             let venta
+            let abonadoAnterior
             nuevaLista.forEach(e =>{
                 if(e.nro_comp === trSeleccionado.id){    
                     venta = e
+                    abonadoAnterior=e.abonado;
+                    console.log(abonadoAnterior);
                 }
             });
 
@@ -167,6 +171,7 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
                 trSeleccionado.children[5].children[0].value = "";
                 trSeleccionado.children[5].children[0].focus();
              }else{
+                 //Si una venta y ase encuentra en el arreglo de imprimir no entramo al if sino agregamos la venta al arreglo
                 if (!arregloParaImprimir.some(objeto => objeto.numero === trSeleccionado.id)) {
                     const renglon = trSeleccionado.children
                     let objeto = {
@@ -177,14 +182,14 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
                         saldo: renglon[6].innerHTML.trim()
 
                     };
-                    let saldo = objeto.pagado;
-                    console.log(saldo === cliente.saldo_p);
                     (inputSeleccionado.value !== "")  && arregloParaImprimir.push(objeto);
+                }else{
+                    const modificarSaldo = arregloParaImprimir.find(objeto => objeto.numero === trSeleccionado.id)
+                    modificarSaldo.precioFinal = parseFloat(inputSeleccionado.value)
+                    modificarSaldo.pagado = parseFloat(inputSeleccionado.value)
                 }
-                venta.abonado = parseFloat(venta.abonado) + parseFloat(inputSeleccionado.value);
-                (venta.abonado === venta.precioFinal) && (venta.pagado = true);
                 if(a === inputSeleccionado.id){
-                    total.value = (parseFloat(inputSeleccionado.value) + parseFloat(total.value) - parseFloat(aDescontar).toFixed(2))
+                    total.value = (parseFloat(inputSeleccionado.value) + parseFloat(total.value) - parseFloat(aDescontar)).toFixed(2)
                 }else{
                     if (inputSeleccionado.value !== "") {
                         total.value = ((parseFloat(inputSeleccionado.value) + parseFloat(total.value)) - parseFloat(aDescontar)).toFixed(2)
@@ -198,16 +203,22 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
                 }else{
                     saldoAfavor.focus()
                 }
-                console.log(arregloParaImprimir);
+        }
+        if (parseFloat(total.value) === parseFloat(cliente.saldo)) {
+            const saldoAFavor = document.querySelector('#saldoAFavor');
+            saldoAFavor.removeAttribute('disabled')
+        }else{
+            saldoAFavor.setAttribute('disabled',"")
+        }
         }
 
-        }
 })
+
 let saldoAFavorAnterior = "0"
 saldoAfavor.addEventListener('keydown',e=>{
     
     if (e.key === "Enter" && saldoAfavor.value !== "") {
-        (total.value = (parseFloat(total.value) + parseFloat(saldoAfavor.value) - parseFloat(saldoAFavorAnterior)).toFixed(2));
+        total.value = (parseFloat(total.value) + parseFloat(saldoAfavor.value) - parseFloat(saldoAFavorAnterior)).toFixed(2);
         (saldoAfavor.value = (parseFloat(saldoAfavor.value)).toFixed(2));
         saldoAFavorAnterior = saldoAfavor.value 
     }
@@ -226,6 +237,7 @@ imprimir.addEventListener('keydown',e=>{
 
 
 const hacerRecibo = async()=>{
+    modificarVentas(nuevaLista)
     const nrmComp = await traerUltimoNroRecibo()
     modifcarNroRecibo(nrmComp)
     const recibo = {}
@@ -241,11 +253,11 @@ const hacerRecibo = async()=>{
     saldoFavor = (saldoAfavor.value !== "") && parseFloat(saldoAFavor.value);
     recibo.abonado = saldoAfavor.value
     const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2));
-    ipcRenderer.send('modificarSaldo',[cliente._id,aux,saldoNuevo])
-    ipcRenderer.send('modificamosLasVentas',nuevaLista)
-    ipcRenderer.send('nueva-venta',recibo)
-    ipcRenderer.send('imprimir-venta',[cliente,recibo,false,1,"Recibo",arregloParaImprimir,total.value])
-    location.reload()
+     ipcRenderer.send('modificarSaldo',[cliente._id,aux,saldoNuevo])
+     ipcRenderer.send('modificamosLasVentas',nuevaLista)
+     ipcRenderer.send('nueva-venta',recibo)
+     ipcRenderer.send('imprimir-venta',[cliente,recibo,false,1,"Recibo",arregloParaImprimir,total.value])
+     location.reload()
 }
 
 const traerUltimoNroRecibo = async ()=>{
@@ -290,6 +302,7 @@ const inputsCliente = async (cliente)=>{
     cuit.value = cliente.cuit;
     fecha.value = mostrarFecha;
 
+
     if (situacion === "blanco" && parseFloat(cliente.saldo) > 0)  {
         saldoAFavor.setAttribute("disabled","")
     }else if(situacion === "negro" && parseFloat(cliente.saldo_p) > 0){
@@ -317,4 +330,19 @@ const tamanioVentas = async()=>{
         retornar = await JSON.parse(args)
     })
     return retornar
+}
+
+
+const modificarVentas = (lista)=>{
+    const trs = document.querySelectorAll('tbody tr')
+    trs.forEach(tr=>{
+        nuevaLista.forEach(venta=>{
+            if(tr.id === venta.nro_comp){
+                console.log(venta.abonado);
+                venta.abonado = (tr.children[5].children[0].value !== "") ? (parseFloat(tr.children[4].innerHTML) + parseFloat(tr.children[5].children[0].value)).toFixed(2) : venta.abonado; 
+                venta.pagado = (parseFloat(venta.abonado) === venta.precioFinal) ? true : false;
+
+            }
+        })
+    })
 }

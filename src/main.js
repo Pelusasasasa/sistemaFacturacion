@@ -1,11 +1,12 @@
 const a = require('./config')
 const fs = require('fs')
+require('dotenv').config();
 let URL
 if (a === 1) {
-    URL = "http://179.62.24.12/api/";
+    URL = process.env.URLPUBLICANEGOCIO;
 }else if(a === 2){
-    URL = "http://192.168.1.11:4000/api/";
-    //URL = "http://192.168.0.124:4000/api/";
+    URL = "http://192.168.1.106:4000/api/";
+    //URL = process.env.URLPRIVADANEGOCIO;
 }
 let conexion;
 let tipoConexion;
@@ -367,11 +368,10 @@ ipcMain.on('imprimir-venta',async(e,args)=>{
     const options = {
         silent: condicion,
         copies: cantidad,
-        deviceName: name,
-        margins:{
-            marginType: "none"
-        }
     };
+    if(name !== undefined){
+        options.deviceName = name
+    }
     if (tipo === "Recibo") {
         abrirVentana("imprimir-recibo")
     }else if(tipo === "ticket-factura"){
@@ -385,12 +385,12 @@ ipcMain.on('imprimir-venta',async(e,args)=>{
 const imprimir = (opciones,args)=>{
     nuevaVentana.webContents.on('did-finish-load', function() {
         nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
-            // nuevaVentana.webContents.print(opciones,(success, errorType) => {
-            //         if (success) {
-            //             ventanaPrincipal.focus()
-            //             nuevaVentana.close();
-            //         }
-            //   })
+            nuevaVentana.webContents.print(opciones,(success, errorType) => {
+                    if (success) {
+                        ventanaPrincipal.focus()
+                        nuevaVentana.close();
+                    }
+              })
     });
 }
 

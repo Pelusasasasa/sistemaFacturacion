@@ -209,14 +209,14 @@ factura.addEventListener('click',async e=>{
     venta.descuento = parseFloat(descuentoN.value);
     venta.precioFinal = parseFloat(total.value);
     venta.vendedor = vendedor
-    if (parseFloat(precioFinal)>10000) {
+    if (parseFloat(precioFinal)>10000 && buscarCliente.value === "A CONSUMIDOR FINAL" && dnicuit.value === "00000000"  && direccion.value === "CHAJARI") {
         alert("Factura mayor a 10000, poner valores clientes")
     }else{
     actualizarNroCom(venta.nro_comp,venta.cod_comp)
     ipcRenderer.send('nueva-venta',venta)
     imprimirTikectFactura(venta,cliente)
     imprimirItem(venta,cliente)
-    //location.reload();
+    location.reload();
     }
 })
 
@@ -383,6 +383,12 @@ const inputseleccionado = (e) =>{
         const a = yaSeleccionado
         a.parentNode.removeChild(a)
     }
+    let nuevoTotal = 0;
+        listaProductos.forEach(({objeto,cantidad})=>{
+            nuevoTotal += (objeto.precio_venta * cantidad);
+        })
+    total.value = (nuevoTotal - (nuevoTotal*parseFloat(descuento.value)/100)).toFixed(2)
+    descuentoN.value = (nuevoTotal*parseFloat(descuento.value)/100).toFixed(2)
     codigo.focus()
 })
 

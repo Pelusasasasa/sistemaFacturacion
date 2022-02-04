@@ -52,7 +52,6 @@ const listar = (ventas)=>{
     let totaliva21 = 0;
     let totaliva105 = 0;
     let total = 0
-    console.log(ventas)
     let diaVentaAnterior = new Date((ventas[0].fecha)).getDate()
 
     ventas.forEach(async venta => {
@@ -103,7 +102,7 @@ const listar = (ventas)=>{
         tbody.innerHTML += await `
             <tr>
                 <td>${day}/${month}/${year}</td>
-                <td>${cliente.cliente}</td>
+                <td>${venta.nombreCliente}</td>
                 <td>${cond_iva}</td>
                 <td>${cliente.cuit}</td>
                 <td>${venta.tipo_comp}</td>
