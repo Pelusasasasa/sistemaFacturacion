@@ -37,7 +37,7 @@ buscar.addEventListener('click',e=>{
 
 ipcRenderer.on('traerVentasEntreFechas',(e,args)=>{
     let ventas = JSON.parse(args)
-    ventas = ventas.filter(venta => venta.tipo_comp !== "Presupuesto");
+    ventas = ventas.filter(venta => venta.tipo_comp !== "Presupuesto" || venta.tipo_comp !== "Recibos" || venta.tipo_comp !== "Recibos_P");
     listaTicketFactura = ventas.filter(venta=>venta.tipo_comp === "Ticket Factura");
     listaNotaCredito = ventas.filter(venta=>venta.tipo_comp !== "Ticket Factura");
     (listaNotaCredito.length > 0) && listar(listaNotaCredito);

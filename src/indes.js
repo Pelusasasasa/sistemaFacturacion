@@ -13,11 +13,12 @@ ipcRenderer.on('traerUsuarios',(e,args)=>{
 const listaPedidos = document.querySelector('.listaPedidos')
 const body = document.querySelector('body')
 const emitirComprobante = document.querySelector('.emitirComprobante')
-const pedidos = document.querySelector('#pedidos')
-const emitirRecibo = document.querySelector('.emitirRecibo')
-const resumenCuenta = document.querySelector('.resumenCuenta')
-const notaCredito = document.querySelector('.notaCredito')
-const productos = document.querySelector('.productos')
+const pedidos = document.querySelector('#pedidos');
+const emitirRecibo = document.querySelector('.emitirRecibo');
+const resumenCuenta = document.querySelector('.resumenCuenta');
+const notaCredito = document.querySelector('.notaCredito');
+const productos = document.querySelector('.productos');
+const clientes = document.querySelector('.clientes');
 
 const flecha = document.querySelector('.flecha')
 listaPedidos.addEventListener('click', (e) =>{
@@ -30,6 +31,10 @@ listaPedidos.addEventListener('click', (e) =>{
 
 productos.addEventListener('click',e=>{
     validacionUsuario("productos/productos.html")
+})
+
+clientes.addEventListener('click',e=>{
+    validacionUsuario("clientes/clientes.html")
 })
 
 emitirComprobante.addEventListener('click',e=>{

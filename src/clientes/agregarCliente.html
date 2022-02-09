@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Registrar Cliente</title>
+    <title>Agregar Cliente</title>
     <link rel="stylesheet" href="../../build/css/app.css" />
   </head>
   <body class="seccionAgregarCliente">
@@ -116,9 +116,9 @@
 
         <div class="formulario__campo">
           <label for="condicionFacturacion">Condicion de Factura</label>
-          <select name="conFac" id="conFac">
+          <select disabled name="conFac" id="conFac" >
             <option value="1">1- Cte. Cte Normal</option>
-            <option value="4">4- Contado</option>
+            <option value="4" selected>4- Contado</option>
           </select>
         </div>
 
@@ -127,7 +127,7 @@
         <div class="formulario__campo tipo">
           <div class="moroso">
             <label for="normal">Normal</label>
-            <input type="radio" name="moroso" id="moroso/normal" value="normal" />
+            <input type="radio" checked name="moroso" id="moroso/normal" value="normal" />
           </div>
 
           <div class="moroso">

@@ -4,7 +4,7 @@ let dia = hoy.getDate()
 if (dia<10) {
     dia = `0${dia}`
 }
-let mes = hoy.getMonth()
+let mes = hoy.getMonth() + 1
 
 mes = mes === 0 ? mes+1 : mes ;
 

@@ -2,8 +2,7 @@ const {ipcRenderer} = require('electron');
 const buscarCliente = document.querySelector('#buscarCliente')
 const resultado = document.querySelector('#resultado')
 let clientes = ''
-let texto;
-console.log("HOLA");
+let texto;  
 
 const body = document.querySelector('body')
 body.addEventListener('keypress',e=>{
@@ -17,6 +16,7 @@ let situacion = "blanco"
 
 
 ipcRenderer.on('traerSaldo',async(e,args) =>{
+    console.log("b");
     let clientes = JSON.parse(args);
     clientes = clientes.sort(function(a,b){
         let A = a.cliente.toUpperCase()
@@ -92,16 +92,19 @@ body.addEventListener('keydown',e=>{
         recorrerConFlechas(e)
     }
 })
-
+ipcRenderer.on('situacion',async(e,args)=>{
+    situacion = JSON.parse(args)
+    console.log(situacion);
+})
 
 //compramaos si en el input de buscar el texto que escribimos es igual al nombre de algun cliente
 const filtrar = ()=>{
+    console.log("a");
     resultado.innerHTML='';
     texto = buscarCliente.value.toLowerCase();
-    ipcRenderer.on('situacion',async(e,args)=>{
-        situacion = JSON.parse(args)
+
     ipcRenderer.send('traerSaldo',texto);
-    })
+
 }
 filtrar()
 

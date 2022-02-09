@@ -39,24 +39,31 @@ document.addEventListener('keydown',(event) =>{
       document.addEventListener('keydown',(e) =>{
           if (e.key === "F3" && situacion === "negro") {
               ocultarNegro();
-              situacion = 'blanco'
-              (parseFloat(cliente.saldo)>0) && saldoAfavor.setAttribute('disabled',"")
-            listarLista(nuevaLista,situacion)
+              situacion = 'blanco';
+              (parseFloat(cliente.saldo)>0) && saldoAfavor.setAttribute('disabled',"");
+            listarLista(nuevaLista,situacion);
           }
       })
   }
 })
 
+const body = document.querySelector('.contenedorEmitirRecibo')
+const informacionCliente = document.querySelector('.informacionCliente')
+const botones = document.querySelector('.botones')
+const pagado = document.querySelector('.pagado')
 const ocultarNegro = ()=>{
-    const body = document.querySelector('.contenedorEmitirRecibo')
+    pagado.classList.remove('mostrarNegro')
+    informacionCliente.classList.remove('mostrarNegro')
+    botones.classList.remove('mostrarNegro')
     saldo.classList.remove('none')
     saldo_p.classList.add('none')
     body.classList.remove('mostrarNegro')
 }
 
 const mostrarNegro = ()=>{
-    const saldo = document.querySelector('#saldo')
-    const saldo_p = document.querySelector('#saldo_p')
+    pagado.classList.add('mostrarNegro')
+    informacionCliente.classList.add('mostrarNegro')
+    botones.classList.add('mostrarNegro')
     const body = document.querySelector('.contenedorEmitirRecibo')
     saldo.classList.add('none')
     saldo_p.classList.remove('none')
@@ -104,6 +111,7 @@ codigo.addEventListener('keypress', (e)=>{
 })
 
 ipcRenderer.on('mando-el-cliente',async(e,args)=>{
+    cliente=JSON.parse(args)
     inputsCliente(JSON.parse(args))
 })
 
@@ -204,7 +212,7 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
                     saldoAfavor.focus()
                 }
         }
-        if (parseFloat(total.value) === parseFloat(cliente.saldo)) {
+        if ((parseFloat(total.value) === parseFloat(cliente.saldo) && situacion === "blanco") || (parseFloat(total.value) === parseFloat(cliente.saldo_p) && situacion === "negro")) {
             const saldoAFavor = document.querySelector('#saldoAFavor');
             saldoAFavor.removeAttribute('disabled')
         }else{

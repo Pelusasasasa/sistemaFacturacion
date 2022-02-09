@@ -15,6 +15,7 @@ const utilidad = document.querySelector('#utilidad');
 const precioVenta = document.querySelector('#precioVenta');
 const imagen = document.querySelector('#imagen')
 const unidad = document.querySelector('#unidad')
+const salir = document.querySelector('.salir')
 
 const agregar = document.querySelector('.agregar')
 
@@ -62,7 +63,7 @@ tasaIva.addEventListener('blur  ', (e) =>{
 
 if (costoPesos.focus) {
 costoPesos.addEventListener('blur', (e) =>{
-    costoT = resultado(parseFloat(costoPesos.value),valorTasaIva);
+    costoPesos.value !== "" && (    costoT = resultado(parseFloat(costoPesos.value),valorTasaIva))
 })
 }
 
@@ -70,20 +71,12 @@ costoDolares.addEventListener('blur', (e) =>{
    costoDolares.value !== "" && (costoT = resultado(parseFloat(costoDolares.value),valorTasaIva,dolar))   ;
 })
 
-ivaImp.addEventListener('focus' , (e) =>{
-    
-    console.log(ivaImp.value);
-
-})
-
 costoTotal.addEventListener('focus' , (e) =>{
-    (costoPesos.value === "") ? (ivaImp.value = parseFloat((costoDolares.value * valorTasaIva / 100).toFixed(2))) : ivaImp.value = parseFloat(costoT.toFixed(2))
+    (costoPesos.value === "" || parseFloat(costoPesos.value) === 0) ? (ivaImp.value = parseFloat((parseFloat(costoDolares.value) * valorTasaIva / 100).toFixed(2))) : ivaImp.value = (parseFloat(costoPesos.value) * valorTasaIva / 100).toFixed(2)
     costoT = parseFloat(ivaImp.value)
     let costoP = 0;
-    if ((costoPesos.value) === "") {
-        costoP = parseFloat(costoDolares.value)*dolar
-        const sumar = parseFloat((costoP*valorTasaIva/100).toFixed(3))
-        costoTotal.value = sumar+(parseFloat(costoDolares.value)*dolar)
+    if ((costoPesos.value) === "" || parseFloat(costoPesos.value) === 0) {
+        costoTotal.value = ((parseFloat(costoDolares.value) + parseFloat(ivaImp.value))*dolar).toFixed(2)
     }else{
         costoP = parseFloat(costoPesos.value)
         costoTotal.value = ((costoT+costoP).toFixed(2));
@@ -112,7 +105,7 @@ agregar.addEventListener('click' , (e) =>{
         iva: letraIva,
         observacion: observaciones.value,
         costo: costoPesos.value,
-        costodolar: costoDolares.value,
+        costodolar: parseFloat(costoDolares.value),
         impuestos: ivaImp.value,
         utilidad: utilidad.value,
         precio_venta: precioVenta.value,
@@ -214,15 +207,10 @@ costoPesos.addEventListener('keypress',e=>{
 
 costoDolares.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        ivaImp.focus()
-    }
-})
-
-ivaImp.addEventListener('keypress',e=>{
-    if (e.key === "Enter") {
         costoTotal.focus()
     }
 })
+
 
 costoTotal.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
@@ -294,4 +282,8 @@ costoTotal.addEventListener('focus',e=>{
 
 observaciones.addEventListener('focus',e=>{
     selecciona_value(observaciones.id)
+})
+
+salir.addEventListener('click',e=>{
+    window.close()
 })

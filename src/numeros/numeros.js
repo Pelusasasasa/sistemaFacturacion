@@ -76,8 +76,6 @@ ipcRenderer.on('numeros-enviados',(e,args)=>{
     dolar.value = numeros.dolar;
 })
 
-
-
 cancelar.addEventListener('click', ()=>{
     window.close()
 })

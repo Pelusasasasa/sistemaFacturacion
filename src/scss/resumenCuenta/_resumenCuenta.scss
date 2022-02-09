@@ -26,6 +26,7 @@
         }
     }
     .imagen{
+        color: black;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -42,6 +43,7 @@
         }
     }
     .cliente{
+        color: black;
         p{
             font-weight: 100;
             margin: .5rem;
@@ -54,9 +56,13 @@
         display: flex;
         justify-content: space-between;
     }
+    main{
+        color: black;
+    }
     .seccionTabla{
         min-height: 20rem;
         table{
+
             width: 100%;
             border-collapse: collapse;
             thead{
@@ -113,7 +119,7 @@
     }
 
     .mostrarNegro{
-        background-color: black;
+        background-color: black !important;
     }
 }
 

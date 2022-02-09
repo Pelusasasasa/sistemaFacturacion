@@ -15,11 +15,15 @@ const conFact = document.querySelector('#conFact')
 const observaciones = document.querySelector('#observaciones')
 let _id = ""
 let condicion
+let acceso
 
 
 
 ipcRenderer.on('datos-clientes',(e,args)=>{
-    cliente = JSON.parse(args)
+    cliente = JSON.parse(args)[0];
+    acceso = JSON.parse(args)[1];
+
+
     for(let i of moroso){
         if (i.value===cliente.condicion) {
             (condicion=cliente.condicion)
@@ -46,10 +50,9 @@ const modificar = document.querySelector('.modificar')
 modificar.addEventListener('click', (e)=>{
     e.preventDefault()
     const inputs = document.querySelectorAll('input')
-    const selects = document.querySelectorAll('select')
-    for(let select of selects){
-        select.toggleAttribute('disabled')
-    }
+    const selects = document.querySelector('#conIva')
+        selects.toggleAttribute('disabled')
+        acceso !== "0" ? conFact.setAttribute('disabled',"") : conFact.removeAttribute('disabled');
     for(let input of inputs){ 
         input.toggleAttribute('disabled')
 }
@@ -114,7 +117,14 @@ function selecciona_value(idInput) {
 
 nombre.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        localidad.focus()
+        conIva.focus()
+    }
+})
+
+conIva.addEventListener('keypress',e=>{
+    e.preventDefault()
+    if (e.key === "Enter") {
+        direccion.focus()
     }
 })
 
@@ -131,12 +141,12 @@ provincia.addEventListener('keypress',e=>{
 })
 cod_postal.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        direccion.focus()
+        dnicuit.focus()
     }
 })
 direccion.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        dnicuit.focus()
+        localidad.focus()
     }
 })
 
@@ -161,6 +171,19 @@ telefono.addEventListener('keypress',e=>{
 limite.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
         conFact.focus()
+    }
+})
+conFact.addEventListener('keypress',e=>{
+    e.preventDefault()
+    if (e.key === "Enter") {
+        console.log(moroso[0]);
+        moroso[0].focus()
+    }
+})
+
+moroso[0].addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        observaciones.focus()
     }
 })
 

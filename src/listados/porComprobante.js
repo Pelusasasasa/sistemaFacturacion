@@ -68,7 +68,7 @@ function listarVentas(lista) {
             <tr>
                 <td>${venta.nro_comp}</td>
                 <td>${hoy}/${mes}/${anio}</td>
-                <td>${venta.cliente}</td>
+                <td>${venta.nombreCliente}</td>
                 <td>${objeto._id}</td>
                 <td>${objeto.descripcion}</td>
                 <td class= "egreso">${(parseFloat(cantidad)).toFixed(2)}</td>

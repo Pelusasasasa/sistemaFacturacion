@@ -57,12 +57,16 @@
       }
       .tbody {
         tr:not(.total):not(.titulo){
+          &:hover{
+            background-color: lightgrey;
+          }
           td{
             white-space: nowrap;
             resize: both;
             text-overflow: clip;
             padding: 0;
-            border: .1rem solid black
+            border: .1rem solid black;
+
           }
         }
         h2 {

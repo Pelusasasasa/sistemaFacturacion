@@ -2,10 +2,21 @@ const {ipcRenderer,remote} = require('electron');
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
 
+function getParameterByName(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+    results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
+
+const acceso = getParameterByName("acceso")
+
+
 
 const buscarCliente = document.querySelector('#buscarCliente')
 const resultado = document.querySelector('#resultado')
 const eliminar = document.querySelector('.eliminar')
+acceso !== "0" && eliminar.classList.add('none') 
 
 
 ipcRenderer.on('get-clientes',(e,args) =>{
@@ -73,7 +84,7 @@ agregar.addEventListener('click',e=>{
 const modificar = document.querySelector('.modificar')
 modificar.addEventListener('click',() =>{
     if (identificador) {
-        ipcRenderer.send('abrir-ventana-modificar-cliente',identificador)
+        ipcRenderer.send('abrir-ventana-modificar-cliente',[identificador,acceso])
     }else{
         dialogs.alert('Cliente no seleccionado')
         document.querySelector('.ok').focus()

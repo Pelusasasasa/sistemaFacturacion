@@ -60,7 +60,11 @@ const ocultarNegro = ()=>{
     const saldo = document.querySelector('#saldo')
     const saldo_p = document.querySelector('#saldo_p')
     const botonFacturar = document.querySelector('#botonFacturar')
-    const body = document.querySelector('.consultaCtaCte')
+    const body = document.querySelector('.consultaCtaCte');
+    const seccion_botones = document.querySelector('.seccion_botones');
+    const buscador = document.querySelector('.buscador')
+    buscador.classList.remove("mostrarNegro")
+    seccion_botones.classList.remove("mostrarNegro")
     saldo.classList.remove('none')
     saldo_p.classList.add('none')
     botonFacturar.classList.add('none')
@@ -72,7 +76,11 @@ const mostrarNegro = ()=>{
     const saldo = document.querySelector('#saldo')
     const saldo_p = document.querySelector('#saldo_p')
     const botonFacturar = document.querySelector('#botonFacturar')
-    const body = document.querySelector('.consultaCtaCte')
+    const body = document.querySelector('.consultaCtaCte');
+    const seccion_botones = document.querySelector('.seccion_botones');
+    const buscador = document.querySelector('.buscador')
+    buscador.classList.add("mostrarNegro")
+    seccion_botones.classList.add("mostrarNegro")
     saldo.classList.add('none')
     botonFacturar.classList.remove('none')
     saldo_p.classList.remove('none')
@@ -259,7 +267,8 @@ botonFacturar.addEventListener('click',() =>{
         dialogs.promptPassword("Contraseña").then(value=>{
         ipcRenderer.invoke('traerUsuario',value).then((args)=>{
             if (JSON.parse(args) !== "") {
-                ipcRenderer.send('abrir-ventana-emitir-comprobante',[JSON.parse(args).nombre,seleccionado.id])   
+                console.log(JSON.parse(args));
+                ipcRenderer.send('abrir-ventana-emitir-comprobante',[JSON.parse(args).nombre,seleccionado.id,JSON.parse(args).empresa])   
             }
         })
         })

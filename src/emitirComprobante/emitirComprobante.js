@@ -226,6 +226,9 @@ codigo.addEventListener('keypress',(e) => {
                         dialogs.prompt("Cantidad",async valor =>{
                             await mostrarVentas(product,valor)
                             codigo.value = "";
+                            console.log(precio.value);
+                            precio.children[0].value = "";
+                            descripcion.children[0].value = "";
                             codigo.focus()
                             precio.classList.add('none')
                             descripcion.classList.add('none')
@@ -242,7 +245,7 @@ codigo.addEventListener('keypress',(e) => {
                         codigo.focus()
                 }else{
                     dialogs.prompt("Cantidad",async valor=>{
-                        if (valor === undefined || valor === "") {
+                        if (valor === undefined || valor === "" || valor === "0") {
                             e.target.value = await "";
                             codigo.focus()
                         }else{
@@ -634,7 +637,7 @@ presupuesto.addEventListener('click',async (e)=>{
                  ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion])
              }
          }
-         location.reload()
+         window.location = "../index.html"
     }
 })
 
@@ -642,59 +645,63 @@ presupuesto.addEventListener('click',async (e)=>{
 const ticketFactura = document.querySelector('.ticketFactura')
 ticketFactura.addEventListener('click',async (e) =>{
     e.preventDefault()
-    venta.productos = listaProductos;
-     tipoVenta = "Ticket Factura"
-     verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
-     if (tipoPago === "Ninguno") {
-        alert("Seleccionar un modo de venta")
-        }else{
-        venta.nombreCliente = buscarCliente.value;
-        venta._id = await tamanioVentas();
-        venta.observacion = observaciones.value
-        venta.fecha = new Date()
-        venta.descuento = (descuentoN.value);
-        venta.precioFinal = redondear(total.value);
-        venta.tipo_comp = tipoVenta;
-        numeroComprobante(tipoVenta);
-        venta.cod_comp = verCodComprobante(tipoVenta)
-        venta.nro_comp = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp)
-        venta.pagado = verSiPagoONo(venta.tipo_pago)
-        venta.tipo_pago = tipopago(tipoPago)   
-        venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
-        venta.comprob = venta.nro_comp;
+    const stockNegativo = listaProductos.find(producto=>producto.cantidad < 0)
+    if(stockNegativo){
+        alert("Ticket Factura no puede ser productos en negativo");
+        exit;
+    }else{
+     venta.productos = listaProductos;
+      tipoVenta = "Ticket Factura"
+      verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
+      if (tipoPago === "Ninguno") {
+         alert("Seleccionar un modo de venta")
+         }else{
+         venta.nombreCliente = buscarCliente.value;
+         venta._id = await tamanioVentas();
+         venta.observacion = observaciones.value
+         venta.fecha = new Date()
+         venta.descuento = (descuentoN.value);
+         venta.precioFinal = redondear(total.value);
+         venta.tipo_comp = tipoVenta;
+         numeroComprobante(tipoVenta);
+         venta.cod_comp = verCodComprobante(tipoVenta)
+         venta.nro_comp = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp)
+         venta.pagado = verSiPagoONo(venta.tipo_pago)
+         venta.tipo_pago = tipopago(tipoPago)   
+         venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
+         venta.comprob = venta.nro_comp;
 
 
-        if (venta.precioFinal >=10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" && dnicuit.value === "00000000" && direccion.value === "CHAJARI")) {
-            alert("Factura mayor a 10000, poner datos cliente")
-            console.log("a");
-        }else{
-        venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente);
-        venta.empresa = inputEmpresa.value;
-        for(let producto of venta.productos){
-            sacarStock(producto.cantidad,producto.objeto)
-            await movimientoProducto(producto.cantidad,producto.objeto)
-        };
-        actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+         if (venta.precioFinal >=10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" && dnicuit.value === "00000000" && direccion.value === "CHAJARI")) {
+             alert("Factura mayor a 10000, poner datos cliente")
+         }else{
+         venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente);
+         venta.empresa = inputEmpresa.value;
+         for(let producto of venta.productos){
+             sacarStock(producto.cantidad,producto.objeto)
+             await movimientoProducto(producto.cantidad,producto.objeto)
+         };
+         actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
         
-        //subirAAfip(venta)
+         //subirAAfip(venta)
         
-        await ipcRenderer.send('nueva-venta',venta);
-        ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100"])
-        //imprimirTikectFactura(venta,cliente)
-        //imprimirItem(venta,cliente)
+         await ipcRenderer.send('nueva-venta',venta);
+         ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100"])
+         //imprimirTikectFactura(venta,cliente)
+         //imprimirItem(venta,cliente)
 
+        console.log(borraNegro);
+         if (borraNegro) {
+             ipcRenderer.on('clienteModificado',async(e,args)=>{
+                 console.log("a");
+                 await borrarCuentaCorriente(ventaDeCtaCte)
+             })
 
-        if (borraNegro) {
-            ipcRenderer.on('clienteModificado',async(e,args)=>{
-                await borrarCuentaCorriente(ventaDeCtaCte)
+         };
+         !borraNegro && (window.location = '../index.html');
 
-                borraNegro && window.close();
-            })
-
-        };
-        !borraNegro && location.reload();
-
-        }
+         }
+     }
     }
  })
 
@@ -846,15 +853,18 @@ function ponerInputsClientes(cliente) {
     }
 }
 
+let ventaAnterior;
 ipcRenderer.once('venta',(e,args)=>{
     borraNegro = true;
-    const [usuario,numero] = JSON.parse(args)
-    ventaDeCtaCte = numero
-    textoUsuario.innerHTML = usuario
-    venta.vendedor = usuario
+    const [usuario,numero,empresaS] = JSON.parse(args);
+    inputEmpresa.value = empresaS;
+    ventaDeCtaCte = numero;
+    textoUsuario.innerHTML = usuario;
+    venta.vendedor = usuario;
     ipcRenderer.send('traerVenta',numero);
     ipcRenderer.on('traerVenta',async (e,args)=>{
         const venta = JSON.parse(args)[0]
+        ventaAnterior = venta
         const cliente = JSON.parse(await ipcRenderer.invoke('get-cliente',venta.cliente))
         ponerInputsClientes(cliente)
         venta.productos.forEach(producto =>{
@@ -865,11 +875,13 @@ ipcRenderer.once('venta',(e,args)=>{
 })
 
 const borrarCuentaCorriente = async (numero)=>{
-    await ipcRenderer.send('borrarVentaACliente',[venta.cliente,numero])
-    ipcRenderer.send('eliminar-venta',numero)
+    console.log(numero);
+    ventaAnterior.tipo_pago === "CC" && await ipcRenderer.send('borrarVentaACliente',[venta.cliente,numero]);
+    //ipcRenderer.send('eliminar-venta',numero)
 }   
 
-const {DBFFile} = require ('dbffile')
+const {DBFFile} = require ('dbffile');
+const { exit } = require('process');
 
 const imprimirTikectFactura = async(venta,cliente)=>{
 
@@ -1040,6 +1052,7 @@ telefono.addEventListener('focus',e=>{
     selecciona_value(telefono.id)
 })
 
+
 buscarCliente.addEventListener('focus',e=>{
     selecciona_value(buscarCliente.id)
 })
@@ -1054,6 +1067,14 @@ direccion.addEventListener('focus',e=>{
 })
 dnicuit.addEventListener('focus',e=>{
     selecciona_value(dnicuit.id)
+})
+
+descuento.addEventListener('focus',e=>{
+    selecciona_value(descuento.id)
+})
+
+cobrado.addEventListener('focus',e=>{
+    selecciona_value(cobrado.id)
 })
 
 buscarCliente.addEventListener('keypress',e=>{

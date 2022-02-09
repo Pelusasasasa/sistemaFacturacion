@@ -1,5 +1,6 @@
 .mostrarNegro{
   background-color: black;
+  color: white;
 }
 
 .contenedorEmitirRecibo {
@@ -36,6 +37,7 @@
   }
 
   .tabla {
+    color: black;
     background-color: white;
     overflow: scroll;
     border: 0.1rem solid black;

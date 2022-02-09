@@ -49,7 +49,10 @@ seleccionar.addEventListener('click',e=>{
 const buscar = document.querySelector('.buscar')
 buscar.addEventListener('click',e=>{
      if (seleccionado.id==="porNumero") {
-         const idVenta = (primerNumero.value + "-" + segundoNumero.value)
+         let idVenta
+        primerNumero.value === "0000" 
+        ? idVenta = (segundoNumero.value).padStart(8,"0")
+        : idVenta = (primerNumero.value + "-" + (segundoNumero.value).padStart(8,"0"));
          ipcRenderer.send('traerVenta',idVenta)
      }else{
          ipcRenderer.send('get-clientes',(razon.value).toUpperCase())
@@ -64,9 +67,14 @@ ipcRenderer.on('get-clientes',(e,args)=>{
     traerTodasLasVentas(JSON.parse(args))
 })
 ipcRenderer.on('traerVenta',async (e,args)=>{
-    cliente = await buscarCliente(JSON.parse(args)[0].cliente)
-    tbody.innerHTML = ``
-    listarVentas(JSON.parse(args)[0])
+    if (JSON.parse(args).length !== 0) {
+        cliente = await buscarCliente(JSON.parse(args)[0].cliente)
+        tbody.innerHTML = ``
+        listarVentas(JSON.parse(args)[0]) 
+    }else{
+        alert("No se encontro ninguna Venta")
+    }
+
 })
 
 
@@ -81,7 +89,7 @@ function listarVentas(venta) {
                 <td>${objeto._id}</td>
                 <td>${objeto.descripcion}</td>
                 <td>${venta.nro_comp}</td>
-                <td>${cantidad}</td>
+                <td>${parseFloat(cantidad).toFixed(2)}</td>
                 <td>${objeto.precio_venta}</td>
                 <td>${(objeto.precio_venta*cantidad).toFixed(2)}</td>
             </tr>
@@ -121,11 +129,16 @@ function traerTodasLasVentas(lista) {
 }
 
 ipcRenderer.on('traerVentasIdYFechas',(e,args)=>{
-    const lista = JSON.parse(args)
+    let lista = JSON.parse(args)
     tbody.innerHTML = ``;
     if(lista.length === 0){
         alert("No hay ventas, fijarse nombre y fechas")
     }
+    lista = lista.filter(venta=>{
+        if(venta.tipo_comp !== "Recibos" && venta.tipo_comp !== "Recibos_P"){
+            return venta
+        }
+    })
     lista.forEach(async venta=>{
         cliente = await buscarCliente(venta.cliente)
         listarVentas(venta)

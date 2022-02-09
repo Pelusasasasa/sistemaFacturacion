@@ -10,7 +10,7 @@ let day = hoy.getDate()
 if (day<10) {
     day = `0${day}`
 }
-let month = hoy.getMonth()
+let month = hoy.getMonth() + 1
 
 month = month === 0 ? month+1 : month ;
 

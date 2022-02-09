@@ -56,7 +56,7 @@ const fecha = document.querySelector('.fecha')
             }
             tbody.innerHTML=""
              for (let {objeto,cantidad} of lista) {
-                 if (venta.tipo_pago !== "CC") {
+                 if (venta.tipo_pago !== "CC" || (valorizado === "valorizado" && venta.tipo_pago === "CC"   )) {
                         
                     tbody.innerHTML += `
                     <tr>

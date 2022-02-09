@@ -5,7 +5,7 @@ let URL
 if (a === 1) {
     URL = process.env.URLPUBLICANEGOCIO;
 }else if(a === 2){
-    URL = "http://192.168.1.106:4000/api/";
+    URL = "http://192.168.1.105:4000/api/";
     //URL = process.env.URLPRIVADANEGOCIO;
 }
 let conexion;
@@ -174,9 +174,9 @@ ipcMain.on('CambiarPrecios',async(e,args)=>{
     let dolar = await axios.get(`${URL}tipoVenta`);
     dolar = dolar.data.dolar
     productos = productos.data;
-
-    productos.forEach(producto => {
-        (producto.precio_venta) = (parseFloat(producto.utilidad)+(dolar*(parseFloat(producto.impuestos) + parseFloat(producto.costodolar)))).toFixed(2);
+    productos.forEach(async producto => {
+        producto.precio_venta = (parseFloat(producto.impuestos)+(parseFloat(producto.utilidad)*(parseFloat(producto.impuestos)/100))).toFixed(2);
+        await axios.put(`${URL}productos/${producto._id}`,producto)
     });
 })
 
@@ -187,16 +187,15 @@ ipcMain.on('modficarPrecioPorcentaje',async(e,args)=>{
     porcentaje = parseFloat(porcentaje);
     let productos = await axios.get(`${URL}productos/marcas/${marca}`)
     productos = productos.data;
-    console.log(productos[0])
     await productos.forEach(async producto=>{
-        if (producto.costodolar === "0") {
+        if (producto.costodolar === 0) {
             producto.costo = (parseFloat(producto.costo) + parseFloat(producto.costo)*5/100).toFixed(2);
             producto.impuestos = (producto.iva === "N") ? (parseFloat(producto.costo) * 26 / 100) : (parseFloat(producto.costo) * 15 / 100);
             producto.precio_venta = ((parseFloat(producto.costo) + parseFloat(producto.impuestos))*parseFloat(producto.utilidad)/100) +(parseFloat(producto.costo) + parseFloat(producto.impuestos))
             producto.impuestos = (producto.impuestos).toFixed(2)
             producto.precio_venta = (producto.precio_venta).toFixed(2)
         }else{
-            producto.costodolar = (parseFloat(producto.costodolar) + parseFloat(producto.costodolar)*5/100).toFixed(2);
+            producto.costodolar = parseFloat((parseFloat(producto.costodolar) + parseFloat(producto.costodolar)*5/100).toFixed(2));
             producto.impuestos = (producto.iva === "N") ? (parseFloat(producto.costodolar) * 26 / 100) : (parseFloat(producto.costodolar) * 15 / 100);
             producto.precio_venta = ((parseFloat(producto.costo) + parseFloat(producto.impuestos))*parseFloat(producto.utilidad)) + (parseFloat(producto.costo) + parseFloat(producto.impuestos))
             producto.impuestos = (producto.impuestos).toFixed(2)
@@ -241,10 +240,11 @@ ipcMain.on('nuevo-cliente', async (e, args) => {
 //Abrir ventana para modificar un cliente
 ipcMain.on('abrir-ventana-modificar-cliente', (e, args) => {
     abrirVentana("modificar-cliente")
+    const [idCliente,acceso] = args
     nuevaVentana.on('ready-to-show',async ()=>{
-        let cliente = await axios.get(`${URL}clientes/id/${args}`)
+        let cliente = await axios.get(`${URL}clientes/id/${idCliente}`)
         cliente = cliente.data
-        nuevaVentana.webContents.send('datos-clientes', JSON.stringify(cliente))
+        nuevaVentana.webContents.send('datos-clientes', JSON.stringify([cliente,acceso]))
     })
     nuevaVentana.setMenuBarVisibility(false)
 })
@@ -350,9 +350,10 @@ ipcMain.handle('tamanioVentas',async(e,args)=>{
 ipcMain.on('nueva-venta', async (e, args) => {
     let nuevaVenta = await axios.post(`${URL}ventas`,args)
     nuevaVenta = nuevaVenta.data
-    if (nuevaVenta.tipo_pago !== "PP") {    
+    let cliente 
+    if (nuevaVenta.tipo_pago == "CC") {    
         const _id = nuevaVenta.cliente;
-        let cliente = await axios.get(`${URL}clientes/id/${_id}`);
+        cliente = await axios.get(`${URL}clientes/id/${_id}`);
         cliente = cliente.data;
         let listaVentas = cliente.listaVentas;
         listaVentas[0] === "" ? (listaVentas[0] = nuevaVenta.nro_comp) : (listaVentas.push(nuevaVenta.nro_comp));
@@ -360,6 +361,8 @@ ipcMain.on('nueva-venta', async (e, args) => {
         let clienteModificado = await axios.put(`${URL}clientes/${_id}`,cliente);
         clienteModificado = clienteModificado.data;
         e.reply('clienteModificado',JSON.stringify(clienteModificado))
+    }else{
+        e.reply('clienteModificado',JSON.stringify(cliente))
     }
 })
 
@@ -493,10 +496,10 @@ ipcMain.on('ventaModificada',async (e,[args,id])=>{
 })
 
     ipcMain.on('abrir-ventana-emitir-comprobante',(e,args)=>{
-        const[vendedor,numeroVenta] = args
+        const[vendedor,numeroVenta,empresa] = args
         abrirVentana("emitirComrpobante")
         nuevaVentana.on('ready-to-show',async ()=>{
-            nuevaVentana.webContents.send('venta',JSON.stringify([vendedor,numeroVenta]))
+            nuevaVentana.webContents.send('venta',JSON.stringify([vendedor,numeroVenta,empresa]))
         })
     })
 
@@ -648,6 +651,7 @@ ipcMain.on('eliminarPedido', async (e, id) => {
 //Abrir ventana para modificar un producto
 ipcMain.on('abrir-ventana-modificar-producto',  (e, args) => {
     const [id,acceso,texto,seleccion] = args
+    console.log(seleccion);
     abrirVentana('abrir-ventana-modificar-producto')
     nuevaVentana.on('ready-to-show',async ()=>{
         let Producto = await axios.get(`${URL}productos/${id}`)

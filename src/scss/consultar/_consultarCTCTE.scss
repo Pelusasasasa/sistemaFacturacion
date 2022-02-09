@@ -1,5 +1,5 @@
 .mostrarNegro{
-  background-color: black;
+  background-color: black !important;
 }
 .consultaCtaCte {
   display: flex;
@@ -33,6 +33,7 @@
   }
 
   .listarventas {
+    color: black;
 
     @include Chico(){
       height: 25rem;
@@ -77,6 +78,7 @@
   }
 
   .listarDetalleVenta {
+    color: black;
     background-color: white;
     @include Chico(){
       height: 35rem;

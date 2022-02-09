@@ -63,10 +63,10 @@ function asignarCampos() {
     marca.value = producto.marca
     stock.value = producto.stock
     tasaIva.value=producto.iva;
-    (producto.costo !== "0") ? (costoPesos.value = parseFloat(producto.costo).toFixed(2)) : (costoPesos.value = "0.00");
-    (producto.costodolar !== "0") ? (costoDolares.value = parseFloat(producto.costodolar).toFixed(3)) : (costoDolares.value = "0.00");
+    (parseFloat(producto.costo) !== 0) ? (costoPesos.value = parseFloat(producto.costo).toFixed(2)) : (costoPesos.value = "0.00");
+    (parseFloat(producto.costodolar) !== 0) ? (costoDolares.value = parseFloat(producto.costodolar).toFixed(3)) : (costoDolares.value = "0.00");
 
-    if (costoPesos.value === "0.00") {
+    if (parseFloat(costoPesos.value) === 0) {
         ivaImp.value = parseFloat(producto.impuestos)
         costo = parseFloat(costoDolares.value)
         costoTotal.value = ((costo+parseFloat(producto.impuestos))*dolar).toFixed(3)
@@ -91,16 +91,13 @@ if (costoPesos.focus) {
     })
     }
 
-ivaImp.addEventListener('focus',(e)=>{
-    (costoPesos.value === "0.00") ? (ivaImp.value = parseFloat((costoDolares.value * valorTasaIva / 100).toFixed(3))) : ivaImp.value = parseFloat(costo.toFixed(2))
-})
-
 costoTotal.addEventListener('focus',()=>{
+    (parseFloat(costoPesos.value) === 0) ? (ivaImp.value = parseFloat((costoDolares.value * valorTasaIva / 100).toFixed(3))) : ivaImp.value = parseFloat(costo.toFixed(2))
     selecciona_value(costoTotal.id);
     costoT = parseFloat(ivaImp.value)
     let costoP = 0
     
-    if (costoPesos.value === "0.00") {
+    if (parseFloat(costoPesos.value) === 0) {
         costoP = parseFloat(costoDolares.value);
         costoTotal.value = ((parseFloat(ivaImp.value)+parseFloat(costoDolares.value))*dolar).toFixed(2)
     }else{
@@ -127,7 +124,6 @@ modificar.addEventListener('click',e=>{
     tasaIva.removeAttribute("disabled") 
     costoPesos.removeAttribute("disabled") 
     costoDolares.removeAttribute("disabled") 
-    ivaImp.removeAttribute("disabled") 
     costoTotal.removeAttribute("disabled") 
     observaciones.removeAttribute("disabled")
     utilidad.removeAttribute("disabled") 
@@ -147,7 +143,7 @@ guardar.addEventListener('click',e=>{
     producto.stock = stock.value
     producto.iva = tasaIva.value
     producto.costo = costoPesos.value
-    producto.costodolar = costoDolares.value
+    producto.costodolar = parseFloat(costoDolares.value)
     producto.observacion = observaciones.value
     producto.utilidad = utilidad.value
     producto.precio_venta = precioVenta.value

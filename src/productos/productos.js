@@ -66,8 +66,10 @@ function recorrerConFlechas(e) {
 
 function filtrar(){
     //obtenemos lo que se escribe en el input
+    console.log(texto);
+    console.log(select.value);
     texto = buscarProducto.value.toLowerCase();
-    ipcRenderer.send('get-productos',[texto,seleccion]);
+    ipcRenderer.send('get-productos',[texto,select.value]);
 }
 
 ipcRenderer.on('get-productos', (e,args) =>{
@@ -87,10 +89,6 @@ ipcRenderer.on('get-productos', (e,args) =>{
             `
     }
 })
-
-select.addEventListener('click',(e) =>{
-    seleccion = e.target.value;
-}) 
 
 //Hacemos que se seleccione un producto
 let seleccionarTBody = document.querySelector('tbody')
@@ -117,6 +115,7 @@ function mostrarImagen(id) {
 
 ipcRenderer.once('Historial',async(e,args)=>{
     const [textoA,seleccionA] = JSON.parse(args)
+    console.log(textoA,seleccionA);
     buscarProducto.value = await textoA;
     select.value = await seleccionA;
     filtrar()
@@ -127,7 +126,7 @@ ipcRenderer.once('Historial',async(e,args)=>{
 const modificar = document.querySelector('.modificar')
 modificar.addEventListener('click',e=>{
     if(seleccionado){
-        ipcRenderer.send('abrir-ventana-modificar-producto',[seleccionado.id,acceso,texto,seleccion])
+        ipcRenderer.send('abrir-ventana-modificar-producto',[seleccionado.id,acceso,texto,select.value])
     }else{
             alert('Producto no seleccionado')
     }
@@ -154,13 +153,12 @@ movimiento.addEventListener('click',()=>{
 const ingresarMov = document.querySelector('.ingresar')
 ingresarMov.addEventListener('click', e => {
    if (seleccionado) {
-    console.log(seleccionado);
        dialogs.promptPassword("Contraseña",async valor=>{
         let vendedor
         await ipcRenderer.invoke('traerUsuario',valor).then((args)=>{
             vendedor =  JSON.parse(args).nombre
         })
-            ipcRenderer.send('abrir-ventana-movimiento-producto',[seleccionado.id,vendedor])
+           vendedor ?  ipcRenderer.send('abrir-ventana-movimiento-producto',[seleccionado.id,vendedor]) : alert("Contraseña Incorrecta");
         })
    }else{
         alert('Producto no seleccionado')
