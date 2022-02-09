@@ -31,6 +31,7 @@ const original = document.querySelector('#original')
 const factura = document.querySelector('.factura');
 const cancelar = document.querySelector('.cancelar');
 const borrarProducto = document.querySelector('.borrarProducto')
+const facturaOriginal = document.querySelector('#facturaOriginal')
 
 let cliente = {};
 let venta = {};
@@ -126,7 +127,7 @@ codigo.addEventListener('keypress',(e) => {
                         codigo.focus()
                 }else{
                     dialogs.prompt("Cantidad",async valor=>{
-                        if (valor === undefined || valor === "") {
+                        if (valor === undefined || valor === "" || parseFloat(valor) === 0) {
                             e.target.value = await "";
                             codigo.focus()
                         }else{
@@ -190,33 +191,37 @@ descuento.addEventListener('blur',e=>{
 
 factura.addEventListener('click',async e=>{
     e.preventDefault();
-    const venta = {};
-    venta.cliente = codigoC.value;
-    venta._id = await tamanioVentas();
-    venta.tipo_comp = "Nota Credito";
-    venta.observaciones = observaciones.value;
-    venta.descuento = descuentoN.value;
-    venta.cod_comp = verCod_comp(cliente.cond_iva)
-    venta.nro_comp = await traerNumeroComprobante(venta.cod_comp)
-    venta.comprob = venta.nro_comp;
-    venta.productos = listaProductos;
-    venta.tipo_pago = "CD";
-    venta.cod_doc = (cliente.cuit.length > 8) ? 80 : 96;
-    venta.dnicuit = cliente.cuit;
-    venta.conIva = cliente.cond_iva;
-    venta.pagado = true;
-    venta.abonado = "0";
-    venta.descuento = parseFloat(descuentoN.value);
-    venta.precioFinal = parseFloat(total.value);
-    venta.vendedor = vendedor
-    if (parseFloat(precioFinal)>10000 && buscarCliente.value === "A CONSUMIDOR FINAL" && dnicuit.value === "00000000"  && direccion.value === "CHAJARI") {
-        alert("Factura mayor a 10000, poner valores clientes")
+    if (facturaOriginal.value === "") {
+        alert("No se escribio el numero de la factura Original")
     }else{
-    actualizarNroCom(venta.nro_comp,venta.cod_comp)
-    ipcRenderer.send('nueva-venta',venta)
-    imprimirTikectFactura(venta,cliente)
-    imprimirItem(venta,cliente)
-    location.reload();
+        const venta = {};
+        venta.cliente = codigoC.value;
+        venta._id = await tamanioVentas();
+        venta.tipo_comp = "Nota Credito";
+        venta.observaciones = observaciones.value;
+        venta.descuento = descuentoN.value;
+        venta.cod_comp = verCod_comp(cliente.cond_iva)
+        venta.nro_comp = await traerNumeroComprobante(venta.cod_comp)
+        venta.comprob = venta.nro_comp;
+        venta.productos = listaProductos;
+        venta.tipo_pago = "CD";
+        venta.cod_doc = (cliente.cuit.length > 8) ? 80 : 96;
+        venta.dnicuit = cliente.cuit;
+        venta.conIva = cliente.cond_iva;
+        venta.pagado = true;
+        venta.abonado = "0";
+        venta.descuento = parseFloat(descuentoN.value);
+        venta.precioFinal = parseFloat(total.value);
+        venta.vendedor = vendedor
+        if (parseFloat(precioFinal)>10000 && buscarCliente.value === "A CONSUMIDOR FINAL" && dnicuit.value === "00000000"  && direccion.value === "CHAJARI") {
+            alert("Factura mayor a 10000, poner valores clientes")
+        }else{
+        actualizarNroCom(venta.nro_comp,venta.cod_comp)
+        ipcRenderer.send('nueva-venta',venta)
+        imprimirTikectFactura(venta,cliente)
+        imprimirItem(venta,cliente)
+        location.reload();
+        }
     }
 })
 

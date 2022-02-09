@@ -134,6 +134,7 @@ const listarLista = (lista,situacion,tipo)=>{
             return (e.tipo_comp === aux) || e.tipo_comp === "Recibos"
         }
     })
+    console.log(listaGlobal)
     listar.innerHTML = '';
     let saldoAcumulativo = 0;
     listaGlobal.forEach(venta => {
@@ -291,9 +292,11 @@ const ponerDatosCliente = async (Cliente)=>{
     saldo.value = (parseFloat(Cliente.saldo)).toFixed(2)
     saldo_p.value = (parseFloat(Cliente.saldo_p)).toFixed(2)
     listaVentas=Cliente.listaVentas
+    console.log(listaVentas)
 
     await ipcRenderer.invoke('traerVentas',listaVentas).then((args)=>{
         lista = JSON.parse(args)
+        console.log(lista)
     })
         lista.forEach(venta =>{
             (venta.pagado === false || (venta.tipo_comp === "Recibos" && (venta.precioFinal < 0 || parseFloat(venta.abonado) > 0 ))) && nuevaLista.push(venta);

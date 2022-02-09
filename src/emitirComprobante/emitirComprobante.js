@@ -245,7 +245,7 @@ codigo.addEventListener('keypress',(e) => {
                         codigo.focus()
                 }else{
                     dialogs.prompt("Cantidad",async valor=>{
-                        if (valor === undefined || valor === "" || valor === "0") {
+                        if (valor === undefined || valor === "" || parseFloat(valor) === 0) {
                             e.target.value = await "";
                             codigo.focus()
                         }else{
@@ -658,7 +658,8 @@ ticketFactura.addEventListener('click',async (e) =>{
          }else{
          venta.nombreCliente = buscarCliente.value;
          venta._id = await tamanioVentas();
-         venta.observacion = observaciones.value
+         console.log(observaciones.value)
+         venta.observaciones = observaciones.value
          venta.fecha = new Date()
          venta.descuento = (descuentoN.value);
          venta.precioFinal = redondear(total.value);

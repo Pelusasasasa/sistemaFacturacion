@@ -116,7 +116,7 @@ async function cantidad(e) {
     await dialogs.prompt("cantidad",async(valor) =>{
         const pro = productos.find(e=>e._id === seleccionado.id)
         console.log(valor);
-        if (valor === undefined || valor === "" || valor === "0") {
+        if (valor === undefined || valor === "" || parseFloat(valor) === 0) {
             await seleccionado.classList.remove('seleccionado')
             seleccionado = ""
             buscarProducto.focus()

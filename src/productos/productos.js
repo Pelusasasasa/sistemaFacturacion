@@ -66,8 +66,6 @@ function recorrerConFlechas(e) {
 
 function filtrar(){
     //obtenemos lo que se escribe en el input
-    console.log(texto);
-    console.log(select.value);
     texto = buscarProducto.value.toLowerCase();
     ipcRenderer.send('get-productos',[texto,select.value]);
 }
@@ -101,11 +99,6 @@ seleccionarTBody.addEventListener('click',(e) =>{
     seleccionado && mostrarImagen(seleccionado.id)
 })
 
-// const inputseleccionado = (e) =>{
-//     const yaSeleccionado = document.querySelector('.seleccionado')
-//     yaSeleccionado && yaSeleccionado.classList.remove('seleccionado')
-//    e.classList.toggle('seleccionado')
-// }
 
 const imagen = document.querySelector('.imagen')
 function mostrarImagen(id) {
@@ -180,6 +173,11 @@ eliminar.addEventListener('click',e=>{
 })
  buscarProducto.addEventListener('keyup',filtrar);
 filtrar();
+buscarProducto.addEventListener('keypress',e=>{
+    if (buscarProducto.value.length === 3 && e.key !== "-" && select.value === "codigo") {
+        buscarProducto.value = buscarProducto.value + "-"
+    }
+})
 
 
 document.addEventListener('keydown',e=>{
