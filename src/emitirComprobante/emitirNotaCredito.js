@@ -31,7 +31,7 @@ const original = document.querySelector('#original')
 const factura = document.querySelector('.factura');
 const cancelar = document.querySelector('.cancelar');
 const borrarProducto = document.querySelector('.borrarProducto')
-const facturaOriginal = document.querySelector('#facturaOriginal')
+const facturaOriginal = document.querySelector('#original')
 
 let cliente = {};
 let venta = {};
@@ -191,6 +191,7 @@ descuento.addEventListener('blur',e=>{
 
 factura.addEventListener('click',async e=>{
     e.preventDefault();
+    console.log(facturaOriginal)
     if (facturaOriginal.value === "") {
         alert("No se escribio el numero de la factura Original")
     }else{

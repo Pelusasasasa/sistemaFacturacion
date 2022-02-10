@@ -175,7 +175,8 @@ ipcMain.on('CambiarPrecios',async(e,args)=>{
     dolar = dolar.data.dolar
     productos = productos.data;
     productos.forEach(async producto => {
-        producto.precio_venta = (parseFloat(producto.impuestos)+(parseFloat(producto.utilidad)*(parseFloat(producto.impuestos)/100))).toFixed(2);
+        const costoTotal = (parseFloat(producto.impuestos)+parseFloat(producto.costodolar)*parseFloat(dolar));
+        producto.precio_venta = (costoTotal+(parseFloat(producto.utilidad)*costoTotal/100)).toFixed(2);
         await axios.put(`${URL}productos/${producto._id}`,producto)
     });
 })
