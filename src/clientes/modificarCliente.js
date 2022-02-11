@@ -13,10 +13,43 @@ const limite = document.querySelector('#limite')
 const moroso = document.querySelectorAll('input[name="moroso"]')
 const conFact = document.querySelector('#conFact')
 const observaciones = document.querySelector('#observaciones')
+const saldo = document.querySelector('#saldo')
+const saldo_p = document.querySelector('#saldo_p')
 let _id = ""
 let condicion
 let acceso
+let situacion = "blanco"
 
+document.addEventListener('keydown',(event) =>{
+    if (event.key === "Alt") {
+       document.addEventListener('keydown',(e) =>{
+           if (e.key === "F9" && situacion === "blanco") {
+               mostrarNegro();
+               situacion = "negro"
+           }
+       })
+   }
+})
+
+document.addEventListener('keydown',(event) =>{
+    if (event.key === "Alt") {
+       document.addEventListener('keydown',(e) =>{
+           if (e.key === "F3" && situacion === "negro") {
+               ocultarNegro();
+               situacion = "blanco"
+           }
+       })
+   }
+})
+const mostrarNegro = ()=>{
+    const saldo_pDIV = document.querySelector('.saldo_p')
+    saldo_pDIV.classList.remove('none')
+}
+
+const ocultarNegro = ()=>{
+    const saldo_pDIV = document.querySelector('.saldo_p')
+    saldo_pDIV.classList.add('none')
+}
 
 
 ipcRenderer.on('datos-clientes',(e,args)=>{
@@ -43,6 +76,8 @@ ipcRenderer.on('datos-clientes',(e,args)=>{
     conFact.value = cliente.cond_fact
     observaciones.value = cliente.observacion
     conIva.value = cliente.cond_iva
+    saldo.value = cliente.saldo;
+    saldo_p.value = cliente.saldo_p;
 })
 
 
@@ -64,7 +99,6 @@ guardar.addEventListener('click',e =>{
     for(let i of moroso){
         i.checked && (condicion=i.value)
     }
-    console.log(condicion)
     e.preventDefault()
     nuevoCliente._id = _id
     nuevoCliente.cliente = nombre.value 

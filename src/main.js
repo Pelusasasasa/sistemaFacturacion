@@ -5,7 +5,7 @@ let URL
 if (a === 1) {
     URL = process.env.URLPUBLICANEGOCIO;
 }else if(a === 2){
-    URL = "http://192.168.1.109:4000/api/";
+    URL = "http://192.168.0.124:4000/api/";
     //URL = process.env.URLPRIVADANEGOCIO;
 }
 let conexion;
@@ -209,6 +209,13 @@ ipcMain.on('modficarPrecioPorcentaje',async(e,args)=>{
     
 })
 
+//probar imagenes 
+ipcMain.on('traerImagen',async(e,args)=>{
+    let path = await axios.get(`${URL}productos/imagenes/imagen`)
+    path = path.data;
+    e.reply("traerImagen",JSON.stringify(path))
+})
+
 //FIN PRODUCTOS
 
 
@@ -234,6 +241,7 @@ ipcMain.handle('get-cliente', async (e, args) => {
 ipcMain.on('nuevo-cliente', async (e, args) => {
     const inicial = (args.cliente[0]).toUpperCase()
     let numero = await axios.get(`${URL}clientes/crearCliente/${inicial}`)
+    console.log(numero)
     args._id = numero.data
     await axios.post(`${URL}clientes`,args)
 })
@@ -352,7 +360,7 @@ ipcMain.on('nueva-venta', async (e, args) => {
     let nuevaVenta = await axios.post(`${URL}ventas`,args)
     nuevaVenta = nuevaVenta.data
     let cliente 
-    if (nuevaVenta.tipo_pago == "CC") {    
+    if (nuevaVenta.tipo_pago == "CC" || nuevaVenta.tipo_comp === "Recibos") {    
         const _id = nuevaVenta.cliente;
         cliente = await axios.get(`${URL}clientes/id/${_id}`);
         cliente = cliente.data;

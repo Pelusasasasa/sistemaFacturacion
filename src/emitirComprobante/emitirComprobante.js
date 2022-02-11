@@ -600,44 +600,48 @@ const sacarIdentificadorTabla = (arreglo)=>{
 const presupuesto = document.querySelector('.presupuesto')
 presupuesto.addEventListener('click',async (e)=>{
     e.preventDefault()
-    venta.productos = listaProductos
-    verElTipoDeVenta(tiposVentas) //vemos si es contado,cuenta corriente o presupuesto en el input[radio]
-    if (tipoPago === "Ninguno") {
-        alert("Seleccionar un modo de venta")
+    if (listaProductos.length===0) {
+        alert("Cargar Productos")
+    }else{
+        venta.productos = listaProductos
+        verElTipoDeVenta(tiposVentas) //vemos si es contado,cuenta corriente o presupuesto en el input[radio]
+        if (tipoPago === "Ninguno") {
+                alert("Seleccionar un modo de venta")
         }else{
-        venta.nombreCliente = buscarCliente.value;
-        tipoVenta="Presupuesto"
-        venta._id = await tamanioVentas()
-        venta.descuento = (descuentoN.value);
-        venta.precioFinal = redondear(total.value)
-        venta.tipo_comp = tipoVenta
-        venta.tipo_pago = tipopago(tipoPago)
-        venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.Cod_comp,venta.tipo_pago);
-        venta.empresa = inputEmpresa.value;
-        venta.pagado = verSiPagoONo(venta.tipo_pago);//Ejecutamos para ver si la venta se pago o no
-        let valorizadoImpresion = "valorizado"
-         if (!valorizado.checked && venta.tipo_pago === "CC") {
-         venta.precioFinal = "0.1" 
-         valorizadoImpresion="no valorizado"
-         }
-         sacarIdentificadorTabla(venta.productos);
-         if (venta.tipo_pago !== "PP") {
-             venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
-         for (let producto of venta.productos){
-                 sacarStock(producto.cantidad,producto.objeto)
-                 await movimientoProducto(producto.cantidad,producto.objeto)
-             }
-         }
-         actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-         ipcRenderer.send('nueva-venta',venta);
-         if (impresion.checked) {
-             if (venta.tipo_pago === "CC") {
-                 ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion])
-             }else{
-                 ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion])
-             }
-         }
-         window.location = "../index.html"
+            venta.nombreCliente = buscarCliente.value;
+            tipoVenta="Presupuesto"
+            venta._id = await tamanioVentas()
+            venta.descuento = (descuentoN.value);
+            venta.precioFinal = redondear(total.value)
+            venta.tipo_comp = tipoVenta
+            venta.tipo_pago = tipopago(tipoPago)
+            venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.Cod_comp,venta.tipo_pago);
+            venta.empresa = inputEmpresa.value;
+            venta.pagado = verSiPagoONo(venta.tipo_pago);//Ejecutamos para ver si la venta se pago o no
+            let valorizadoImpresion = "valorizado"
+            if (!valorizado.checked && venta.tipo_pago === "CC") {
+            venta.precioFinal = "0.1" 
+            valorizadoImpresion="no valorizado"
+            }
+            sacarIdentificadorTabla(venta.productos);
+            if (venta.tipo_pago !== "PP") {
+                venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
+            for (let producto of venta.productos){
+                    sacarStock(producto.cantidad,producto.objeto)
+                    await movimientoProducto(producto.cantidad,producto.objeto)
+                }
+            }
+            actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+            ipcRenderer.send('nueva-venta',venta);
+            if (impresion.checked) {
+                if (venta.tipo_pago === "CC") {
+                    ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion])
+                }else{
+                    ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion])
+                }
+            }
+            window.location = "../index.html"
+        }
     }
 })
 
@@ -645,10 +649,12 @@ presupuesto.addEventListener('click',async (e)=>{
 const ticketFactura = document.querySelector('.ticketFactura')
 ticketFactura.addEventListener('click',async (e) =>{
     e.preventDefault()
+
     const stockNegativo = listaProductos.find(producto=>producto.cantidad < 0)
     if(stockNegativo){
         alert("Ticket Factura no puede ser productos en negativo");
-        exit;
+    }else if(listaProductos.length===0){
+        alert("Ningun producto cargado")
     }else{
      venta.productos = listaProductos;
       tipoVenta = "Ticket Factura"
@@ -788,20 +794,20 @@ borrarProducto.addEventListener('click',e=>{
 const cancelar = document.querySelector('.cancelar')
 cancelar.addEventListener('click',async e=>{
     e.preventDefault()
-    if (listaProductos.length !== 0) {
-        const ventaCancelada = {}
-
-        if (cliente._id) {
-            ventaCancelada.cliente = cliente._id
-        }
-        ventaCancelada.productos = listaProductos
-        ventaCancelada._id = await tamanioCancelados()
-        ventaCancelada.vendedor = vendedor
-        ipcRenderer.send('ventaCancelada',ventaCancelada)
-    }
-        window.location = "../index.html"
+    if (confirm("Desea cancelar el Presupuesto")) {
+        if (listaProductos.length !== 0) {
+            const ventaCancelada = {}
     
-        
+            if (cliente._id) {
+                ventaCancelada.cliente = cliente._id
+            }
+            ventaCancelada.productos = listaProductos
+            ventaCancelada._id = await tamanioCancelados()
+            ventaCancelada.vendedor = vendedor
+            ipcRenderer.send('ventaCancelada',ventaCancelada)
+        }
+            window.location = "../index.html"
+    }
 })
 
 // Vemos el tamanio de los Cancelados

@@ -169,7 +169,6 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
                 if(e.nro_comp === trSeleccionado.id){    
                     venta = e
                     abonadoAnterior=e.abonado;
-                    console.log(abonadoAnterior);
                 }
             });
 
@@ -346,7 +345,6 @@ const modificarVentas = (lista)=>{
     trs.forEach(tr=>{
         nuevaLista.forEach(venta=>{
             if(tr.id === venta.nro_comp){
-                console.log(venta.abonado);
                 venta.abonado = (tr.children[5].children[0].value !== "") ? (parseFloat(tr.children[4].innerHTML) + parseFloat(tr.children[5].children[0].value)).toFixed(2) : venta.abonado; 
                 venta.pagado = (parseFloat(venta.abonado) === venta.precioFinal) ? true : false;
 
@@ -354,3 +352,9 @@ const modificarVentas = (lista)=>{
         })
     })
 }
+
+cancelar.addEventListener('click',e=>{
+    if (confirm("Desea cancelar el Recibo")) {
+        location.href = "../index.html"
+    }
+})

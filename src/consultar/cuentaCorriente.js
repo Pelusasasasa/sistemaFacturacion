@@ -134,7 +134,6 @@ const listarLista = (lista,situacion,tipo)=>{
             return (e.tipo_comp === aux) || e.tipo_comp === "Recibos"
         }
     })
-    console.log(listaGlobal)
     listar.innerHTML = '';
     let saldoAcumulativo = 0;
     listaGlobal.forEach(venta => {
@@ -162,7 +161,6 @@ const listarLista = (lista,situacion,tipo)=>{
         saldoAcumulativo = (venta.tipo_comp === "Presupuesto" || venta.tipo_comp === "Ticket Factura" ) ? saldoAcumulativo + venta.precioFinal : saldoAcumulativo-venta.precioFinal
         if (venta.length !== 0) {
             let fecha = new Date(venta.fecha)
-            console.log(listaGlobal);
             if (tipo === "compensada") {
                 listar.innerHTML += `
                 <tr id="${venta.nro_comp}">
@@ -268,7 +266,6 @@ botonFacturar.addEventListener('click',() =>{
         dialogs.promptPassword("Contraseña").then(value=>{
         ipcRenderer.invoke('traerUsuario',value).then((args)=>{
             if (JSON.parse(args) !== "") {
-                console.log(JSON.parse(args));
                 ipcRenderer.send('abrir-ventana-emitir-comprobante',[JSON.parse(args).nombre,seleccionado.id,JSON.parse(args).empresa])   
             }
         })
@@ -292,7 +289,6 @@ const ponerDatosCliente = async (Cliente)=>{
     saldo.value = (parseFloat(Cliente.saldo)).toFixed(2)
     saldo_p.value = (parseFloat(Cliente.saldo_p)).toFixed(2)
     listaVentas=Cliente.listaVentas
-    console.log(listaVentas)
 
     await ipcRenderer.invoke('traerVentas',listaVentas).then((args)=>{
         lista = JSON.parse(args)

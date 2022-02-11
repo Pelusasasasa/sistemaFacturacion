@@ -194,6 +194,8 @@ factura.addEventListener('click',async e=>{
     console.log(facturaOriginal)
     if (facturaOriginal.value === "") {
         alert("No se escribio el numero de la factura Original")
+    }else if(listaProductos.length === 0){
+        alert("No se cargo productos")
     }else{
         const venta = {};
         venta.cliente = codigoC.value;
@@ -266,7 +268,9 @@ const tamanioVentas = async()=>{
 }
 
 cancelar.addEventListener('click',e=>{
-    window.location = '../index.html'
+    if (confirm("Desea cancelar Nota Credito")) {
+        window.location = '../index.html'
+    }
 })
 
 const imprimirTikectFactura = async(venta,cliente)=>{

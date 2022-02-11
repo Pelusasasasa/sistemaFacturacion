@@ -13,7 +13,7 @@ const costoTotal = document.querySelector('#costoTotal');
 const observaciones = document.querySelector('#observaciones'); 
 const utilidad = document.querySelector('#utilidad');
 const precioVenta = document.querySelector('#precioVenta');
-const imagen = document.querySelector('#imagen')
+const imgs = document.querySelector('#imgs')
 const unidad = document.querySelector('#unidad')
 const salir = document.querySelector('.salir')
 

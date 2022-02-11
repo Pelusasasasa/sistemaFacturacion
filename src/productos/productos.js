@@ -14,8 +14,6 @@ const acceso = getParameterByName('acceso')
 const resultado = document.querySelector('#resultado');
 const select = document.querySelector('#seleccion');
 const buscarProducto = document.querySelector('#buscarProducto');
-let productos = '';
-let seleccion = 'descripcion'
 let texto = ""
 let seleccionado
 const body = document.querySelector('body')
@@ -95,6 +93,7 @@ seleccionarTBody.addEventListener('click',(e) =>{
     const sacarSeleccion = document.querySelector('.seleccionado')
     sacarSeleccion && sacarSeleccion.classList.remove('seleccionado')
     seleccionado.classList.toggle('seleccionado')
+    console.log("first")
     //mostrar imagen
     seleccionado && mostrarImagen(seleccionado.id)
 })
@@ -102,8 +101,14 @@ seleccionarTBody.addEventListener('click',(e) =>{
 
 const imagen = document.querySelector('.imagen')
 function mostrarImagen(id) {
-    imagen.innerHTML = `
-    <img class="imagenProducto" src=../Fotos/${id}.jpg>`
+    console.log("a")
+    ipcRenderer.send('traerImagen',id)
+    ipcRenderer.on('traerImagen',(e,args)=>{
+        const path = JSON.parse(args)
+        imagen.innerHTML = `
+        <img class="imagenProducto" src=../Fotos/${path}.jpg>`
+    })
+   
 }
 
 ipcRenderer.once('Historial',async(e,args)=>{
@@ -189,3 +194,8 @@ document.addEventListener('keydown',e=>{
 if (acceso === "2" || acceso === "1") {
     eliminar.classList.add('none')
 }
+
+//cunado se cambie la conidcion el codigo toma el foco
+select.addEventListener('change',e=>{
+    buscarProducto.select()
+})
