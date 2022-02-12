@@ -5,7 +5,7 @@ let URL
 if (a === 1) {
     URL = process.env.URLPUBLICANEGOCIO;
 }else if(a === 2){
-    URL = "http://192.168.0.124:4000/api/";
+    URL = "http://192.168.1.11:4000/api/";
     //URL = process.env.URLPRIVADANEGOCIO;
 }
 let conexion;
@@ -241,7 +241,6 @@ ipcMain.handle('get-cliente', async (e, args) => {
 ipcMain.on('nuevo-cliente', async (e, args) => {
     const inicial = (args.cliente[0]).toUpperCase()
     let numero = await axios.get(`${URL}clientes/crearCliente/${inicial}`)
-    console.log(numero)
     args._id = numero.data
     await axios.post(`${URL}clientes`,args)
 })
@@ -282,7 +281,7 @@ ipcMain.on('modificarSaldo',async (e,arreglo)=>{
     const [id,tipoSaldo,nuevoSaldo] = arreglo
     let cliente = await axios.get(`${URL}clientes/id/${id}`);
     cliente = cliente.data;
-    cliente[tipoSaldo] = nuevoSaldo;
+    cliente[tipoSaldo] = nuevoSaldo.toFixed(2);
     await axios.put(`${URL}clientes/${id}`,cliente)
 })
 
@@ -350,17 +349,23 @@ ipcMain.on('abrir-ventana-clientesConSaldo',async(e,args)=>{
 
 //tamanio de las ventas
 ipcMain.handle('tamanioVentas',async(e,args)=>{
-    let tamanio = await axios.get(`${URL}ventas`)
+    let tamanio
+    args === "presupuesto" ? tamanio = await axios.get(`${URL}presupuesto`)  : tamanio = await axios.get(`${URL}ventas`)
     tamanio = tamanio.data;
     return(JSON.stringify(parseFloat(tamanio) + 1))
 })
 
 //Obtenemos la venta
 ipcMain.on('nueva-venta', async (e, args) => {
-    let nuevaVenta = await axios.post(`${URL}ventas`,args)
+    let nuevaVenta;
+    if (args.tipo_comp === "Presupuesto") {
+       nuevaVenta = await axios.post(`${URL}presupuesto`,args)
+    }else{
+       nuevaVenta = await axios.post(`${URL}ventas`,args)
+    }
     nuevaVenta = nuevaVenta.data
     let cliente 
-    if (nuevaVenta.tipo_pago == "CC" || nuevaVenta.tipo_comp === "Recibos") {    
+    if (nuevaVenta.tipo_pago == "CC" || nuevaVenta.tipo_comp === "Recibos" || nuevaVenta.tipo_comp === "Recibos_P") {    
         const _id = nuevaVenta.cliente;
         cliente = await axios.get(`${URL}clientes/id/${_id}`);
         cliente = cliente.data;
@@ -412,9 +417,14 @@ ipcMain.handle('traerVentas' ,async (e,args)=>{
     for (const id of args) {
         let venta = await axios.get(`${URL}ventas/${id}`)
         venta = venta.data;
-
         if(venta.length !== 0){
             lista.push(venta[0])
+        }else{
+            let presupuesto = await axios.get(`${URL}presupuesto/${id}`)
+            presupuesto = presupuesto.data;
+            if (presupuesto.length !== 0) {
+                lista.push(presupuesto[0])
+            }
         }
     }
     return (JSON.stringify(lista))
@@ -424,6 +434,10 @@ ipcMain.handle('traerVentas' ,async (e,args)=>{
 ipcMain.on('traerVenta',async (e,args)=>{
     let venta = await axios.get(`${URL}ventas/${args}`)
     venta = venta.data
+    if (venta.length === 0) {
+        venta = await axios.get(`${URL}presupuesto/${args}`);
+        venta = venta.data;
+    }
 
     e.reply('traerVenta',JSON.stringify(venta))
 })
@@ -435,12 +449,13 @@ ipcMain.on('modificamosLasVentas',async (e,arreglo)=>{
         const nro_comp = Venta.nro_comp
         const abonado = Venta.abonado
         const pagado = Venta.pagado
-        let venta = await axios.get(`${URL}ventas/${nro_comp}`)
+        let venta
+        Venta.tipo_comp === "Presupuesto" ? venta = await axios.get(`${URL}presupuesto/${nro_comp}`) : venta = await axios.get(`${URL}ventas/${nro_comp}`)
         venta = venta.data[0];
-
+        console.log(venta)
         venta.abonado = parseFloat(abonado).toFixed(2)
         venta.pagado = pagado
-        await axios.put(`${URL}ventas/${id}`,venta)
+        venta.tipo_comp === "Presupuesto" ? await axios.put(`${URL}presupuesto/${id}`,venta)  : await axios.put(`${URL}ventas/${id}`,venta)
     }
 })
 
@@ -458,6 +473,11 @@ const probar = async (listau,fecha1,fecha2)=>{
     for await (const Venta of listau){
         let ventaARetornar = await axios.get(`${URL}ventas/${Venta}/${fecha1}/${fecha2}`)
         ventaARetornar = ventaARetornar.data
+        if (ventaARetornar.length === 0) {
+            ventaARetornar = await axios.get(`${URL}presupuesto/${Venta}/${fecha1}/${fecha2}`);
+            ventaARetornar = ventaARetornar.data
+            console.log(ventaARetornar)
+        }
         if(ventaARetornar[0] !== undefined){
             retornar.push(ventaARetornar[0])
     }
@@ -471,7 +491,10 @@ ipcMain.on('traerVentasEntreFechas',async(e,args)=>{
     let hasta = DateTime.fromISO(args[1]).endOf('day')
     let ventas = await axios.get(`${URL}ventas/${desde}/${hasta}`)
     ventas = ventas.data
-    e.reply('traerVentasEntreFechas',JSON.stringify(ventas))
+    console.log(ventas)
+    let presupuesto = await axios.get(`${URL}presupuesto/${desde}/${hasta}`)
+    presupuesto = presupuesto.data;
+    e.reply('traerVentasEntreFechas',JSON.stringify([...ventas,...presupuesto]))
 })
 
 //traerVentas entre fechas de un cliente
@@ -660,7 +683,6 @@ ipcMain.on('eliminarPedido', async (e, id) => {
 //Abrir ventana para modificar un producto
 ipcMain.on('abrir-ventana-modificar-producto',  (e, args) => {
     const [id,acceso,texto,seleccion] = args
-    console.log(seleccion);
     abrirVentana('abrir-ventana-modificar-producto')
     nuevaVentana.on('ready-to-show',async ()=>{
         let Producto = await axios.get(`${URL}productos/${id}`)
@@ -690,7 +712,6 @@ ipcMain.on('abrir-ventana-agregar-producto',async(e,args)=>{
 //Abrir ventana de movimiento de producto
 ipcMain.on('abrir-ventana-movimiento-producto',async (e,arreglo)=>{
     const [id,vendedor] = arreglo
-    console.log(id);
     abrirVentana('movProducto')
     let producto = await axios.get(`${URL}productos/${id}`);
     producto = producto.data
@@ -907,7 +928,6 @@ const templateMenu = [
     //         clientes = clientes.data
     //         clientes.forEach(async cliente =>{
     //             abrirVentana("resumenCuenta")
-    //             console.log(cliente)
     //             await nuevaVentana.on('ready-to-show',()=>{
     //                 nuevaVentana.webContents.send('datosAImprimir',JSON.stringify(cliente))
     //             })

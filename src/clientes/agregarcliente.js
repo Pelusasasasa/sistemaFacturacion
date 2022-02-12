@@ -140,7 +140,7 @@ botonEnviar.addEventListener('click',async e =>{
         mail: email.value,
         cond_iva: conIva.value,
         saldo: saldo.value,
-        limite: limite.value,
+        limite: parseFloat(limite.value),
         condicion: condicion,
         saldo_p: saldo_p.value,
         cond_fact: condicionFacturacion.value,

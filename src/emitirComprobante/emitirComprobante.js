@@ -541,9 +541,9 @@ function redondear(numero) {
 }
 
 
-const tamanioVentas = async()=>{
+const tamanioVentas = async(tipoVenta)=>{//tipoVenta = Presupuesto o Ticket Factura
     let retornar
-    await ipcRenderer.invoke('tamanioVentas').then(async(args)=>{
+    await ipcRenderer.invoke('tamanioVentas',tipoVenta).then(async(args)=>{
         retornar = await JSON.parse(args)
     })
     return retornar
@@ -610,7 +610,7 @@ presupuesto.addEventListener('click',async (e)=>{
         }else{
             venta.nombreCliente = buscarCliente.value;
             tipoVenta="Presupuesto"
-            venta._id = await tamanioVentas()
+            venta._id = await tamanioVentas("presupuesto")
             venta.descuento = (descuentoN.value);
             venta.precioFinal = redondear(total.value)
             venta.tipo_comp = tipoVenta
@@ -663,8 +663,7 @@ ticketFactura.addEventListener('click',async (e) =>{
          alert("Seleccionar un modo de venta")
          }else{
          venta.nombreCliente = buscarCliente.value;
-         venta._id = await tamanioVentas();
-         console.log(observaciones.value)
+         venta._id = await tamanioVentas("ticket factura");
          venta.observaciones = observaciones.value
          venta.fecha = new Date()
          venta.descuento = (descuentoN.value);

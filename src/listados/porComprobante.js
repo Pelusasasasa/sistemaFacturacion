@@ -32,6 +32,7 @@ let ventas = []
 const promesaVentas = new Promise((resolve,reject)=>{
     ipcRenderer.on('traerVentasEntreFechas',(e,args)=>{
         ventas = JSON.parse(args)
+        console.log(ventas)
 
     })
 })

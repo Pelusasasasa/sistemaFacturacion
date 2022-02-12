@@ -59,8 +59,6 @@ buscar.addEventListener('click',e=>{
      }
 })
 
-
-
 let cliente
 
 ipcRenderer.on('get-clientes',(e,args)=>{
@@ -130,6 +128,7 @@ function traerTodasLasVentas(lista) {
 
 ipcRenderer.on('traerVentasIdYFechas',(e,args)=>{
     let lista = JSON.parse(args)
+    console.log(lista)
     tbody.innerHTML = ``;
     if(lista.length === 0){
         alert("No hay ventas, fijarse nombre y fechas")

@@ -291,8 +291,8 @@ const ponerDatosCliente = async (Cliente)=>{
     listaVentas=Cliente.listaVentas
 
     await ipcRenderer.invoke('traerVentas',listaVentas).then((args)=>{
+        console.log(JSON.parse(args))
         lista = JSON.parse(args)
-        console.log(lista)
     })
         lista.forEach(venta =>{
             (venta.pagado === false || (venta.tipo_comp === "Recibos" && (venta.precioFinal < 0 || parseFloat(venta.abonado) > 0 ))) && nuevaLista.push(venta);

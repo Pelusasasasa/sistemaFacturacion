@@ -113,7 +113,7 @@ guardar.addEventListener('click',e =>{
     nuevoCliente.observacion = observaciones.value
     nuevoCliente.condicion = condicion
     nuevoCliente.cond_fact = conFact.value 
-    nuevoCliente.lim_compra = limite.value 
+    nuevoCliente.lim_compra = parseFloat(limite.value) 
     console.log(nuevoCliente)
     ipcRenderer.send('modificarCliente',nuevoCliente)
     window.close()

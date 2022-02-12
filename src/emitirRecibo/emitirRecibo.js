@@ -260,11 +260,11 @@ const hacerRecibo = async()=>{
     saldoFavor = (saldoAfavor.value !== "") && parseFloat(saldoAFavor.value);
     recibo.abonado = saldoAfavor.value
     const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2));
-     ipcRenderer.send('modificarSaldo',[cliente._id,aux,saldoNuevo])
-     ipcRenderer.send('modificamosLasVentas',nuevaLista)
-     ipcRenderer.send('nueva-venta',recibo)
-     ipcRenderer.send('imprimir-venta',[cliente,recibo,false,1,"Recibo",arregloParaImprimir,total.value])
-     location.reload()
+    ipcRenderer.send('modificarSaldo',[cliente._id,aux,saldoNuevo])
+    ipcRenderer.send('modificamosLasVentas',nuevaLista)
+    ipcRenderer.send('nueva-venta',recibo)
+    ipcRenderer.send('imprimir-venta',[cliente,recibo,false,1,"Recibo",arregloParaImprimir,total.value])
+    location.href = "../index.html"
 }
 
 const traerUltimoNroRecibo = async ()=>{
