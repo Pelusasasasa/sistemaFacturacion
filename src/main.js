@@ -5,7 +5,7 @@ let URL
 if (a === 1) {
     URL = process.env.URLPUBLICANEGOCIO;
 }else if(a === 2){
-    URL = "http://192.168.1.11:4000/api/";
+    URL = "http://192.168.1.105:4000/api/";
     //URL = process.env.URLPRIVADANEGOCIO;
 }
 let conexion;
@@ -317,7 +317,7 @@ ipcMain.on('borrarVentaACliente',async (e,args)=>{
 
     let cliente = await axios.get(`${URL}clientes/id/${id}`)
     cliente = cliente.data;
-    let venta = await axios.get(`${URL}ventas/${numero}`)
+    let venta = await axios.get(`${URL}presupuesto/${numero}`)
     venta = venta.data[0]
 
     cliente.saldo_p = (parseFloat(cliente.saldo_p)-venta.precioFinal).toFixed(2);
@@ -325,7 +325,8 @@ ipcMain.on('borrarVentaACliente',async (e,args)=>{
     cliente.listaVentas = cliente.listaVentas.filter(num=>(numero!== num))
 
     await axios.put(`${URL}clientes/${id}`,cliente)
-    await axios.delete(`${URL}ventas/${numero}`)
+    console.log(numero)
+    await axios.delete(`${URL}presupuesto/${numero}`)
 })
 
 //enviamos los clientes que tienen saldo
@@ -491,7 +492,6 @@ ipcMain.on('traerVentasEntreFechas',async(e,args)=>{
     let hasta = DateTime.fromISO(args[1]).endOf('day')
     let ventas = await axios.get(`${URL}ventas/${desde}/${hasta}`)
     ventas = ventas.data
-    console.log(ventas)
     let presupuesto = await axios.get(`${URL}presupuesto/${desde}/${hasta}`)
     presupuesto = presupuesto.data;
     e.reply('traerVentasEntreFechas',JSON.stringify([...ventas,...presupuesto]))
@@ -504,7 +504,9 @@ ipcMain.handle('traerVentasClienteEntreFechas',async(e,args)=>{
     hasta = DateTime.fromISO(hasta).endOf('day')
     let ventas = await axios.get(`${URL}ventas/cliente/${cliente}/${desde}/${hasta}`)
     ventas = ventas.data;
-    return JSON.stringify(ventas)
+    let presupuestos = await axios.get(`${URL}presupuesto/cliente/${cliente}/${desde}/${hasta}`);
+    presupuestos = presupuestos.data
+    return JSON.stringify([...ventas,...presupuestos])
 })
 
 

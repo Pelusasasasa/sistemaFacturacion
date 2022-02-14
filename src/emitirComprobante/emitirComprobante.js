@@ -623,6 +623,7 @@ presupuesto.addEventListener('click',async (e)=>{
             venta.precioFinal = "0.1" 
             valorizadoImpresion="no valorizado"
             }
+            
             sacarIdentificadorTabla(venta.productos);
             if (venta.tipo_pago !== "PP") {
                 venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);

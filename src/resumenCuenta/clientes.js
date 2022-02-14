@@ -30,10 +30,10 @@ ipcRenderer.on('traerSaldo',async(e,args) =>{
         }
 
         return 0
-    })
+    });
 
-   clientes = (situacion === "blanco") ? retornarClientes(clientes,"saldo") : retornarClientes(clientes,"saldo_p")
-
+   clientes = (situacion === "blanco") ? retornarClientes(clientes,"saldo") : retornarClientes(clientes,"saldo_p");
+   console.log(clientes)
     for(let cliente of clientes){
         let nombre = cliente.cliente.toLowerCase();
         if(nombre.indexOf(texto) !== -1){
@@ -136,6 +136,6 @@ document.addEventListener('keydown',e=>{
 })
 
 const retornarClientes = (Clientes,saldo)=>{
-    const retornar = Clientes.filter(cliente => cliente[saldo] !== "0")
+    const retornar = Clientes.filter(cliente =>( cliente[saldo] !== "0" || cliente[saldo] !== "0.00"))
     return retornar
 }

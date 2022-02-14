@@ -94,6 +94,15 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
 })
 
 function listarVentas(ventas,situacion) {
+    ventas.sort(function(a,b){
+        console.log(a.fecha > b.fecha)
+        if (a.fecha > b.fecha) {
+            return 1
+        }else if(a.fecha < b.fecha){
+            return -1
+        }
+        return 0
+    });
     ventas = ventas.filter(venta=>venta.tipo_pago !== "CD")
     ventas = ventas.filter(venta => {
         if (((venta.tipo_comp === "Presupuesto" || venta.tipo_comp === "Ticket Factura"))) {
