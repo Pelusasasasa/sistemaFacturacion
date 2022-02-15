@@ -1028,7 +1028,7 @@ function abrirVentana(texto,numeroVenta){
             nuevaVentana.setMenuBarVisibility(false)
         }else if(texto === "imprimir-factura"){
             nuevaVentana = new BrowserWindow({
-                parent:ventanaPrincipal,
+                
                 width: 1000,
                 height: 500,
                 webPreferences: {

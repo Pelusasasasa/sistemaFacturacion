@@ -9,6 +9,7 @@ const comprobante = document.querySelector('.comprobante')
 const numeroComprobante = document.querySelector('.numeroComprobante')
 const fecha = document.querySelector('.fecha')
 const hora = document.querySelector('.hora')
+const listaProductos = document.querySelector('.listaProductos')
 
 
 ipcRenderer.on('imprimir',(e,args)=>{
@@ -35,6 +36,16 @@ const ponerValores = (Cliente,Venta)=>{
     cuit.innerHTML = Cliente.cuit;
     iva.innerHTML = Cliente.cond_iva;
     direccion.innerHTML = `${Cliente.direccion}  ${Cliente.localidad}`
+    let total=0
+    Venta.productos.forEach(({cantidad,objeto}) =>{
+        total += parseFloat(cantidad)*parseFloat(objeto.precio_venta)
+        listaProductos.innerHTML += `
+            <li>${cantidad}/${objeto.precio_venta} <span class="iva">${objeto.iva === "N" ? "(21.00)" : "(15.00)"}</span></li>
+            <li>${objeto.descripcion} <span class=total-U>${(parseFloat(cantidad)*parseFloat(objeto.precio_venta)).toFixed(2)}</span></li>
+        `
+    })
+    const totalSpan = document.querySelector('.total')
+    totalSpan.innerHTML = total
 }
 
 
