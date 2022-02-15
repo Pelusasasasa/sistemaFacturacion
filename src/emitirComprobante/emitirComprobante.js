@@ -226,7 +226,6 @@ codigo.addEventListener('keypress',(e) => {
                         dialogs.prompt("Cantidad",async valor =>{
                             await mostrarVentas(product,valor)
                             codigo.value = "";
-                            console.log(precio.value);
                             precio.children[0].value = "";
                             descripcion.children[0].value = "";
                             codigo.focus()
@@ -300,13 +299,15 @@ function mostrarVentas(objeto,cantidad) {
     listaProductos.push({objeto,cantidad});
 }
 
-const cambioPrecio = document.querySelector('.parte-producto_cambioPrecio ')
+const cambioPrecio = document.querySelector('.parte-producto_cambioPrecio')
+const nuevaCantidadDiv = document.querySelector('.parte-producto_cantidad')
 
 resultado.addEventListener('click',e=>{
     inputseleccionado(e.path[1])
     if (yaSeleccionado) {
         borrarProducto.classList.remove('none')
         cambioPrecio.classList.remove('none')
+        nuevaCantidadDiv.classList.remove('none')
     }
 })
 
@@ -314,7 +315,6 @@ resultado.addEventListener('click',e=>{
 //Para Cambiar el precio de un producto
 cambioPrecio.children[1].addEventListener('keypress',(e)=>{
     if (e.key === "Enter") {
-        
         const  producto = listaProductos.find(({objeto,cantidad})=> objeto.identificadorTabla === yaSeleccionado.id);
         borrarUnProductoDeLaLista(yaSeleccionado)
         if (producto) {
@@ -327,6 +327,24 @@ cambioPrecio.children[1].addEventListener('keypress',(e)=>{
         cambioPrecio.classList.add('none');
         codigo.focus()
         
+    }
+})
+
+//Para cambiar la cantidad
+const nuevaCantidad = document.querySelector('#nuevaCantidad');
+nuevaCantidad.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        const producto = listaProductos.find(({objeto,cantidad}) => objeto.identificadorTabla === yaSeleccionado.id);
+        borrarUnProductoDeLaLista(yaSeleccionado)
+        if (producto) {
+            const index = listaProductos.indexOf(producto)
+            listaProductos.splice(index,1)
+        }
+        producto.cantidad = parseFloat(nuevaCantidad.value);
+        mostrarVentas(producto.objeto,producto.cantidad);
+        nuevaCantidad.value = "";
+        nuevaCantidadDiv.classList.add('none')
+        codigo.focus()
     }
 })
 
@@ -596,6 +614,9 @@ const sacarIdentificadorTabla = (arreglo)=>{
         delete producto.objeto.identificadorTabla  
     })
 }
+
+console.log(descuentoN)
+
 //Aca mandamos la venta en presupuesto
 const presupuesto = document.querySelector('.presupuesto')
 presupuesto.addEventListener('click',async (e)=>{
@@ -628,6 +649,10 @@ presupuesto.addEventListener('click',async (e)=>{
             if (venta.tipo_pago !== "PP") {
                 venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
             for (let producto of venta.productos){
+                    if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
+                        producto.objeto.precio_venta = parseFloat(producto.cantidad) * (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
+                        producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
+                    }
                     sacarStock(producto.cantidad,producto.objeto)
                     await movimientoProducto(producto.cantidad,producto.objeto)
                 }
@@ -685,6 +710,10 @@ ticketFactura.addEventListener('click',async (e) =>{
          venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente);
          venta.empresa = inputEmpresa.value;
          for(let producto of venta.productos){
+            if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
+                producto.objeto.precio_venta = parseFloat(producto.cantidad) * (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
+                producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
+            }
              sacarStock(producto.cantidad,producto.objeto)
              await movimientoProducto(producto.cantidad,producto.objeto)
          };
@@ -697,10 +726,8 @@ ticketFactura.addEventListener('click',async (e) =>{
          //imprimirTikectFactura(venta,cliente)
          //imprimirItem(venta,cliente)
 
-        console.log(borraNegro);
          if (borraNegro) {
              ipcRenderer.on('clienteModificado',async(e,args)=>{
-                 console.log("a");
                  await borrarCuentaCorriente(ventaDeCtaCte)
              })
 
@@ -882,7 +909,6 @@ ipcRenderer.once('venta',(e,args)=>{
 })
 
 const borrarCuentaCorriente = async (numero)=>{
-    console.log(numero);
     ventaAnterior.tipo_pago === "CC" && await ipcRenderer.send('borrarVentaACliente',[venta.cliente,numero]);
     //ipcRenderer.send('eliminar-venta',numero)
 }   
@@ -1159,12 +1185,11 @@ function selecciona_value(idInput) {
             Preciofinal = (Preciofinal - (parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)).toFixed(2)) 
             listaProductos.forEach(e=>{
                 if (productoSeleccionado.id === e.objeto.identificadorTabla) {
-                        listaProductos = listaProductos.filter(e=>e.objeto.identificadorTabla !== productoSeleccionado.id)
+                        listaProductos = listaProductos.splice(e=>e.objeto.identificadorTabla === productoSeleccionado.id)
                         totalPrecioProducos -= (e.objeto.precio_venta*e.cantidad);
                 }
             })
             const a = productoSeleccionado
-    
             a.parentNode.removeChild(a)
         }
         let nuevoTotal = 0;

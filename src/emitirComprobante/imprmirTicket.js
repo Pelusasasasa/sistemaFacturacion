@@ -18,7 +18,7 @@ ipcRenderer.on('imprimir',(e,args)=>{
 })
 
 const ponerValores = (Cliente,Venta)=>{
-    console.log(fecha);
+    console.log(Venta);
     const fechaVenta = new Date(Venta.fecha)
     let dia = fechaVenta.getDate()
     let mes = fechaVenta.getMonth()+1;
