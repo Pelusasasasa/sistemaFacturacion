@@ -719,10 +719,11 @@ ticketFactura.addEventListener('click',async (e) =>{
          };
          actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
         
-         //subirAAfip(venta)
-        
+         const afip = await subirAAfip(venta)
+
          await ipcRenderer.send('nueva-venta',venta);
-         ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100"])
+
+         ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100",afip])
          //imprimirTikectFactura(venta,cliente)
          //imprimirItem(venta,cliente)
 
@@ -732,7 +733,7 @@ ticketFactura.addEventListener('click',async (e) =>{
              })
 
          };
-         !borraNegro && (window.location = '../index.html');
+         //!borraNegro && (window.location = '../index.html');
 
          }
      }
@@ -1078,7 +1079,11 @@ const subirAAfip = async(venta)=>{
         }
         const textoQR = btoa(unescape(encodeURIComponent(qr)));//codificamos lo que va en el QR
         const QR = await generarQR(textoQR,res.CAE,res.CAEFchVto)
-        printPage("ticket factura",QR,res.CAE,res.CAEFchVto,ultimoElectronica,venta.cod_comp);
+        return {
+            QR,
+            cae:res.CAE,
+            vencimientoCae:res.CAEFchVto
+        }
 }
 
 telefono.addEventListener('focus',e=>{

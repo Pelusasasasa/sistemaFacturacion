@@ -14,12 +14,11 @@ const totalSpan = document.querySelector('.total')
 const totalContado = document.querySelector('.totalContado');
 console.log(totalContado)
 ipcRenderer.on('imprimir',(e,args)=>{
-    const [Venta,Cliente] = JSON.parse(args)
-
-    ponerValores(Cliente,Venta)
+    const [Venta,Cliente,,,,,valoresQR] = JSON.parse(args)
+    ponerValores(Cliente,Venta,valoresQR)
 })
 
-const ponerValores = (Cliente,Venta)=>{
+const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     const fechaVenta = new Date(Venta.fecha)
     let dia = fechaVenta.getDate()
     let mes = fechaVenta.getMonth()+1;
@@ -47,6 +46,13 @@ const ponerValores = (Cliente,Venta)=>{
     
     totalSpan.innerHTML = total;
     totalContado.innerHTML = total
+
+    const imgQR = document.querySelector('#QR')
+    const pCae = document.querySelector('.cae');
+    const fechaCae = document.querySelector('.fechaCae');
+    imgQR.src = QR;
+    pCae.innerHTML = cae
+    fechaCae.innerHTML = vencimientoCae
 }
 
 
