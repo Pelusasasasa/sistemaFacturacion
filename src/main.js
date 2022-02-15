@@ -5,7 +5,7 @@ let URL
 if (a === 1) {
     URL = process.env.URLPUBLICANEGOCIO;
 }else if(a === 2){
-    URL = "http://192.168.1.109:4000/api/";
+    URL = "http://192.168.1.11:4000/api/";
     //URL = process.env.URLPRIVADANEGOCIO;
 }
 let conexion;

@@ -10,8 +10,9 @@ const numeroComprobante = document.querySelector('.numeroComprobante')
 const fecha = document.querySelector('.fecha')
 const hora = document.querySelector('.hora')
 const listaProductos = document.querySelector('.listaProductos')
-
-
+const totalSpan = document.querySelector('.total')
+const totalContado = document.querySelector('.totalContado');
+console.log(totalContado)
 ipcRenderer.on('imprimir',(e,args)=>{
     const [Venta,Cliente] = JSON.parse(args)
 
@@ -19,7 +20,6 @@ ipcRenderer.on('imprimir',(e,args)=>{
 })
 
 const ponerValores = (Cliente,Venta)=>{
-    console.log(Venta);
     const fechaVenta = new Date(Venta.fecha)
     let dia = fechaVenta.getDate()
     let mes = fechaVenta.getMonth()+1;
@@ -40,12 +40,13 @@ const ponerValores = (Cliente,Venta)=>{
     Venta.productos.forEach(({cantidad,objeto}) =>{
         total += parseFloat(cantidad)*parseFloat(objeto.precio_venta)
         listaProductos.innerHTML += `
-            <li>${cantidad}/${objeto.precio_venta} <span class="iva">${objeto.iva === "N" ? "(21.00)" : "(15.00)"}</span></li>
+            <li>${cantidad}/${objeto.precio_venta} <span class="iva">${objeto.iva === "N" ? "(21.00)" : "(10.50)"}</span></li>
             <li>${objeto.descripcion} <span class=total-U>${(parseFloat(cantidad)*parseFloat(objeto.precio_venta)).toFixed(2)}</span></li>
         `
     })
-    const totalSpan = document.querySelector('.total')
-    totalSpan.innerHTML = total
+    
+    totalSpan.innerHTML = total;
+    totalContado.innerHTML = total
 }
 
 

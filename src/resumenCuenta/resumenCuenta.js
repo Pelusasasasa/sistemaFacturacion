@@ -188,11 +188,11 @@ function listarVentas(ventas,situacion) {
 }
 
 imprimir.addEventListener('click',e=>{
-
+    const header = document.querySelector('header')
     volver.classList.add('disable')
     ocultar.classList.add('disable')
     header.classList.add('m-0')
     header.classList.add('p-0')
     window.print()
-    //history.go(-1)
+    location.reload();
 })
