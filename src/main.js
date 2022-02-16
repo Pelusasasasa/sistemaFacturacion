@@ -401,16 +401,69 @@ ipcMain.on('imprimir-venta',async(e,args)=>{
 })
 
 const imprimir = (opciones,args)=>{
-    nuevaVentana.webContents.on('did-finish-load', function() {
-        nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
-            nuevaVentana.webContents.print(opciones,(success, errorType) => {
-                    if (success) {
-                        ventanaPrincipal.focus()
-                        nuevaVentana.close();
-                    }
-              })
-    });
+    const [venta,clienteImprimir,,,,,{QR,cae,vencimientoCae}]
+    console.log(args)
+    // prueba2(venta.productos,venta.precioFinal,clienteImprimir,QR,cae,vencimientoCae)
+    // nuevaVentana.webContents.on('did-finish-load', function() {
+    //     nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
+    //         nuevaVentana.webContents.print(opciones,(success, errorType) => {
+    //                 if (success) {
+    //                     ventanaPrincipal.focus()
+    //                     nuevaVentana.close();
+    //                 }
+    //           })
+    // });
 }
+
+const prueba2 = (productos,precioFinal,cliente,QR,cae,vencimientoCae)=>{
+    let ThermalPrinter = require('node-thermal-printer');
+
+    let printer = new ThermalPrinter({
+        type: PrinterTypes.EPSON,
+        interface: 'tcp://192.168.1.100:6001'
+      });
+
+      printer.alingCenter()
+        printer.println("* ELECTRO AVENIDA *");
+        printer.println("GIANOVI MARINA ISABEL");
+        printer.println("INGRESO BRUTOS: 27165767433")
+        printer.println("C.U.I.T Nro: 27165767433");
+        printer.println("AV.9 DE JULION-3380 (3228);CHAJARI E.R.");
+        printer.println("INICIO DE ACTIVIDADES: 02-03-07");
+        printer.println("IVA RESPONSABLE INSCRIPTO");
+        printer.println("-----------------------------------");
+        printer.println("comprobonate + numeroComprobante");
+        printer.println("fecha y hora");
+        printer.println("-----------------------------------")
+        printer.println(`${cliente.cliente}`);
+        printer.println(`${cliente.cuit}`);
+        printer.println(`${cliente.iva}`);
+        printer.println(`${cliente.direccion} - ${cliente.localidad}`);
+        printer.println("-----------------------------------");
+        printer.println("CANTIDAD/PRECIO-UNIT /(% IVA)");
+        printer.println("DESCRIPCION [/B.I] IMPORTE");
+        printer.println("-----------------------------------");
+        productos.forEach(producto=>{
+            printer.println(`${cantidad}/${producto.precio_venta}     (${producto.iva === "N" ? "21.00" : "10.50"})`)
+            printer.println(`${producto.descripcion}      ${parseFloat(producto.precio_venta)*parseFloat(cantidad)}`)
+        })
+        printer.println(`TOTAL         $${precioFinal}`);
+        printer.println("recibi(mos)");
+        printer.print("Contado");
+        printer.print(precioFinal)
+        printer.print("CAMBIO");
+        printer.println("$0.00")
+        printer.println("* MUCHAS GRACIAS *");
+
+        printer.printQR(QR)
+        printer.println(cae);
+        printer.println(vencimientoCae)
+
+        printer.cut();
+
+        printer.execute()
+
+}       
 
 //buscamos las ventas
 ipcMain.handle('traerVentas' ,async (e,args)=>{
