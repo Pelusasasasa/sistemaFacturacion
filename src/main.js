@@ -5,7 +5,7 @@ let URL
 if (a === 1) {
     URL = process.env.URLPUBLICANEGOCIO;
 }else if(a === 2){
-    URL = "http://192.168.1.11:4000/api/";
+    URL = "http://192.168.1.109:4000/api/";
     //URL = process.env.URLPRIVADANEGOCIO;
 }
 let conexion;
@@ -381,49 +381,50 @@ ipcMain.on('nueva-venta', async (e, args) => {
     }
 })
 
+//imprivimos una venta ya sea presupuesto o ticket factura
 ipcMain.on('imprimir-venta',async(e,args)=>{
-    const [,,condicion,cantidad,tipo,name] = args;
+    console.log(args)
+    const [venta,cliente,condicion,cantidad,tipo,name,{QR,cae,vencimientoCae}] = args;
     const options = {
         silent: condicion,
         copies: cantidad,
     };
-    if(name !== undefined){
-        options.deviceName = name
-    }
     if (tipo === "Recibo") {
         abrirVentana("imprimir-recibo")
+        await imprimir(options,args)
     }else if(tipo === "ticket-factura"){
-        abrirVentana("imprimir-factura")
+        imprimirTicket(venta.productos,venta.precioFinal,cliente,QR,cae,vencimientoCae)
     }else{
         abrirVentana("imprimir-comprobante")
+        await imprimir(options,args)
     }
-    await imprimir(options,args)
+
 })
 
+//funcion para imprimir presupuesto
 const imprimir = (opciones,args)=>{
-    const [venta,clienteImprimir,,,,,{QR,cae,vencimientoCae}]
-    console.log(args)
-    // prueba2(venta.productos,venta.precioFinal,clienteImprimir,QR,cae,vencimientoCae)
-    // nuevaVentana.webContents.on('did-finish-load', function() {
-    //     nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
-    //         nuevaVentana.webContents.print(opciones,(success, errorType) => {
-    //                 if (success) {
-    //                     ventanaPrincipal.focus()
-    //                     nuevaVentana.close();
-    //                 }
-    //           })
-    // });
+    nuevaVentana.webContents.on('did-finish-load', function() {
+        nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
+            nuevaVentana.webContents.print(opciones,(success, errorType) => {
+                    if (success) {
+                        ventanaPrincipal.focus()
+                        nuevaVentana.close();
+                    }
+              })
+    });
 }
 
-const prueba2 = (productos,precioFinal,cliente,QR,cae,vencimientoCae)=>{
-    let ThermalPrinter = require('node-thermal-printer');
+//Funcion para imprimir un ticket factura en impresora termica
+const imprimirTicket = (productos,precioFinal,cliente,QR,cae,vencimientoCae,venta)=>{
+    const ThermalPrinter = require("node-thermal-printer").printer;
+    const PrinterTypes = require("node-thermal-printer").types;
 
     let printer = new ThermalPrinter({
         type: PrinterTypes.EPSON,
-        interface: 'tcp://192.168.1.100:6001'
+        interface: 'tcp://192.168.1.103:6001'
       });
 
-      printer.alingCenter()
+         printer.alignLeft()
         printer.println("* ELECTRO AVENIDA *");
         printer.println("GIANOVI MARINA ISABEL");
         printer.println("INGRESO BRUTOS: 27165767433")
@@ -432,20 +433,20 @@ const prueba2 = (productos,precioFinal,cliente,QR,cae,vencimientoCae)=>{
         printer.println("INICIO DE ACTIVIDADES: 02-03-07");
         printer.println("IVA RESPONSABLE INSCRIPTO");
         printer.println("-----------------------------------");
-        printer.println("comprobonate + numeroComprobante");
+        printer.println(`${venta.tipo_comp}   ${venta.nro_comp}`);
         printer.println("fecha y hora");
         printer.println("-----------------------------------")
         printer.println(`${cliente.cliente}`);
         printer.println(`${cliente.cuit}`);
-        printer.println(`${cliente.iva}`);
+        printer.println(`${cliente.cond_iva}`);
         printer.println(`${cliente.direccion} - ${cliente.localidad}`);
         printer.println("-----------------------------------");
         printer.println("CANTIDAD/PRECIO-UNIT /(% IVA)");
         printer.println("DESCRIPCION [/B.I] IMPORTE");
         printer.println("-----------------------------------");
-        productos.forEach(producto=>{
-            printer.println(`${cantidad}/${producto.precio_venta}     (${producto.iva === "N" ? "21.00" : "10.50"})`)
-            printer.println(`${producto.descripcion}      ${parseFloat(producto.precio_venta)*parseFloat(cantidad)}`)
+        productos.forEach(({cantidad,objeto})=>{
+            printer.println(`${cantidad}/${objeto.precio_venta}     (${objeto.iva === "N" ? "21.00" : "10.50"})`)
+            printer.println(`${objeto.descripcion}      ${parseFloat(objeto.precio_venta)*parseFloat(cantidad)}`)
         })
         printer.println(`TOTAL         $${precioFinal}`);
         printer.println("recibi(mos)");
@@ -453,14 +454,23 @@ const prueba2 = (productos,precioFinal,cliente,QR,cae,vencimientoCae)=>{
         printer.print(precioFinal)
         printer.print("CAMBIO");
         printer.println("$0.00")
-        printer.println("* MUCHAS GRACIAS *");
-
-        printer.printQR(QR)
         printer.println(cae);
         printer.println(vencimientoCae)
+        printer.println("* MUCHAS GRACIAS *");
+
+
+        printer.printQR(QR,{
+            cellSize: 5,             // 1 - 8
+            correction: 'H',         // L(7%), M(15%), Q(25%), H(30%)
+            model: 2                 // 1 - Model 1
+                                     // 2 - Model 2 (standard)
+                                     // 3 - Micro QR
+    })
+
+
 
         printer.cut();
-
+        printer.partialCut()
         printer.execute()
 
 }       

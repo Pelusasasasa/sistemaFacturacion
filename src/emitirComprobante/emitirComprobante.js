@@ -13,7 +13,6 @@ const dialogs = Dialogs()
 let vendedor = getParameterByName('vendedor')
 let empresa = getParameterByName('empresa')
 const { ipcRenderer, Main } = require("electron");
-const { CLIENT_RENEG_LIMIT } = require('tls');
 const usuario = document.querySelector(".usuario")
 const textoUsuario = document.createElement("P")
 textoUsuario.innerHTML = vendedor
@@ -747,7 +746,7 @@ async function generarQR(texto) {
     const qrcode = require('qrcode')
     const url = `https://www.afip.gob.ar/fe/qr/?p=${texto}`;
     let retornar = await qrcode.toDataURL(url)
-    return retornar
+    return url
 }
 
 //funcion que busca en la afip a una persona
