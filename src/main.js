@@ -325,7 +325,6 @@ ipcMain.on('borrarVentaACliente',async (e,args)=>{
     cliente.listaVentas = cliente.listaVentas.filter(num=>(numero!== num))
 
     await axios.put(`${URL}clientes/${id}`,cliente)
-    console.log(numero)
     await axios.delete(`${URL}presupuesto/${numero}`)
 })
 
@@ -383,97 +382,40 @@ ipcMain.on('nueva-venta', async (e, args) => {
 
 //imprivimos una venta ya sea presupuesto o ticket factura
 ipcMain.on('imprimir-venta',async(e,args)=>{
-    console.log(args)
-    const [venta,cliente,condicion,cantidad,tipo,name,{QR,cae,vencimientoCae}] = args;
+    const [,,condicion,cantidad,tipo,,,] = args;
     const options = {
         silent: condicion,
         copies: cantidad,
     };
-    if (tipo === "Recibo") {
+    if (tipo === "Recibos_P") {
         abrirVentana("imprimir-recibo")
-        await imprimir(options,args)
-    }else if(tipo === "ticket-factura"){
-        imprimirTicket(venta.productos,venta.precioFinal,cliente,QR,cae,vencimientoCae)
-    }else{
-        abrirVentana("imprimir-comprobante")
-        await imprimir(options,args)
-    }
 
+    }else if(tipo === "ticket-factura" || tipo === "Recibos"){
+        console.log("a")
+        abrirVentana("imprimir-factura")
+    }else{
+        console.log("b")
+        abrirVentana("imprimir-comprobante")
+
+    }
+    await imprimir(options,args)
 })
 
 //funcion para imprimir presupuesto
 const imprimir = (opciones,args)=>{
     nuevaVentana.webContents.on('did-finish-load', function() {
         nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
+        if(args[0].tipo_comp !== "Ticket Factura" || args[0].tipo_comp !== "Recibos"){
             nuevaVentana.webContents.print(opciones,(success, errorType) => {
                     if (success) {
                         ventanaPrincipal.focus()
-                        nuevaVentana.close();
+                        //nuevaVentana.close();
                     }
               })
+        }
+
     });
-}
-
-//Funcion para imprimir un ticket factura en impresora termica
-const imprimirTicket = (productos,precioFinal,cliente,QR,cae,vencimientoCae,venta)=>{
-    const ThermalPrinter = require("node-thermal-printer").printer;
-    const PrinterTypes = require("node-thermal-printer").types;
-
-    let printer = new ThermalPrinter({
-        type: PrinterTypes.EPSON,
-        interface: 'tcp://192.168.1.103:6001'
-      });
-
-         printer.alignLeft()
-        printer.println("* ELECTRO AVENIDA *");
-        printer.println("GIANOVI MARINA ISABEL");
-        printer.println("INGRESO BRUTOS: 27165767433")
-        printer.println("C.U.I.T Nro: 27165767433");
-        printer.println("AV.9 DE JULION-3380 (3228);CHAJARI E.R.");
-        printer.println("INICIO DE ACTIVIDADES: 02-03-07");
-        printer.println("IVA RESPONSABLE INSCRIPTO");
-        printer.println("-----------------------------------");
-        printer.println(`${venta.tipo_comp}   ${venta.nro_comp}`);
-        printer.println("fecha y hora");
-        printer.println("-----------------------------------")
-        printer.println(`${cliente.cliente}`);
-        printer.println(`${cliente.cuit}`);
-        printer.println(`${cliente.cond_iva}`);
-        printer.println(`${cliente.direccion} - ${cliente.localidad}`);
-        printer.println("-----------------------------------");
-        printer.println("CANTIDAD/PRECIO-UNIT /(% IVA)");
-        printer.println("DESCRIPCION [/B.I] IMPORTE");
-        printer.println("-----------------------------------");
-        productos.forEach(({cantidad,objeto})=>{
-            printer.println(`${cantidad}/${objeto.precio_venta}     (${objeto.iva === "N" ? "21.00" : "10.50"})`)
-            printer.println(`${objeto.descripcion}      ${parseFloat(objeto.precio_venta)*parseFloat(cantidad)}`)
-        })
-        printer.println(`TOTAL         $${precioFinal}`);
-        printer.println("recibi(mos)");
-        printer.print("Contado");
-        printer.print(precioFinal)
-        printer.print("CAMBIO");
-        printer.println("$0.00")
-        printer.println(cae);
-        printer.println(vencimientoCae)
-        printer.println("* MUCHAS GRACIAS *");
-
-
-        printer.printQR(QR,{
-            cellSize: 5,             // 1 - 8
-            correction: 'H',         // L(7%), M(15%), Q(25%), H(30%)
-            model: 2                 // 1 - Model 1
-                                     // 2 - Model 2 (standard)
-                                     // 3 - Micro QR
-    })
-
-
-
-        printer.cut();
-        printer.partialCut()
-        printer.execute()
-
-}       
+}   
 
 //buscamos las ventas
 ipcMain.handle('traerVentas' ,async (e,args)=>{
@@ -498,9 +440,11 @@ ipcMain.handle('traerVentas' ,async (e,args)=>{
 ipcMain.on('traerVenta',async (e,args)=>{
     let venta = await axios.get(`${URL}ventas/${args}`)
     venta = venta.data
+    console.log(venta)
     if (venta.length === 0) {
         venta = await axios.get(`${URL}presupuesto/${args}`);
         venta = venta.data;
+
     }
 
     e.reply('traerVenta',JSON.stringify(venta))
@@ -516,7 +460,6 @@ ipcMain.on('modificamosLasVentas',async (e,arreglo)=>{
         let venta
         Venta.tipo_comp === "Presupuesto" ? venta = await axios.get(`${URL}presupuesto/${nro_comp}`) : venta = await axios.get(`${URL}ventas/${nro_comp}`)
         venta = venta.data[0];
-        console.log(venta)
         venta.abonado = parseFloat(abonado).toFixed(2)
         venta.pagado = pagado
         venta.tipo_comp === "Presupuesto" ? await axios.put(`${URL}presupuesto/${id}`,venta)  : await axios.put(`${URL}ventas/${id}`,venta)
@@ -540,7 +483,7 @@ const probar = async (listau,fecha1,fecha2)=>{
         if (ventaARetornar.length === 0) {
             ventaARetornar = await axios.get(`${URL}presupuesto/${Venta}/${fecha1}/${fecha2}`);
             ventaARetornar = ventaARetornar.data
-            console.log(ventaARetornar)
+
         }
         if(ventaARetornar[0] !== undefined){
             retornar.push(ventaARetornar[0])
@@ -551,8 +494,12 @@ const probar = async (listau,fecha1,fecha2)=>{
     
 //traerVentas entre las fechas
 ipcMain.on('traerVentasEntreFechas',async(e,args)=>{
+
     const desde = new Date(args[0])
+    console.log(args[0])
     let hasta = DateTime.fromISO(args[1]).endOf('day')
+    console.log(desde)
+    console.log(hasta)
     let ventas = await axios.get(`${URL}ventas/${desde}/${hasta}`)
     ventas = ventas.data
     let presupuesto = await axios.get(`${URL}presupuesto/${desde}/${hasta}`)
@@ -576,13 +523,19 @@ ipcMain.handle('traerVentasClienteEntreFechas',async(e,args)=>{
 //Mandamos la modificacion de la venta
 ipcMain.on('ventaModificada',async (e,[args,id])=>{
      let venta = await axios.get(`${URL}ventas/${id}`)
-     venta = venta.data[0]
+     if(venta.data.length === 0){
+        venta = await axios.get(`${URL}presupuesto/${id}`)
+        venta = venta.data[0];
+    }else{
+        venta = venta.data[0]
+    }
+
      let saldoABorrar = venta.precioFinal
      venta.precioFinal = args.precioFinal;
      venta.productos = args.productos;
-     //ipcRenderer.send('imprimir-venta',[venta,args.cliente,false,1])
-     await axios.put(`${URL}ventas/${venta._id}`,venta)
-    let cliente = await axios.get(`${URL}clientes/id/${args.cliente}`)
+     console.log(venta)
+    venta.tipo_comp === "Ticket Factura" ? await axios.put(`${URL}ventas/${venta._id}`,venta) : await axios.put(`${URL}presupuesto/${venta._id}`,venta);
+    let cliente = await axios.get(`${URL}clientes/id/${args.cliente}`);
     cliente = cliente.data;
     let total = 0
     total = args.precioFinal
@@ -841,13 +794,13 @@ const templateMenu = [
         submenu: [{
             label: 'Pedidos',
             click() {
-                descargas();
+                descargas("Pedidos");
             }
         },
         {
             label: 'Ventas',
             click() {
-                descargas()
+                descargas("Ventas")
             }
         }]
     },
@@ -1091,9 +1044,8 @@ function abrirVentana(texto,numeroVenta){
             nuevaVentana.setMenuBarVisibility(false)
         }else if(texto === "imprimir-factura"){
             nuevaVentana = new BrowserWindow({
-                
-                width: 1000,
-                height: 500,
+                width: 500,
+                height: 200,
                 webPreferences: {
                     contextIsolation: false,
                     nodeIntegration: true
@@ -1524,10 +1476,38 @@ function abrirVentana(texto,numeroVenta){
     }
 }
 
-async function descargas() {
-    pedidos((await axios.get(`${URL}pedidos`)).data)
-    ventas((await axios.get(`${URL}ventas`)).data)
+async function descargas(nombreFuncion) {
+    if(nombreFuncion === "Pedidos"){
+        pedidos((await axios.get(`${URL}pedidos`)).data)
+    }else if(nombreFuncion === "Ventas"){
+        let desde = new Date();
+        let dia = desde.getDate();
+        let mes = desde.getMonth() + 1;
+        let anio = desde.getFullYear();
+        dia = dia < 10 ? `0${dia}` : dia ;
+        mes = mes===13 ? mes=1 : mes;
+        mes = mes < 10 ? `0${mes}` : mes;
+        let hasta = `${anio}-${mes}-${dia}`;
+        desde = new Date(`${anio}-${mes}-${dia}`)
+        hasta = DateTime.fromISO(hasta).endOf('day');
+        const tickets = (await axios.get(`${URL}ventas/${desde}/${hasta}`)).data;
+        const presupuesto = (await axios.get(`${URL}presupuesto/${desde}/${hasta}`)).data
+        let ticketsDelDia = tickets.filter(ticket =>{
+            if (ticket.tipo_comp === "Ticket Factura" && ticket.tipo_pago==="CD") {
+                return ticket;
+            }else if(ticket.tipo_comp === "Recibos" || ticket.tipo_comp === "Recibos_P"){
+                return ticket
+            }
+        })
+        let presupuestosDelDia = presupuesto.filter(presu =>{
+            if(presu.tipo_pago === "CD"){
+                return presu
+            }
+        })
+        ventas([...ticketsDelDia,...presupuestosDelDia])
+    }
 }
+
 const validarUsuario = (texto)=>{
     ventanaPrincipal.webContents.send('validarUsuario',JSON.stringify(texto))
 }

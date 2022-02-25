@@ -660,9 +660,9 @@ presupuesto.addEventListener('click',async (e)=>{
             ipcRenderer.send('nueva-venta',venta);
             if (impresion.checked) {
                 if (venta.tipo_pago === "CC") {
-                    ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion])
+                    ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",,{},valorizadoImpresion])
                 }else{
-                    ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion])
+                    ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",,{},valorizadoImpresion])
                 }
             }
             window.location = "../index.html"
@@ -717,11 +717,9 @@ ticketFactura.addEventListener('click',async (e) =>{
              await movimientoProducto(producto.cantidad,producto.objeto)
          };
          actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-        
          const afip = await subirAAfip(venta)
 
          await ipcRenderer.send('nueva-venta',venta);
-
          ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100",afip])
          //imprimirTikectFactura(venta,cliente)
          //imprimirItem(venta,cliente)
@@ -732,7 +730,7 @@ ticketFactura.addEventListener('click',async (e) =>{
              })
 
          };
-         //!borraNegro && (window.location = '../index.html');
+         !borraNegro && (window.location = '../index.html');
 
          }
      }
@@ -743,9 +741,7 @@ ticketFactura.addEventListener('click',async (e) =>{
 //Generamos el qr
 async function generarQR(texto) {
     const fs = require('fs')
-    const qrcode = require('qrcode')
     const url = `https://www.afip.gob.ar/fe/qr/?p=${texto}`;
-    let retornar = await qrcode.toDataURL(url)
     return url
 }
 

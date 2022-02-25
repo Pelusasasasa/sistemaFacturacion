@@ -1,12 +1,13 @@
 const {ipcRenderer} = require('electron')
 
 ipcRenderer.on('imprimir',(e,args)=>{
+    const [Venta,Cliente,,,,,,arreglo,total] = JSON.parse(args)
     console.log(JSON.parse(args))
-    const [Cliente,Venta,,,,arreglo,total] = JSON.parse(args)
     listar(Venta,Cliente,arreglo,total)
 })
 
 const listar = (venta,Cliente,lista,precio)=>{
+
 const numero = document.querySelector('.numero')
 const fecha = document.querySelector('.fecha');
 const cliente = document.querySelector('.cliente')
@@ -25,7 +26,7 @@ mes = (mes<10) ? `0${mes}` : mes;
 hoy = (hoy<10) ? `0${hoy}` : hoy;
 
 const cond_iva = (Cliente.iva === undefined) && "Consumidor Final";
-
+console.log(Cliente)
 fecha.innerHTML = `${hoy}/${mes}/${anio}`;
 numero.innerHTML = venta.nro_comp;
 cliente.innerHTML = Cliente.cliente;
