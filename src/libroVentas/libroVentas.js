@@ -14,10 +14,12 @@ ultimoDiaMesAnterior=ultimoDiaMesAnterior.getDate()
 let ultimoDia = (new Date(anio,mes,0))
 ultimoDia = ultimoDia.getDate();
 
-const mesAyer = ((mes-1) === 0) ? 12 : mes;
+let mesAyer = ((mes-1) === 0) ? 12 : mes-1;
+mesAyer = mesAyer < 10 ? `0${mesAyer}` : mes
 const anioAyer = (mes === "01") ? (anio-1) : anio;
 
 const fechaAyer = `${anioAyer}-${mesAyer}-${ultimoDiaMesAnterior}`
+
 const fechaHoy = `${anio}-${mes}-${ultimoDia}`
 
 
@@ -25,6 +27,7 @@ const desde = document.querySelector('#desde');
 const hasta = document.querySelector('#hasta');
 const tbody = document.querySelector('.tbody');
 const buscar =  document.querySelector('.buscar');
+
 desde.value = fechaAyer;
 hasta.value = fechaHoy;
 

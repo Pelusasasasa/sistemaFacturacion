@@ -1,4 +1,8 @@
-const { ipcRenderer } = require("electron");
+
+const { DateTime } = require("luxon");
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
 
 const hoy = new Date();
 let dia = hoy.getDate()
@@ -23,19 +27,20 @@ const hasta =  document.querySelector('#hasta')
 desde.value = fechaDeHoy
 hasta.value = fechaDeHoy
 const tbody =  document.querySelector('.tbody')
-
-buscar.addEventListener('click',e=>{
-    ipcRenderer.send('traerVentasEntreFechas',[desde.value,hasta.value])
-})
 let ventas = []
-
-const promesaVentas = new Promise((resolve,reject)=>{
-    ipcRenderer.on('traerVentasEntreFechas',(e,args)=>{
-        ventas = JSON.parse(args)
-        console.log(ventas)
-
-    })
+buscar.addEventListener('click',async e=>{
+    const desdefecha = new Date(desde.value)
+    let hastafecha = DateTime.fromISO(hasta.value).endOf('day')
+    let tickets = await axios.get(`${URL}ventas/${desdefecha}/${hastafecha}`)
+    tickets = tickets.data
+    let presupuesto = await axios.get(`${URL}presupuesto/${desdefecha}/${hastafecha}`)
+    presupuesto = presupuesto.data;
+    ventas = [...tickets,...presupuesto];
+    
+    // ipcRenderer.send('traerVentasEntreFechas',[desde.value,hasta.value])
 })
+
+
 
 contado.addEventListener('click',e=>{
     const ventasContado = ventas.filter(venta => venta.tipo_pago === "CD")

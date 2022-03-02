@@ -1,7 +1,9 @@
 const { ipcRenderer } = require("electron");
+require('dotenv').config();
+const URL = process.env.URL;
+const axios = require("axios")
 
 
-const formularioProducto = document.querySelector('#formularioProducto');
 const codigo = document.querySelector('#codigo');
 const codFabrica = document.querySelector('#cod-fabrica');
 const descripcion = document.querySelector('#descripcion');
@@ -17,31 +19,25 @@ const observaciones = document.querySelector('#observaciones');
 const utilidad = document.querySelector('#utilidad');
 const precioVenta = document.querySelector('#precioVenta');
 const unidad = document.querySelector('#unidad');
-let dolar = 100
-let costo = 0
-let valorTasaIva = 26
-let acceso
+let dolar = 0;
+let costo = 0;
+let valorTasaIva = 26;
+let acceso;
 
 
 //Traer el dolar
-ipcRenderer.send('traerDolar')
-const promesa = new Promise((resolve,reject) =>{
-    ipcRenderer.on('traerDolar',(e,args)=>{
-        args = JSON.parse(args)
-        dolar = parseFloat(args)
+const traerDolar = async()=>{
+    let numeros = await axios.get(`${URL}tipoVenta`)
+    numeros = numeros.data
+    dolar = numeros.dolar
+}
+traerDolar()
+
+    ipcRenderer.on('id-producto',async(e,args)=>{
+        let producto = await axios.get(`${URL}productos/${args}`);
+        producto = producto.data;
+        asignarCampos(producto)
     })
-    resolve()
-
-})
-let producto = {}
-
-const promesaProductos = new Promise((resolve,reject)=>{
-    ipcRenderer.on('datos-productos',(e,args)=>{
-        producto = JSON.parse(args)
-        resolve()
-    })
-})
-
 ipcRenderer.on('acceso',(e,args)=>{
     acceso = JSON.parse(args)
     console.log(acceso)
@@ -50,12 +46,7 @@ ipcRenderer.on('acceso',(e,args)=>{
     }
 })
 
-
-promesaProductos.then(()=>{
-    asignarCampos()
-})
-
-function asignarCampos() {
+function asignarCampos(producto) {
     codigo.value = producto._id
     codFabrica.value = producto.cod_fabrica
     descripcion.value = producto.descripcion
@@ -134,7 +125,8 @@ modificar.addEventListener('click',e=>{
 
 
 const guardar = document.querySelector('.guardar')
-guardar.addEventListener('click',e=>{
+guardar.addEventListener('click',async e=>{
+    let producto = {};
     producto._id = codigo.value
     producto.cod_fabrica = codFabrica.value
     producto.descripcion = descripcion.value
@@ -150,7 +142,8 @@ guardar.addEventListener('click',e=>{
     producto.unidad = unidad.value
     producto.impuestos = ivaImp.value
     console.log(producto)
-    ipcRenderer.send('modificarProducto',producto)
+    await axios.put(`${URL}productos/${producto._id}`,producto)
+    // ipcRenderer.send('modificarProducto',producto)
     window.close()
 })
 

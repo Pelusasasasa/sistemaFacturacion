@@ -1,4 +1,8 @@
-const { ipcRenderer } = require("electron");
+
+const { DateTime } = require("luxon");
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
 const hoy = new Date()
 let dia = hoy.getDate()
 if (dia<10) {
@@ -18,17 +22,17 @@ const hasta =  document.querySelector('#hasta')
 desde.value = fechaDeHoy
 hasta.value = fechaDeHoy
 const tbody =  document.querySelector('.tbody')
-buscar.addEventListener('click',e=>{
-    ipcRenderer.send('traerVentasEntreFechas',[desde.value,hasta.value])
+buscar.addEventListener('click',async e=>{
+    const desdeFecha = new Date(desde.value);
+    let hastaFecha = DateTime.fromISO(hasta.value).endOf('day');
+    let ventas = await axios.get(`${URL}ventas/${desdeFecha}/${hastaFecha}`);
+    ventas = ventas.data;
+    let presupuesto = await axios.get(`${URL}presupuesto/${desdeFecha}/${hastaFecha}`);
+    presupuesto = presupuesto.data;
+    const ventasPresupuestos = ventas.filter(venta => venta.tipo_pago === "PP")
+    const presupuestoPresupuestos = presupuesto.filter(venta => venta.tipo_pago === "PP")
+    listarVentas([...ventasPresupuestos,...presupuestoPresupuestos],tbody)
 })
-let ventas = []
-
-
-    ipcRenderer.on('traerVentasEntreFechas',(e,args)=>{
-        ventas = JSON.parse(args)
-        const ventasPresupuestos = ventas.filter(venta => venta.tipo_pago === "PP")
-        listarVentas(ventasPresupuestos,tbody)
-    })
 
 function listarVentas(lista,bodyelegido) {
     bodyelegido.innerHTML = ""

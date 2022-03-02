@@ -1,6 +1,9 @@
 const { ipcRenderer } = require("electron");
 const Dialogs = require("dialogs");
+const { default: axios } = require("axios");
 const dialogs = Dialogs()
+require('dotenv').config();
+const URL = process.env.URL;
 
 function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -62,15 +65,24 @@ function recorrerConFlechas(e) {
     }
 }
 
-function filtrar(){
+async function filtrar(){
     //obtenemos lo que se escribe en el input
     texto = buscarProducto.value.toLowerCase();
-    ipcRenderer.send('get-productos',[texto,select.value]);
+    let productos;
+    if(texto !== ""){ 
+        let condicion = select.value;
+        condicion === "codigo" && (condicion = "_id")
+        productos = await axios.get(`${URL}productos/buscarProducto/${texto}/${condicion}`)
+    }else{
+        productos = await axios.get(`${URL}productos/buscarProducto/textoVacio/descripcion`)
+    }
+    productos = productos.data
+    ponerProductos(productos);
+    //ipcRenderer.send('get-productos',[texto,select.value]);
 }
 
-ipcRenderer.on('get-productos', (e,args) =>{
+const ponerProductos = productos =>{
     resultado.innerHTML = '';
-    const productos = JSON.parse(args);
     for(let producto of productos){
             resultado.innerHTML += `
                 <tr id="${producto._id}">
@@ -84,7 +96,7 @@ ipcRenderer.on('get-productos', (e,args) =>{
                 </tr>
             `
     }
-})
+}
 
 //Hacemos que se seleccione un producto
 let seleccionarTBody = document.querySelector('tbody')

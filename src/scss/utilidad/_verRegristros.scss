@@ -1,0 +1,65 @@
+.seccion-verRegistros{
+    padding: 3rem;
+    background-color: lightgreen;
+    .fecha{
+        margin-bottom: 1rem;
+        display: flex;
+
+        input{
+            margin-right: 3rem;
+        }
+    }
+    .tabla{
+        background-color: white;
+        height: 50rem;
+        overflow: scroll;
+    }
+    table{
+        width: 100%;
+        border-collapse: collapse;
+        thead tr th{
+            padding: 0 1rem;
+            border: .1rem solid black;
+            font-size: 2.5rem;
+        }
+        tbody tr td{
+            border: .1rem solid black;
+            overflow: auto;
+            text-overflow: clip;
+            white-space:  nowrap;
+            text-align: center;
+            resize: both;
+            &:hover{
+                cursor: pointer;
+            }
+            input{
+                width: 100%;
+                height: 100%;
+                text-align: center;
+            }
+        }
+
+        .desabilitado,.desabilitado input{
+            background-color: rgb(148, 148, 148);
+        }
+    }
+
+    .footer{
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .botones{
+        margin-top: 2rem;
+        button{
+            border: none;
+            padding: 1.5rem;
+            border-radius: 7.5rem;
+            &:hover{
+                cursor: pointer;
+                transform: scale(1.2);
+            }
+        }
+
+    }
+}

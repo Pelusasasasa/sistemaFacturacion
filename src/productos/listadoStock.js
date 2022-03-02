@@ -1,3 +1,7 @@
+const axios  = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
+
 const { ipcRenderer } = require("electron")
 const XLSX = require('xlsx');
 
@@ -7,7 +11,6 @@ const desde = document.querySelector('#desde')
 const hasta = document.querySelector('#hasta')
 const listar = document.querySelector('.listar')
 let productos =[]
-
 
 desde.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
@@ -26,12 +29,10 @@ hasta.addEventListener('keypress',e=>{
 })
 
 
-buscar.addEventListener('click',e=>{
-        ipcRenderer.send('traerProductosPorRango',[desde.value,hasta.value])
-        ipcRenderer.on('traerProductosPorRango',(e,args)=>{
-            productos = JSON.parse(args)
-            listarProductos()
-        })
+buscar.addEventListener('click',async e=>{
+        productos = await axios.get(`${URL}productos/productosEntreRangos/${desde.value}/${hasta.value}`)
+        productos = productos.data;
+        listarProductos();
 })
 
     function listarProductos() {

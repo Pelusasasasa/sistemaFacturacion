@@ -7,47 +7,46 @@ const aceptar = document.querySelector('.aceptar')
 const cancelar = document.querySelector('.cancelar')
 const diescripcion = document.querySelector('#descripcion')
 
-codigo.addEventListener('keydown',e=>{
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
+
+codigo.addEventListener('keydown',async e=>{
     if(e.key === "Enter" || e.key === "Tab"){  
-        ipcRenderer.send('get-producto',e.target.value)
+        let producto = await axios.get(`${URL}productos/${codigo.value}`)
+        producto = producto.data
+        if (producto.descripcion) {
+            descripcion.value = producto.descripcion;
+            nuevoCodigo.focus();
+        }else{
+            alert("Producto no existe")
+        }
     }else if((codigo.value.length === 3 || codigo.value.length === 7) && e.key !== "-" && e.key !== "Backspace"){
         codigo.value = codigo.value + "-"
     }
 
 })
 
-ipcRenderer.on('get-producto',(e,args)=>{
-        if(document.activeElement.name === "codigo"){
-            const producto = JSON.parse(args)
-            const {descripcion} = producto
-        if (descripcion) {
-            diescripcion.value = descripcion
-            nuevoCodigo.focus()
-        }else{
-            alert("Producto no existe")
-            codigo.focus()
-        }
-        }
-})
 
-nuevoCodigo.addEventListener('keydown',e=>{
+nuevoCodigo.addEventListener('keydown',async e=>{
     if (e.key === "Enter") {
-            ipcRenderer.send('get-producto',e.target.value)
-            ipcRenderer.on('get-producto',(e,args)=>{
-                const productoYaExistente = JSON.parse(args)
+            let productoYaExistente = await axios.get(`${URL}productos/${e.target.value}`);
+            productoYaExistente = productoYaExistente.data;
                 if (productoYaExistente.length!==0 ) {
-                    console.log(productoYaExistente)
                     alert("codigo ya utilizado")
                 }else{
                     aceptar.focus()
                 }
-            })
     }
 })
 
 
-aceptar.addEventListener('click',e=>{
-    ipcRenderer.send('cambio-codigo',[codigo.value,nuevoCodigo.value])
+aceptar.addEventListener('click',async e=>{
+    const productos = await axios.get(`${URL}productos/${codigo.value}`)
+    const nuevoProducto=productos.data;
+    nuevoProducto._id=nuevoCodigo.value;
+    await axios.post(`${URL}productos`,nuevoProducto)   
+    await axios.delete(`${URL}productos/${codigo.value}`)
     location.reload()
 })
 

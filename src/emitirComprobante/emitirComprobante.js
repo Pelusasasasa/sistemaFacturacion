@@ -599,7 +599,6 @@ function verSiPagoONo(texto) {
     }
  }
 
-
 //pasamos el saldo en negro
 function sumarSaldoAlClienteEnNegro(precio,codigo){
     ipcRenderer.send('sumarSaldoNegro',[precio,codigo])
@@ -613,8 +612,6 @@ const sacarIdentificadorTabla = (arreglo)=>{
         delete producto.objeto.identificadorTabla  
     })
 }
-
-console.log(descuentoN)
 
 //Aca mandamos la venta en presupuesto
 const presupuesto = document.querySelector('.presupuesto')
@@ -643,10 +640,10 @@ presupuesto.addEventListener('click',async (e)=>{
             venta.precioFinal = "0.1" 
             valorizadoImpresion="no valorizado"
             }
-            
             sacarIdentificadorTabla(venta.productos);
             if (venta.tipo_pago !== "PP") {
                 venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,cliente._id);
+
             for (let producto of venta.productos){
                     if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
                         producto.objeto.precio_venta = parseFloat(producto.cantidad) * (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
@@ -656,6 +653,7 @@ presupuesto.addEventListener('click',async (e)=>{
                     await movimientoProducto(producto.cantidad,producto.objeto)
                 }
             }
+
             actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
             ipcRenderer.send('nueva-venta',venta);
             if (impresion.checked) {
@@ -674,69 +672,95 @@ presupuesto.addEventListener('click',async (e)=>{
 const ticketFactura = document.querySelector('.ticketFactura')
 ticketFactura.addEventListener('click',async (e) =>{
     e.preventDefault()
-
     const stockNegativo = listaProductos.find(producto=>producto.cantidad < 0)
     if(stockNegativo){
         alert("Ticket Factura no puede ser productos en negativo");
     }else if(listaProductos.length===0){
         alert("Ningun producto cargado")
     }else{
-     venta.productos = listaProductos;
-      tipoVenta = "Ticket Factura"
-      verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
-      if (tipoPago === "Ninguno") {
-         alert("Seleccionar un modo de venta")
-         }else{
-         venta.nombreCliente = buscarCliente.value;
-         venta._id = await tamanioVentas("ticket factura");
-         venta.observaciones = observaciones.value
-         venta.fecha = new Date()
-         venta.descuento = (descuentoN.value);
-         venta.precioFinal = redondear(total.value);
-         venta.tipo_comp = tipoVenta;
-         numeroComprobante(tipoVenta);
-         venta.cod_comp = verCodComprobante(tipoVenta)
-         venta.nro_comp = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp)
-         venta.pagado = verSiPagoONo(venta.tipo_pago)
-         venta.tipo_pago = tipopago(tipoPago)   
-         venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
-         venta.comprob = venta.nro_comp;
+      venta.productos = listaProductos;
+      const [gravado21,gravado105,iva21,iva105,cant_iva] = gravadoMasIva(venta.productos);
+      console.log(gravado21,gravado105,iva21,iva105,cant_iva)
+     tipoVenta = "Ticket Factura";
+     verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
+     if (tipoPago === "Ninguno") {
+        alert("Seleccionar un modo de venta")
+        }else{
+        venta.nombreCliente = buscarCliente.value;
+        venta._id = await tamanioVentas("ticket factura");
+        venta.observaciones = observaciones.value
+        venta.fecha = new Date()
+        venta.descuento = (descuentoN.value);
+        venta.precioFinal = redondear(total.value);
+        venta.tipo_comp = tipoVenta;
+        numeroComprobante(tipoVenta);
+        venta.cod_comp = verCodComprobante(tipoVenta)
+        venta.nro_comp = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp)
+        venta.pagado = verSiPagoONo(venta.tipo_pago)
+        venta.tipo_pago = tipopago(tipoPago)   
+        venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
+        venta.comprob = venta.nro_comp;
+        venta.gravado21 = gravado21;
+        venta.gravado105 = gravado105;
+        venta.iva21 = iva21;
+        venta.iva105 = iva105
+        venta.cant_iva = cant_iva;
 
 
-         if (venta.precioFinal >=10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" && dnicuit.value === "00000000" && direccion.value === "CHAJARI")) {
-             alert("Factura mayor a 10000, poner datos cliente")
-         }else{
-         venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente);
-         venta.empresa = inputEmpresa.value;
-         for(let producto of venta.productos){
-            if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
-                producto.objeto.precio_venta = parseFloat(producto.cantidad) * (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
-                producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
-            }
-             sacarStock(producto.cantidad,producto.objeto)
-             await movimientoProducto(producto.cantidad,producto.objeto)
-         };
-         actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-         const afip = await subirAAfip(venta)
+        if (venta.precioFinal >=10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" && dnicuit.value === "00000000" && direccion.value === "CHAJARI")) {
+            alert("Factura mayor a 10000, poner datos cliente")
+        }else{
+        venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente);
+        venta.empresa = inputEmpresa.value;
+        for(let producto of venta.productos){
+           if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
+               producto.objeto.precio_venta = parseFloat(producto.cantidad) * (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
+               producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
+           }
+            sacarStock(producto.cantidad,producto.objeto)
+            await movimientoProducto(producto.cantidad,producto.objeto)
+        };
+        actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+        // const afip = await subirAAfip(venta)
 
-         await ipcRenderer.send('nueva-venta',venta);
-         ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100",afip])
-         //imprimirTikectFactura(venta,cliente)
-         //imprimirItem(venta,cliente)
+        await ipcRenderer.send('nueva-venta',venta);
+        ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100",afip]);
 
-         if (borraNegro) {
-             ipcRenderer.on('clienteModificado',async(e,args)=>{
-                 await borrarCuentaCorriente(ventaDeCtaCte)
-             })
+        if (borraNegro) {
+            ipcRenderer.on('clienteModificado',async(e,args)=>{
+                await borrarCuentaCorriente(ventaDeCtaCte)
+            })
 
-         };
-         !borraNegro && (window.location = '../index.html');
+        };
+        !borraNegro && (window.location = '../index.html');
 
-         }
-     }
+        }
+    }
     }
  })
 
+ //sacamos el gravado y el iva
+ const gravadoMasIva = (ventas)=>{
+    let totalIva105 = 0
+    let totalIva21=0
+    let gravado21 = 0 
+    let gravado105 = 0 
+    ventas.forEach(({objeto,cantidad}) =>{
+        if (objeto.iva === "N") {
+            gravado21 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)/1.21)
+            console.log(parseFloat(cantidad)*(parseFloat(objeto.precio_venta)/1.21))    
+            totalIva21 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.21)
+        }else{
+            gravado105 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta/1.105))
+            totalIva105 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.105)
+        }
+    })
+    let cantIva = 1
+    if (gravado105 !== 0 && gravado21 !== 0) {
+        cantIva = 2;
+    }
+    return [parseFloat(totalIva21.toFixed(2)),parseFloat(totalIva105.toFixed(2)),parseFloat(gravado21.toFixed(2)),parseFloat(gravado105.toFixed(2)),cantIva]
+ }
 
 //Generamos el qr
 async function generarQR(texto) {
@@ -772,6 +796,7 @@ async function generarQR(texto) {
     observaciones.focus()
  })
 
+ //Funcion para buscar una persona directamente por el cuit
  function buscarPersonaPorCuit(cuit) {
     const Https = new XMLHttpRequest();
     const url=`https://afip.tangofactura.com/REST/GetContribuyente?cuit=${cuit}`;
@@ -779,7 +804,6 @@ async function generarQR(texto) {
     Https.send()
     Https.onreadystatechange = (e) => {
         if (Https.responseText !== "") {
-
             const persona = JSON.parse(Https.responseText)
             const {nombre,domicilioFiscal,EsRI,EsMonotributo,EsExento,EsConsumidorFinal}= persona.Contribuyente;
             const cliente = {};
@@ -808,11 +832,11 @@ async function generarQR(texto) {
     }
 
  }
+
  //lo usamos para borrar un producto de la tabla
 borrarProducto.addEventListener('click',e=>{
     borrarUnProductoDeLaLista(yaSeleccionado)
 })
-
 
 const cancelar = document.querySelector('.cancelar')
 cancelar.addEventListener('click',async e=>{
@@ -1007,19 +1031,6 @@ const subirAAfip = async(venta)=>{
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
     (ultimoElectronica === 0) && (ultimoElectronica=1); 
-    let totalIva105 = 0
-    let totalIva21=0
-    let totalNeto21 = 0 
-    let totalNeto105 = 0 
-    venta.productos.forEach(({objeto,cantidad}) =>{
-        if (objeto.iva === "N") {
-            totalNeto21 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta/1.21))
-            totalIva21 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.21)
-        }else{
-            totalNeto105 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta/1.105))
-            totalIva105 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.105)
-        }
-    })
     let data = {
         'CantReg': 1,
         'CbteTipo': venta.cod_comp,
@@ -1031,9 +1042,9 @@ const subirAAfip = async(venta)=>{
         'CbteFch': parseInt(fecha.replace(/-/g, '')),
         'ImpTotal': venta.precioFinal,
         'ImpTotConc': 0,
-        'ImpNeto': (totalNeto105+totalNeto21).toFixed(2),
+        'ImpNeto': (venta.gravado21+venta.gravado105).toFixed(2),
         'ImpOpEx': 0,
-        'ImpIVA': (totalIva21+totalIva105).toFixed(2), //Importe total de IVA
+        'ImpIVA': (venta.iva21+venta.iva105).toFixed(2), //Importe total de IVA
         'ImpTrib': 0,
         'MonId': 'PES',
         'PtoVta': 5,
@@ -1041,18 +1052,18 @@ const subirAAfip = async(venta)=>{
         'Iva' 		: [],
         }
         
-        if (totalNeto105 !=0 ) {
+        if (venta.iva105 !=0 ) {
             data.Iva.push({
                     'Id' 		: 4, // Id del tipo de IVA (4 para 10.5%)
-                    'BaseImp' 	: totalNeto105.toFixed(2), // Base imponible
-                    'Importe' 	: totalIva105.toFixed(2) // Importe 
+                    'BaseImp' 	: venta.gravado105, // Base imponible
+                    'Importe' 	: venta.iva105 // Importe 
             })
         }
-        if (totalNeto21 !=0 ) {
+        if (venta.iva21 !=0 ) {
             data.Iva.push({
                     'Id' 		: 5, // Id del tipo de IVA (5 para 21%)
-                    'BaseImp' 	: totalNeto21.toFixed(2), // Base imponible
-                    'Importe' 	: totalIva21.toFixed(2) // Importe 
+                    'BaseImp' 	: venta.gravado21, // Base imponible
+                    'Importe' 	: venta.iva21 // Importe 
             })
         }
         const res = await afip.ElectronicBilling.createNextVoucher(data); //creamos la factura electronica

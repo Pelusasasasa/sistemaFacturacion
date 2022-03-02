@@ -24,6 +24,8 @@ const ventas = (Ventas)=>{
         subject: "Test",
         Author: "Electro Avenida"
     }
+
+    //borraos las propiedades que no son necesarias
     Ventas.forEach(venta => {
         delete venta.pagado
         delete venta.tipo_pago
@@ -39,7 +41,17 @@ const ventas = (Ventas)=>{
         delete venta.cliente
         delete venta.condIva
     });
-    console.log(Ventas[0])
+
+    //Lo que hacemos es ordenar el array por fechas
+    Ventas.sort((a,b)=>{
+        if(a.fecha > b.fecha){
+            return 1;
+        }else if(a.fecha < b.fecha){
+            return -1
+        }
+
+        return 0
+    })
     let newWs = XLSX.utils.json_to_sheet(Ventas)
     XLSX.utils.book_append_sheet(wb,newWs,'Ventas')
     XLSX.writeFile(wb,"Ventas.xlsx")

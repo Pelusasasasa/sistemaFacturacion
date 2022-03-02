@@ -3,6 +3,9 @@ const { ipcRenderer } = require("electron");
 const inputs = document.querySelectorAll('input');
 const modificar = document.querySelector('#modificar')
 const cancelar = document.querySelector('#cancelar')
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
 
 let dolarAux; 
 
@@ -38,7 +41,7 @@ const remitoCorriente = document.querySelector('#remitoCorriente')
 const dolar = document.querySelector('#dolar')
 
 
-function guardarDatos() {    
+async function guardarDatos() {    
     const numeros = {
         "Ultima Factura A": facturaA.value,
         "Ultima Factura B": facturaB.value,
@@ -54,13 +57,18 @@ function guardarDatos() {
         "dolar":dolar.value
     };
     (parseFloat(dolarAux) !== parseFloat(dolar.value)) && cambiarPrecios(parseFloat(dolar.value))
-     ipcRenderer.send('enviar-numero',numeros);
+    await axios.put(`${URL}tipoVenta`,numeros)
 }
 
-ipcRenderer.send('recibir-numeros')
+const recibirNumeros = async()=>{
+    let numeros = await axios.get(`${URL}tipoVenta`);
+    numeros=numeros.data;
+    ponerInpusnumero(numeros)
+}
+recibirNumeros()
 
-ipcRenderer.on('numeros-enviados',(e,args)=>{
-    const numeros = JSON.parse(args)
+const ponerInpusnumero = (objeto)=>{
+    const numeros = objeto
     facturaA.value = numeros["Ultima Factura A"];
     facturaB.value =numeros["Ultima Factura B"];
     creditoA.value =numeros["Ultima N Credito A"];
@@ -74,13 +82,24 @@ ipcRenderer.on('numeros-enviados',(e,args)=>{
     remitoCorriente.value =numeros["Ultimo Remito Cta Cte"];
     dolarAux = numeros.dolar;
     dolar.value = numeros.dolar;
-})
+}
 
 cancelar.addEventListener('click', ()=>{
     window.close()
 })
 
 
-async function cambiarPrecios(numero) {
-    ipcRenderer.send('CambiarPrecios',numero)
+async function cambiarPrecios() {
+
+    //cambiamos el precio de los productos con dolares
+    let productos = await axios.get(`${URL}productos/buscarProducto/textoVacio/dolar`)
+    let dolar = await axios.get(`${URL}tipoVenta`);
+    dolar = dolar.data.dolar
+    productos = productos.data;
+    productos.forEach(async producto => {
+        const costoTotal = (parseFloat(producto.impuestos)+parseFloat(producto.costodolar)*parseFloat(dolar));
+        producto.precio_venta = (costoTotal+(parseFloat(producto.utilidad)*costoTotal/100)).toFixed(2);
+        await axios.put(`${URL}productos/${producto._id}`,producto)
+    });
+    // ipcRenderer.send('CambiarPrecios',numero)
 }

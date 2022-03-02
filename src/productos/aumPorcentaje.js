@@ -1,11 +1,17 @@
 const { ipcRenderer } = require("electron");
 const select = document.querySelector('#marca')
-const porcentaje = document.querySelector('#porcentaje')
+const porcentajeInput = document.querySelector('#porcentaje')
 const modificar = document.querySelector('.modificar')
 
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
+
 let marcas;
-    ipcRenderer.on('mandarMarcas',(e,args)=>{
-        marcas = JSON.parse(args);
+
+    const traerMarcas = async()=>{
+        marcas = await axios(`${URL}productos`);
+        marcas = marcas.data
         marcas.sort();
         marcas.forEach(marca => {
             const option = document.createElement('option')
@@ -13,12 +19,30 @@ let marcas;
             option.value = marca
             select.appendChild(option)
         });
+    }
+traerMarcas()
+
+
+modificar.addEventListener('click',async e=>{
+    let marca = select.value;
+    let porcentaje = parseFloat(porcentajeInput.value);
+    let productos = await axios.get(`${URL}productos/marcas/${marca}`)
+    productos = productos.data;
+    await productos.forEach(async producto=>{
+        if (parseFloat(producto.costodolar) === 0) {
+            producto.costo = (parseFloat(producto.costo) + parseFloat(producto.costo)*porcentaje/100).toFixed(2);
+            producto.impuestos = (producto.iva === "N") ? (parseFloat(producto.costo) * 26 / 100) : (parseFloat(producto.costo) * 15 / 100);
+            producto.precio_venta = ((parseFloat(producto.costo) + parseFloat(producto.impuestos))*parseFloat(producto.utilidad)/100) +(parseFloat(producto.costo) + parseFloat(producto.impuestos))
+            producto.impuestos = (producto.impuestos).toFixed(2)
+            producto.precio_venta = (producto.precio_venta).toFixed(2)
+        }else{
+            producto.costodolar = parseFloat((parseFloat(producto.costodolar) + parseFloat(producto.costodolar)*porcentaje/100).toFixed(2));
+            producto.impuestos = (producto.iva === "N") ? (parseFloat(producto.costodolar) * 26 / 100) : (parseFloat(producto.costodolar) * 15 / 100);
+            producto.precio_venta = ((parseFloat(producto.costo) + parseFloat(producto.impuestos))*parseFloat(producto.utilidad)) + (parseFloat(producto.costo) + parseFloat(producto.impuestos))
+            producto.impuestos = (producto.impuestos).toFixed(2)
+            producto.precio_venta = (producto.precio_venta).toFixed(2)
+        }
+        await axios.put(`${URL}productos/${producto._id}`,producto)
+        alert(`Se Modifico el precio de los productos ${select.value}`)
     })
-
-modificar.addEventListener('click',e=>{
-    ipcRenderer.send('modficarPrecioPorcentaje',[select.value,porcentaje.value])
-})
-
-ipcRenderer.on('avisoModificacion',e=>{
-    alert(`Se Modifico el precio de los productos ${select.value}`)
 })

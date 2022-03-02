@@ -2,6 +2,11 @@ const { ipcRenderer } = require("electron")
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
 
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
+
+
 const cliente = document.querySelector('#buscador')
 const saldo = document.querySelector('#saldo')
 const listar = document.querySelector('.listar')
@@ -88,24 +93,23 @@ const mostrarNegro = ()=>{
     actualizar.classList.remove('none')
 }
 
-cliente.addEventListener('keypress', e =>{
+cliente.addEventListener('keypress', async e =>{
     if (e.key === "Enter") {
         if (cliente.value !== "") {
-            ipcRenderer.invoke('get-cliente',(cliente.value).toUpperCase()).then(async(args)=>{
-                if (JSON.parse(args) !== "") {
-                    ponerDatosCliente(JSON.parse(args));
+            let clienteTraido = await axios.get(`${URL}clientes/id/${cliente.value.toUpperCase( )}`)
+            clienteTraido = clienteTraido.data;
+                if (clienteTraido !== "") {
+                    ponerDatosCliente(clienteTraido);
                 }else{
                      alert("El cliente no existe")
                      cliente.value = "";
                      cliente.focus();
                 }
-
-            })
-        }else{
+            }else{
             ipcRenderer.send('abrir-ventana',"clientes")
+         }
         }
-    }
-})
+    })
 
 ipcRenderer.on('mando-el-cliente',async(e,args)=>{
     ponerDatosCliente(JSON.parse(args))
@@ -219,37 +223,51 @@ let saldoABorrar = 0
 
 
     actualizar.addEventListener('click',e=>{
+
         if (seleccionado) {
+
 
         nuevaLista.find(e=>{
             if (e.nro_comp === seleccionado.id) {
                 ventaAModificar=e;
             }
         })
-        ventaAModificar.productos.forEach(producto=>{
-             ipcRenderer.send('traerPrecio',producto.objeto._id)
-             ipcRenderer.once('traerPrecio',(e,args) => {  
-
-                const productoModificado = JSON.parse(args)
+        ventaAModificar.productos.forEach(async producto=>{
+            console.log(producto)
+                let productoModificado = await axios.get(`${URL}productos/${producto.objeto._id}`)
+                productoModificado = productoModificado.data;
                 if(producto.objeto._id === productoModificado._id){
                     producto.objeto.precio_venta = productoModificado.precio_venta
-                    mostrarDetalles(ventaAModificar.productos)
-                    total=sacarTotal(ventaAModificar.productos)
-                    ventaAModificar.precioFinal = total.toFixed(2)
-            }
-            ipcRenderer.send('ventaModificada',[ventaAModificar,ventaAModificar.nro_comp,situacion])
-            ipcRenderer.on('devolverVenta',(e,args)=>{
-                let [venta,cliente ] = JSON.parse(args)
-                ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"CD"])
-            })
+                    mostrarDetalles(ventaAModificar.productos);
+                    let total1=sacarTotal(ventaAModificar.productos);
+                    ventaAModificar.precioFinal = total1.toFixed(2);
+                    let venta = await axios.get(`${URL}ventas/${ventaAModificar.nro_comp}`);
+                    if(venta.data.length === 0){
+                        venta = await axios.get(`${URL}presupuesto/${ventaAModificar.nro_comp}`)
+                        venta = venta.data[0];
+                    }else{
+                        venta = venta.data[0]
+                    }
+                    let saldoABorrar = venta.precioFinal;
+                    venta.precioFinal = ventaAModificar.precioFinal;
+                    venta.productos = ventaAModificar.productos;
+                    venta.tipo_comp === "Ticket Factura" ? await axios.put(`${URL}ventas/${venta._id}`,venta) : await axios.put(`${URL}presupuesto/${venta._id}`,venta);
+                    let cliente = await axios.get(`${URL}clientes/id/${venta.cliente}`);
+                    cliente = cliente.data;
+                    let total = 0
+                    total = venta.precioFinal
+                    total = (parseFloat(total) - parseFloat(saldoABorrar) + parseFloat(cliente.saldo_p)).toFixed(2)
+                    cliente.saldo_p = total
+                     await axios.put(`${URL}clientes/${venta.cliente}`,cliente);
+                    // ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"CD"])
+                    // })
             location.reload()
-            })
-        })
+            }})
         }else{
             alert("Venta no seleccionada")
         }
-
     })
+
 function sacarTotal(arreglo){
     total = 0   
     arreglo.forEach((producto)=>{

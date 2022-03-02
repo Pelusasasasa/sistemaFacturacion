@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modifcar facturacion</title>
+    <link rel="stylesheet" href="../../build/css/app.css">
+</head>
+<body class="seccion-verRegistros">
+    <main>
+        <section class="fecha">
+            <div>
+                <label for="">Desde: </label>
+                <input type="date" name="desde" id="desde">
+            </div>
+            <div>
+                <label for="">Hasta:</label>
+                <input type="date" name="hasta" id="hasta">
+            </div>
+        </section>
+
+        <section class="tabla">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Codigo</th>
+                        <th>Cliente</th>
+                        <th>Cod_comp</th>
+                        <th>Tipo_Comp</th>
+                        <th>Nro_comp</th>
+                        <th>Comprob</th>
+                        <th>Total</th>
+                        <th>Gravado21</th>
+                        <th>Iva21</th>
+                        <th>Gravado105</th>
+                        <th>Iva105</th>
+                        <th>Cant_iva</th>
+                        <th>Cod_doc</th>
+                        <th>nro_cuit</th>
+                        <th>Cond_iva</th>
+                        <th>Diferecia</th>
+                    </tr>
+                </thead>
+                <tbody class="tbody"></tbody>
+            </table>
+        </section>
+
+        <section class="footer">
+            <div class="botones">
+                <button>Agregar</button>
+                <button class="guardar">Guardar Cambios</button>
+                <button class="salir">Salir</button>
+            </div>
+
+            <div>
+                <h3>Solo se guardaran los renglones que esten  en blanco</h3>
+            </div>
+        </section>
+    </main>
+</body>
+    <script src="verRegistros.js"></script>
+</html>

@@ -1,7 +1,10 @@
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
+const axios = require("axios");
+const { default: cuitValidator } = require("cuit-validator");
 
-
+require("dotenv").config;
+const URL = process.env.URL;
 
 const botonEnviar = document.querySelector('#boton-enviar')
 const nombre = document.querySelector('#nombre')
@@ -15,18 +18,17 @@ const dnicuit = document.querySelector('#dnicuit')
 const conIva = document.querySelector('#conIva')
 const condicionFacturacion = document.querySelector('#conFac')
 const limite = document.querySelector('#limite')
-
+const normal = document.querySelector('input[name=moroso]')
 const moroso = document.querySelectorAll('input[name="moroso"]')
 const observaciones = document.querySelector('#observaciones')
 const salir = document.querySelector('.salir')
 const saldo = "0"
 const saldo_p = "0"
 const listaVenta = []
-const {ipcRenderer} = require('electron');
-const { default: cuitValidator } = require("cuit-validator");
+
 nombre.focus()
 let condicion = ""
-const normal = document.querySelector('input[name=moroso]')
+
 
 nombre.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
@@ -63,7 +65,6 @@ direccion.addEventListener('keypress',e=>{
 })
 dnicuit.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        console.log(conIva.value);
         if((dnicuit.value.length !== 11 && conIva.value !== "Consumidor Final") || (dnicuit.value.length !== 8 && conIva.value === "Consumidor Final")){
             alert("El dni o cuit no es Valido")
         }else{
@@ -119,7 +120,6 @@ normal.addEventListener('keypress',e=>{
 
 botonEnviar.addEventListener('click',async e =>{
     for(let i of moroso){
-
         i.checked && (condicion = i.value  )
     }
 
@@ -147,7 +147,11 @@ botonEnviar.addEventListener('click',async e =>{
         observacion: observaciones.value,
         listaVenta: listaVenta.value
     }
-    ipcRenderer.send('nuevo-cliente',cliente);
+    const inicial = ((nombre.value)[0]).toUpperCase()
+    let numero = await axios.get(`${URL}clientes/crearCliente/${inicial}`)
+    cliente._id = numero.data
+    await axios.post(`${URL}clientes`,cliente)
+    //ipcRenderer.send('nuevo-cliente',cliente);
     window.close()
     
 });

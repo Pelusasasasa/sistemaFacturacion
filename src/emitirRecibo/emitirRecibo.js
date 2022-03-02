@@ -7,6 +7,9 @@ function getParameterByName(name) {
     results = regex.exec(location.search);
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
 
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
@@ -251,7 +254,6 @@ const hacerRecibo = async()=>{
     const nrmComp = await traerUltimoNroRecibo()
     modifcarNroRecibo(nrmComp)
     const recibo = {}
-    console.log(cliente)
     recibo.nro_comp = nrmComp
     recibo.cod_comp = verCodComp(cond_iva.value)
     recibo.dnicuit = cuit.value
@@ -266,9 +268,22 @@ const hacerRecibo = async()=>{
     saldoFavor = (saldoAfavor.value !== "") && parseFloat(saldoAFavor.value);
     recibo.abonado = saldoAfavor.value
     const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2));
-    ipcRenderer.send('modificarSaldo',[cliente._id,aux,saldoNuevo])
-    ipcRenderer.send('modificamosLasVentas',nuevaLista)
-    ipcRenderer.send('nueva-venta',recibo);
+
+    ipcRenderer.send('modificamosLasVentas',nuevaLista);
+    
+    //Tomamos el cliente y agregamos a su lista Ventas la venta y tambien modificamos su saldo
+    const _id = recibo.cliente;
+    let clienteTraido = await axios.get(`${URL}clientes/id/${_id}`);
+    clienteTraido = clienteTraido.data;
+    //saldo
+    clienteTraido[aux] = saldoNuevo.toFixed(2);
+    //listaVentas
+    let listaVentas = clienteTraido.listaVentas;
+    listaVentas[0] === "" ? (listaVentas[0] = recibo.nro_comp) : (listaVentas.push(recibo.nro_comp));
+    clienteTraido.listaVentas = listaVentas;
+    await axios.put(`${URL}clientes/${_id}`,clienteTraido);
+    await axios.post(`${URL}ventas`,recibo);
+
     const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
     const impresora = recibo.tipo_comp === "Recibos" ? "SAM4S GIANT-100" : undefined;
     //arregloParaImprimir contiene todos las ventas que tiene pagadas y total contiene el total del recibo
@@ -277,11 +292,9 @@ const hacerRecibo = async()=>{
 }
 
 const traerUltimoNroRecibo = async ()=>{
-    let retornar
-    await ipcRenderer.invoke('traerUltimoNumero',"Ultimo Recibo").then((args)=>{
-        retornar = JSON.parse(args)
-    })
-    return retornar
+    let numero = await axios.get(`${URL}tipoVenta`)
+    numero = numero.data["Ultimo Recibo"];
+    return numero
 }
 
 const modifcarNroRecibo = async(numero)=>{
@@ -289,7 +302,12 @@ const modifcarNroRecibo = async(numero)=>{
     n2 = parseFloat(n2 ) + 1
     n2 = n2.toString().padStart(8,0)
     let nrmComp = n1 + "-" + n2
-    await ipcRenderer.send('modificar-numeros',[nrmComp,'Ultimo Recibo'])
+
+    let numeros = await axios.get(`${URL}tipoVenta`)
+    numeros = numeros.data;
+    numeros["Ultimo Recibo"] = nrmComp;
+    await axios.put(`${URL}tipoventa`,numeros)
+
 }
 
 document.addEventListener('keydown',e=>{
@@ -325,14 +343,7 @@ const inputsCliente = async (cliente)=>{
         saldoAFavor.setAttribute("disabled","")
     }
 
-    await ipcRenderer.invoke('traerVentas',cliente.listaVentas).then((args)=>{
-        nuevaLista = []
-        listaVentas = JSON.parse(args)
-    })
-    //Sacamos las ventas que ya estan pagadas
-    listaVentas.forEach(venta => {
-        venta.pagado === false && nuevaLista.push(venta)
-    });
+    await traerVentas(cliente.listaVentas)
     listarLista(nuevaLista,situacion)
     trSeleccionado = listar.firstElementChild
     if (trSeleccionado) {
@@ -340,12 +351,27 @@ const inputsCliente = async (cliente)=>{
     }
 }
 
+const traerVentas = async(lista)=>{
+    nuevaLista = [];
+    for(let elemento of lista){
+        let venta = await axios.get(`${URL}ventas/${elemento}`);
+        venta = venta.data[0];
+        let presupuesto = await axios.get(`${URL}presupuesto/${elemento}`);
+        presupuesto = presupuesto.data[0];
+        venta !== undefined && nuevaLista.push(venta);
+        presupuesto !== undefined && nuevaLista.push(presupuesto);
+    };
+    nuevaLista = nuevaLista.filter((venta)=>{
+        return (venta.pagado === false)
+    })
+
+}
+
 const tamanioVentas = async()=>{
     let retornar
-    await ipcRenderer.invoke('tamanioVentas').then(async(args)=>{
-        retornar = await JSON.parse(args)
-    })
-    return retornar
+    retornar = await axios.get(`${URL}ventas`);
+    retornar = retornar.data;
+    return (retornar + 1); 
 }
 
 
@@ -367,11 +393,7 @@ cancelar.addEventListener('click',e=>{
         location.href = "../index.html"
     }
 });
-(async () => {
-    const b = await afip.ElectronicBilling.getVoucherInfo(2,5,9)
-    console.log(b)
-})
-()
+
 const subirAAfip = async(venta)=>{
 
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];

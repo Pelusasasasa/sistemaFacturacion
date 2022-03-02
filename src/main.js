@@ -5,7 +5,7 @@ let URL
 if (a === 1) {
     URL = process.env.URLPUBLICANEGOCIO;
 }else if(a === 2){
-    URL = "http://192.168.1.109:4000/api/";
+    URL = process.env.URL;
     //URL = process.env.URLPRIVADANEGOCIO;
 }
 let conexion;
@@ -55,7 +55,7 @@ function crearVentanaPrincipal() {
 
 //abrir ventana agregar cliente
 ipcMain.on('abrir-ventana-agregar-cliente',e=>{
-    abrirVentana('agregarCliente')
+    abrirVentana('clientes/agregarCliente.html',1100,500)
 })
 
 
@@ -95,10 +95,6 @@ ipcMain.on('nuevo-producto', async (e, args) => {
     await axios.post(`${URL}productos`,args)
 })
 
-//modificamos el producto
-ipcMain.on('modificarProducto', async (e, args) => {
-    await axios.put(`${URL}productos/${args._id}`,args)
-})
 
 //Eliminamos un producto
 ipcMain.on('eliminar-producto', async (e, id) => {
@@ -168,46 +164,6 @@ ipcMain.on('mando-el-producto', async (e, args) => {
     }))
 })
 
-//cambiamos el precio de los productos con dolares
-ipcMain.on('CambiarPrecios',async(e,args)=>{
-    let productos = await axios.get(`${URL}productos/buscarProducto/textoVacio/dolar`)
-    let dolar = await axios.get(`${URL}tipoVenta`);
-    dolar = dolar.data.dolar
-    productos = productos.data;
-    productos.forEach(async producto => {
-        const costoTotal = (parseFloat(producto.impuestos)+parseFloat(producto.costodolar)*parseFloat(dolar));
-        producto.precio_venta = (costoTotal+(parseFloat(producto.utilidad)*costoTotal/100)).toFixed(2);
-        await axios.put(`${URL}productos/${producto._id}`,producto)
-    });
-})
-
-
-//modificamos el precio de los prodcutos por porcentaje
-ipcMain.on('modficarPrecioPorcentaje',async(e,args)=>{
-    let [marca,porcentaje] = args
-    porcentaje = parseFloat(porcentaje);
-    let productos = await axios.get(`${URL}productos/marcas/${marca}`)
-    productos = productos.data;
-    await productos.forEach(async producto=>{
-        if (producto.costodolar === 0) {
-            producto.costo = (parseFloat(producto.costo) + parseFloat(producto.costo)*5/100).toFixed(2);
-            producto.impuestos = (producto.iva === "N") ? (parseFloat(producto.costo) * 26 / 100) : (parseFloat(producto.costo) * 15 / 100);
-            producto.precio_venta = ((parseFloat(producto.costo) + parseFloat(producto.impuestos))*parseFloat(producto.utilidad)/100) +(parseFloat(producto.costo) + parseFloat(producto.impuestos))
-            producto.impuestos = (producto.impuestos).toFixed(2)
-            producto.precio_venta = (producto.precio_venta).toFixed(2)
-        }else{
-            producto.costodolar = parseFloat((parseFloat(producto.costodolar) + parseFloat(producto.costodolar)*5/100).toFixed(2));
-            producto.impuestos = (producto.iva === "N") ? (parseFloat(producto.costodolar) * 26 / 100) : (parseFloat(producto.costodolar) * 15 / 100);
-            producto.precio_venta = ((parseFloat(producto.costo) + parseFloat(producto.impuestos))*parseFloat(producto.utilidad)) + (parseFloat(producto.costo) + parseFloat(producto.impuestos))
-            producto.impuestos = (producto.impuestos).toFixed(2)
-            producto.precio_venta = (producto.precio_venta).toFixed(2)
-        }
-        await axios.put(`${URL}productos/${producto._id}`,producto)
-
-    })
-    nuevaVentana.webContents.send('avisoModificacion')
-    
-})
 
 //probar imagenes 
 ipcMain.on('traerImagen',async(e,args)=>{
@@ -247,7 +203,7 @@ ipcMain.on('nuevo-cliente', async (e, args) => {
 
 //Abrir ventana para modificar un cliente
 ipcMain.on('abrir-ventana-modificar-cliente', (e, args) => {
-    abrirVentana("modificar-cliente")
+    abrirVentana("clientes/modificarCliente.html",1100,450)
     const [idCliente,acceso] = args
     nuevaVentana.on('ready-to-show',async ()=>{
         let cliente = await axios.get(`${URL}clientes/id/${idCliente}`)
@@ -337,7 +293,7 @@ ipcMain.on('traerSaldo',async (e,args)=>{
 
 
 ipcMain.on('abrir-ventana-clientesConSaldo',async(e,args)=>{
-    abrirVentana("abrir-ventana-clientesConSaldo");
+    abrirVentana("resumenCuenta/clientes.html",1200,500 , "noReiniciar");
     nuevaVentana.on('ready-to-show',()=>{
         nuevaVentana.webContents.send('situacion',JSON.stringify(args))
     })
@@ -388,14 +344,13 @@ ipcMain.on('imprimir-venta',async(e,args)=>{
         copies: cantidad,
     };
     if (tipo === "Recibos_P") {
-        abrirVentana("imprimir-recibo")
+        abrirVentana("emitirRecibo/imprimirRecibo.html",1000,900)
 
     }else if(tipo === "ticket-factura" || tipo === "Recibos"){
-        console.log("a")
-        abrirVentana("imprimir-factura")
+        abrirVentana("emitirComprobante/imprimirTicket.html",800,200);
     }else{
         console.log("b")
-        abrirVentana("imprimir-comprobante")
+        abrirVentana("emitirComprobante/imprimir.html",1000,500)
 
     }
     await imprimir(options,args)
@@ -440,13 +395,10 @@ ipcMain.handle('traerVentas' ,async (e,args)=>{
 ipcMain.on('traerVenta',async (e,args)=>{
     let venta = await axios.get(`${URL}ventas/${args}`)
     venta = venta.data
-    console.log(venta)
     if (venta.length === 0) {
         venta = await axios.get(`${URL}presupuesto/${args}`);
         venta = venta.data;
-
     }
-
     e.reply('traerVenta',JSON.stringify(venta))
 })
 
@@ -494,12 +446,8 @@ const probar = async (listau,fecha1,fecha2)=>{
     
 //traerVentas entre las fechas
 ipcMain.on('traerVentasEntreFechas',async(e,args)=>{
-
     const desde = new Date(args[0])
-    console.log(args[0])
     let hasta = DateTime.fromISO(args[1]).endOf('day')
-    console.log(desde)
-    console.log(hasta)
     let ventas = await axios.get(`${URL}ventas/${desde}/${hasta}`)
     ventas = ventas.data
     let presupuesto = await axios.get(`${URL}presupuesto/${desde}/${hasta}`)
@@ -523,17 +471,16 @@ ipcMain.handle('traerVentasClienteEntreFechas',async(e,args)=>{
 //Mandamos la modificacion de la venta
 ipcMain.on('ventaModificada',async (e,[args,id])=>{
      let venta = await axios.get(`${URL}ventas/${id}`)
-     if(venta.data.length === 0){
+    if(venta.data.length === 0){
         venta = await axios.get(`${URL}presupuesto/${id}`)
         venta = venta.data[0];
     }else{
         venta = venta.data[0]
     }
 
-     let saldoABorrar = venta.precioFinal
-     venta.precioFinal = args.precioFinal;
-     venta.productos = args.productos;
-     console.log(venta)
+    let saldoABorrar = venta.precioFinal
+    venta.precioFinal = args.precioFinal;
+    venta.productos = args.productos;
     venta.tipo_comp === "Ticket Factura" ? await axios.put(`${URL}ventas/${venta._id}`,venta) : await axios.put(`${URL}presupuesto/${venta._id}`,venta);
     let cliente = await axios.get(`${URL}clientes/id/${args.cliente}`);
     cliente = cliente.data;
@@ -547,7 +494,7 @@ ipcMain.on('ventaModificada',async (e,[args,id])=>{
 
     ipcMain.on('abrir-ventana-emitir-comprobante',(e,args)=>{
         const[vendedor,numeroVenta,empresa] = args
-        abrirVentana("emitirComrpobante")
+        abrirVentana("emitirComprobante/emitirComprobante.html",1000,1000)
         nuevaVentana.on('ready-to-show',async ()=>{
             nuevaVentana.webContents.send('venta',JSON.stringify([vendedor,numeroVenta,empresa]))
         })
@@ -622,21 +569,6 @@ ipcMain.on('traerDolar',async e=>{
     e.reply('traerDolar',JSON.stringify(dolar))
 })
 
-//traemos un numero del Recibo En EMITIR RECIBO
-ipcMain.handle('traerUltimoNumero',async(e,args)=>{
-    let numero = await axios.get(`${URL}tipoVenta`)
-    numero = numero.data["Ultimo Recibo"]
-    return JSON.stringify(numero)
-})
-
-// //se modifica un numero de comrpobante
-// ipcMain.on('modificar-nrocomp', async (e, args) => {
-//     const numeros = await Numeros.find();
-//     numeros[0][args[1]] = args[0]
-//     await numeros[0].save()
-// })
-
-
 //FIN NUMEROS
 
 //INICIO USUARIOS
@@ -648,6 +580,7 @@ ipcMain.on('traerUsuarios', async (e, args) => {
     e.reply("traerUsuarios", JSON.stringify(usuarios))
 })
 
+//Agregamos un usuario
 ipcMain.on('agregarUsuario', async (e, args) => {
     const usuario = await axios.post(`${URL}usuarios`,args)
 })
@@ -701,11 +634,9 @@ ipcMain.on('eliminarPedido', async (e, id) => {
 //Abrir ventana para modificar un producto
 ipcMain.on('abrir-ventana-modificar-producto',  (e, args) => {
     const [id,acceso,texto,seleccion] = args
-    abrirVentana('abrir-ventana-modificar-producto')
+    abrirVentana('productos/modificarProducto.html',1000,600)
     nuevaVentana.on('ready-to-show',async ()=>{
-        let Producto = await axios.get(`${URL}productos/${id}`)
-        Producto = Producto.data
-    nuevaVentana.webContents.send('datos-productos', JSON.stringify(Producto))
+    nuevaVentana.webContents.send('id-producto', id)
     nuevaVentana.webContents.send('acceso', JSON.stringify(acceso))
     })
     nuevaVentana.on('close', async()=> {
@@ -721,7 +652,7 @@ ipcMain.on('abrir-ventana-modificar-producto',  (e, args) => {
 
 //abrir ventana agregar producto
 ipcMain.on('abrir-ventana-agregar-producto',async(e,args)=>{
-    abrirVentana('agregarProducto')
+    abrirVentana('productos/agregarProducto.html',1100,500)
 })
 
 
@@ -730,7 +661,7 @@ ipcMain.on('abrir-ventana-agregar-producto',async(e,args)=>{
 //Abrir ventana de movimiento de producto
 ipcMain.on('abrir-ventana-movimiento-producto',async (e,arreglo)=>{
     const [id,vendedor] = arreglo
-    abrirVentana('movProducto')
+    abrirVentana('movProductos/movProductos.html',800,500)
     let producto = await axios.get(`${URL}productos/${id}`);
     producto = producto.data
     nuevaVentana.on('ready-to-show',()=>{
@@ -750,9 +681,10 @@ ipcMain.on('movimiento-producto',async (e,args) => {
 })
 
 
-//Abiri ventana de Informacion de producto
+//Abrir ventana de Informacion de producto
 ipcMain.on('abrir-ventana-info-movimiento-producto',async (e,args)=>{
-    abrirVentana('info-movProducto')
+    abrirVentana('movProductos/infoMovProductos.html',1000,500)
+
 //informacion de movimiento de producto
     nuevaVentana.on('ready-to-show',async()=>{
         let producto = await axios.get(`${URL}movProductos/${args}`)
@@ -816,12 +748,6 @@ const templateMenu = [
             }
         ]
     },
-    // {
-    //     label: "Emitir Nota De Credito",
-    //     click(){
-    //         abrirVentana("EmitirNotaCredito")
-    //     }
-    // },
     {
         label: "Datos",
         submenu: [
@@ -831,7 +757,7 @@ const templateMenu = [
                     {
                         label:"Listado Saldo",
                         click(){
-                            abrirVentana("listadoSaldo")
+                            abrirVentana("clientes/listadoSaldo.html",1000,900)
                         }
                     },
                 ]
@@ -843,18 +769,18 @@ const templateMenu = [
                     {
                         label:"Listado de Stock",
                         click(){
-                            abrirVentana("listadoStock")
+                            abrirVentana("productos/listadoStock.html",1000,900)
                         }
                     },
                     {
                         label: "Cambio de codigo",
                         click(){
-                            abrirVentana("cambioCodigo")
+                            abrirVentana("productos/cambioCodigo.html",400,300)
                         }
                     },{
                         label: "Aum porcentaje",
                         click(){
-                            abrirVentana("AumentoPorPorcentaje");
+                            abrirVentana("./productos/aumPorcentaje.html",600,200);
                             nuevaVentana.on('ready-to-show',async()=>{
                                 const marcas = await axios(`${URL}productos`)
                                 nuevaVentana.webContents.send("mandarMarcas",JSON.stringify(marcas.data))
@@ -866,7 +792,7 @@ const templateMenu = [
             {
                 label: "Numeros",
                 click(){
-                    abrirVentana("numeros")
+                    abrirVentana("numeros/numeros.html",500,1000)
                 }
             },{
                 label: "Vendedores",
@@ -882,31 +808,31 @@ const templateMenu = [
             {
                 label: "PorComprobante",
                 click(){
-                    abrirVentana("porComprobante")
+                    abrirVentana("listados/porComrpobante.html",1200,1000)
                 }
             },
             {
                 label: "Presupuesto",
                 click(){
-                    abrirVentana("presupuesto")
+                    abrirVentana("listados/presupuestos.html",1200,1000)
                 }
             },
             {
                 label: "Buscar Venta",
                 click(){
-                    abrirVentana("buscarVenta")
+                    abrirVentana("listados/buscarVentas.html",1200,1000)
                 }
             },
             {
                 label: "Stock Negativo",
                 click(){
-                    abrirVentana("stockNegativo")
+                    abrirVentana("listados/stockNegativo.html",1200,1000)
                 }
             },
             {
                 label: "Libro Ventas",
                 click(){
-                    abrirVentana("libroVentas")
+                    abrirVentana("libroVentas/libroVentas.html",1100,500)
                 }
             }
         ]
@@ -917,7 +843,12 @@ const templateMenu = [
             {
                 label:"Gerencial",
                 click(){
-                    abrirVentana("gerencial")
+                    abrirVentana("utilidad/gerencial.html",1200,1000)
+                }
+            },{
+                label: "Ver Registros",
+                click(){
+                    abrirVentana("utilidad/verRegistros.html",1500,1000)
                 }
             }
         ]
@@ -939,20 +870,7 @@ const templateMenu = [
                 })
             }
         }
-    }//,{
-    //     label: "Resumenes de cuentas",
-    //     async click(){
-    //         let clientes = await axios.get(`${URL}clientes`)
-    //         clientes = clientes.data
-    //         clientes.forEach(async cliente =>{
-    //             abrirVentana("resumenCuenta")
-    //             await nuevaVentana.on('ready-to-show',()=>{
-    //                 nuevaVentana.webContents.send('datosAImprimir',JSON.stringify(cliente))
-    //             })
-    //             // await imprimir(options,args)
-    //         })
-    //     }
-    // }
+    }
 ]
 
 //AbrirVentanaParaBuscarUnCliente
@@ -962,7 +880,7 @@ ipcMain.on('abrir-ventana', (e, args) => {
 
 
 //Para abrir todas las ventanas
-function abrirVentana(texto,numeroVenta){
+function abrirVentana(texto,width,height,reinicio){
     if (texto === "resumenCuenta") {
         nuevaVentana = new BrowserWindow({
             parent:ventanaPrincipal,
@@ -982,147 +900,6 @@ function abrirVentana(texto,numeroVenta){
         nuevaVentana.setMenuBarVisibility(false)
         nuevaVentana.on('close', function (event) {
             nuevaVentana = null
-        })
-    }else if(texto === "abrir-ventana-clientesConSaldo"){
-        nuevaVentana = new BrowserWindow({
-            width: 1200,
-            height: 500,
-            parent:ventanaPrincipal,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-
-            pathname: path.join(__dirname, `resumenCuenta/clientes.html`),
-            protocol: 'file',
-            slashes: true
-        }));
-        //nuevaVentana.setMenuBarVisibility(false)
-        nuevaVentana.on('close', function (event) {
-            nuevaVentana = null
-        })
-    }else if(texto==="movProducto"){
-        nuevaVentana = new BrowserWindow({
-            width: 800,
-            height: 500,
-            parent:ventanaPrincipal,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-
-            pathname: path.join(__dirname, `movProductos/movProductos.html`),
-            protocol: 'file',
-            slashes: true
-        }));
-        nuevaVentana.setMenuBarVisibility(false)
-        nuevaVentana.on('close', function (event) {
-            nuevaVentana = null
-        })
-    }else if(texto === "imprimir-comprobante"){
-            nuevaVentana = new BrowserWindow({
-                parent:ventanaPrincipal,
-                width: 1000,
-                height: 500,
-                webPreferences: {
-                    contextIsolation: false,
-                    nodeIntegration: true
-                }
-            })
-            nuevaVentana.loadURL(url.format({
-                pathname: path.join(__dirname, `emitirComprobante/imprimir.html`),
-                protocol: 'file',
-                slashes: true
-            }));
-            nuevaVentana.on('close', ()=> {
-                nuevaVentana = null
-            })
-            nuevaVentana.setMenuBarVisibility(false)
-        }else if(texto === "imprimir-factura"){
-            nuevaVentana = new BrowserWindow({
-                width: 500,
-                height: 200,
-                webPreferences: {
-                    contextIsolation: false,
-                    nodeIntegration: true
-                }
-            })
-            nuevaVentana.loadURL(url.format({
-                pathname: path.join(__dirname, `emitirComprobante/imprimirTicket.html`),
-                protocol: 'file',
-                slashes: true
-            }));
-            nuevaVentana.on('close', ()=> {
-                nuevaVentana = null
-            })
-            nuevaVentana.setMenuBarVisibility(false);
-        }else if(texto === "imprimir-recibo"){
-            nuevaVentana = new BrowserWindow({
-                parent:ventanaPrincipal,
-                width: 1000,
-                height: 500,
-                webPreferences: {
-                    contextIsolation: false,
-                    nodeIntegration: true
-                }
-            })
-            nuevaVentana.loadURL(url.format({
-                pathname: path.join(__dirname, `emitirRecibo/imprimirRecibo.html`),
-                protocol: 'file',
-                slashes: true
-            }));
-            nuevaVentana.on('close', ()=> {
-                nuevaVentana = null
-            })
-            nuevaVentana.setMenuBarVisibility(false)
-    }else if(texto === "info-movProducto"){
-        nuevaVentana = new BrowserWindow({
-            parent:ventanaPrincipal,
-            width: 1000,
-            height: 500,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.on('close', ()=> {
-            ventanaPrincipal.reload()
-            nuevaVentana = null
-        })
-        nuevaVentana.setMenuBarVisibility(false)
-
-        nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, `movProductos/infoMovProductos.html`),
-            protocol: 'file',
-            slashes: true
-        }));
-
-         nuevaVentana.on('close', function (event) {
-             ventanaPrincipal.reload()
-             nuevaVentana = null
-         })
-    }else if(texto === "modificar-cliente"){
-        nuevaVentana = new BrowserWindow({
-            width: 1100,
-            height: 450,
-            parent:ventanaPrincipal,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, `clientes/modificarCliente.html`),
-            protocol: 'file',
-            slashes: true
-        }));
-        nuevaVentana.on('close', function (event) {
-            nuevaVentana= null
-            ventanaPrincipal.reload();
         })
     }else if(texto === "clientes"){
         nuevaVentana = new BrowserWindow({
@@ -1165,38 +942,6 @@ function abrirVentana(texto,numeroVenta){
             nuevaVentana= null
         })
         nuevaVentana.setMenuBarVisibility(false)
-    }else if(texto === "numeros"){
-        nuevaVentana = new BrowserWindow({
-            parent:ventanaPrincipal,
-            width: 500,
-            height: 1000,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, `${texto}/${texto}.html`),
-            protocol: 'file',
-            slashes: true
-        }));
-        nuevaVentana.setMenuBarVisibility(false)
-    }else if(texto === "abrir-ventana-modificar-producto"){
-        nuevaVentana = new BrowserWindow({
-            parent:ventanaPrincipal,
-            width: 1000,
-            height: 600,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, 'productos/modificarProducto.html'),
-            protocol: 'file',
-            slashes: true
-        }));
-        nuevaVentana.setMenuBarVisibility(false)
     }else if(texto.includes("usuarios")){
         const a = texto.split('?')[1];
         nuevaVentana = new BrowserWindow({
@@ -1220,261 +965,32 @@ function abrirVentana(texto,numeroVenta){
         nuevaVentana.on('ready-to-show',()=>{
             nuevaVentana.webContents.send('acceso',JSON.stringify(a))
         })
-    }else if(texto === "listadoSaldo"){
+    }else{
         nuevaVentana = new BrowserWindow({
             parent:ventanaPrincipal,
-            width: 1000,
-            height: 900,
+            width: width,
+            height: height,
             webPreferences: {
                 contextIsolation: false,
                 nodeIntegration: true
             }
         })
         nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, 'clientes/listadoSaldo.html'),
-            protocol: 'file',
-            slashes: true
-        }));
-        nuevaVentana.setMenuBarVisibility(false)
-        nuevaVentana.on('close',e=>{
-            nuevaVentana = null
-        })
-    }else if(texto === "listadoStock"){
-        nuevaVentana = new BrowserWindow({
-            parent:ventanaPrincipal,
-            width: 1000,
-            height: 900,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, 'productos/listadoStock.html'),
-            protocol: 'file',
-            slashes: true
-        }));
-        nuevaVentana.setMenuBarVisibility(false)
-        nuevaVentana.on('close',e=>{
-            nuevaVentana = null
-        })
-    }else if(texto==="cambioCodigo"){
-        nuevaVentana = new BrowserWindow({
-            width: 400,
-            parent:ventanaPrincipal,
-            height: 300,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, 'productos/cambioCodigo.html'),
-            protocol: 'file',
-            slashes: true
-        }));
-        nuevaVentana.setMenuBarVisibility(false)
-        nuevaVentana.on('close',e=>{
-            nuevaVentana = null
-        })
-    }else if(texto === "porComprobante"){
-        nuevaVentana = new BrowserWindow({
-            parent:ventanaPrincipal,
-            width: 1200,
-            height: 1000,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, 'listados/porComrpobante.html'),
-            protocol: 'file',
-            slashes: true
-        }));
-        nuevaVentana.setMenuBarVisibility(false)
-        nuevaVentana.on('close',e=>{
-            nuevaVentana = null
-        })
-    }else if(texto === "presupuesto"){
-        nuevaVentana = new BrowserWindow({
-            parent:ventanaPrincipal,
-            width: 1200,
-            height: 1000,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, 'listados/presupuestos.html'),
-            protocol: 'file',
-            slashes: true
-        }));
-        nuevaVentana.setMenuBarVisibility(false)
-        nuevaVentana.on('close',e=>{
-            nuevaVentana = null
-        })
-    }else if(texto === "stockNegativo"){
-        nuevaVentana = new BrowserWindow({
-            parent:ventanaPrincipal,
-            width: 1200,
-            height: 1000,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, 'listados/stockNegativo.html'),
-            protocol: 'file',
-            slashes: true
-        }));
-        nuevaVentana.setMenuBarVisibility(false)
-        nuevaVentana.on('close',e=>{
-            nuevaVentana = null
-        })  
-    }else if(texto === "buscarVenta"){
-        nuevaVentana = new BrowserWindow({
-            parent:ventanaPrincipal,
-            width: 1200,
-            height: 1000,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, 'listados/buscarVentas.html'),
-            protocol: 'file',
-            slashes: true
-        }));
-        nuevaVentana.setMenuBarVisibility(false)
-        nuevaVentana.on('close',e=>{
-            nuevaVentana = null
-        }) 
-    }else if(texto === "gerencial"){
-        nuevaVentana = new BrowserWindow({
-            parent:ventanaPrincipal,
-            width: 1200,
-            height: 1000,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, 'utilidad/gerencial.html'),
-            protocol: 'file',
-            slashes: true
-        }));
-        nuevaVentana.setMenuBarVisibility(false)
-        nuevaVentana.on('close',e=>{
-            nuevaVentana = null
-        })
-    }else if(texto === "agregarCliente"){
-        nuevaVentana = new BrowserWindow({
-            parent:ventanaPrincipal,
-            width: 1100,
-            height: 500,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, 'clientes/agregarCliente.html'),
-            protocol: 'file',
-            slashes: true
-        }));
-        nuevaVentana.setMenuBarVisibility(false)
-        nuevaVentana.on('close',e=>{
-            nuevaVentana = null;    
-            ventanaPrincipal.reload()
-        })  
-    }else if(texto === "agregarProducto"){
-        nuevaVentana = new BrowserWindow({
-            parent:ventanaPrincipal,
-            width: 1100,
-            height: 500,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, 'productos/agregarProducto.html'),
+            pathname: path.join(__dirname, `./${texto}`),
             protocol: 'file',
             slashes: true
         }));
         nuevaVentana.setMenuBarVisibility(false)
         nuevaVentana.on('close',e=>{
             nuevaVentana = null;
-            ventanaPrincipal.reload()
-        })  
-    }else if(texto === "emitirComrpobante"){
-        nuevaVentana = new BrowserWindow({
-            parent:ventanaPrincipal,
-            width: 1100,
-            height: 500,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, `emitirComprobante/emitirComprobante.html`),
-            protocol: 'file',
-            slashes: true
-        }));
-        nuevaVentana.setMenuBarVisibility(false)
-        nuevaVentana.on('close',e=>{
-            nuevaVentana = null;
-            ventanaPrincipal.reload()
-        })  
-    }else if(texto === "libroVentas"){
-        nuevaVentana = new BrowserWindow({
-            parent:ventanaPrincipal,
-            width: 1100,
-            height: 500,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, `libroVentas/libroVentas.html`),
-            protocol: 'file',
-            slashes: true
-        }));
-        nuevaVentana.setMenuBarVisibility(false)
-        nuevaVentana.on('close',e=>{
-            nuevaVentana = null;
-            ventanaPrincipal.reload()
-        })  
-    }else if(texto === "AumentoPorPorcentaje"){
 
-        nuevaVentana = new BrowserWindow({
-            parent:ventanaPrincipal,
-            width: 600,
-            height: 200,
-            webPreferences: {
-                contextIsolation: false,
-                nodeIntegration: true
-            }
-        })
-        nuevaVentana.loadURL(url.format({
-            pathname: path.join(__dirname, `./productos/aumPorcentaje.html`),
-            protocol: 'file',
-            slashes: true
-        }));
-        nuevaVentana.setMenuBarVisibility(false)
-        nuevaVentana.on('close',e=>{
-            nuevaVentana = null;
-            ventanaPrincipal.reload()
+            reinicio !== "noReiniciar" && ventanaPrincipal.reload()
         })
     }
 }
+
+
+//Aca hacemos que se descargue un excel Ya sea con los pedidos o con las ventas
 
 async function descargas(nombreFuncion) {
     if(nombreFuncion === "Pedidos"){

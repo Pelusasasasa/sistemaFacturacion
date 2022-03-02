@@ -1,6 +1,9 @@
 const {ipcRenderer,remote} = require('electron');
 const Dialogs = require("dialogs");
-const dialogs = Dialogs()
+const dialogs = Dialogs();
+const axios = require('axios');
+require('dotenv').config
+const URL = process.env.URL;
 
 function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -10,18 +13,13 @@ function getParameterByName(name) {
 }
 
 const acceso = getParameterByName("acceso")
-
-
-
 const buscarCliente = document.querySelector('#buscarCliente')
 const resultado = document.querySelector('#resultado')
 const eliminar = document.querySelector('.eliminar')
 acceso !== "0" && eliminar.classList.add('none') 
+let clientes
 
-
-ipcRenderer.on('get-clientes',(e,args) =>{
-    const clientes = JSON.parse(args);
-    console.log(clientes)
+const ponerClientes = (clientes) =>{
     clientes.sort((a,b)=>{
         if(a.cliente<b.cliente){
             return -1
@@ -50,21 +48,20 @@ ipcRenderer.on('get-clientes',(e,args) =>{
 
     }
 
-})
+}
 
 
 //compramaos si en el input de buscar el texto que escribimos es igual al nombre de algun cliente
-const filtrar = ()=>{
+const filtrar = async ()=>{
     resultado.innerHTML='';
     texto = buscarCliente.value.toLowerCase();
-    ipcRenderer.send('get-clientes',texto);
+    texto = texto === "" ? "a consumidor final" : texto;
+    let clientes = await axios.get(`${URL}clientes/${texto}`);
+    clientes = clientes.data;
+    ponerClientes(clientes)
+    //ipcRenderer.send('get-clientes',texto);
 }
 filtrar()
-
-let seleccionarTBody = document.querySelector('tbody');
-seleccionarTBody.addEventListener('dblclick',  (e) =>{
-        ipcRenderer.send('mando-el-cliente',e.path[1].id);
-})
 
 buscarCliente.addEventListener('keyup',filtrar)
 

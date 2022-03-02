@@ -1,4 +1,7 @@
 const { ipcRenderer } = require("electron")
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
 
 const seleccion = document.querySelectorAll('input[name="seleccionar"]')
 const seleccionar = document.querySelector('.seleccionar')
@@ -47,13 +50,19 @@ seleccionar.addEventListener('click',e=>{
 })
 
 const buscar = document.querySelector('.buscar')
-buscar.addEventListener('click',e=>{
+buscar.addEventListener('click',async e=>{
      if (seleccionado.id==="porNumero") {
          let idVenta
         primerNumero.value === "0000" 
         ? idVenta = (segundoNumero.value).padStart(8,"0")
         : idVenta = (primerNumero.value + "-" + (segundoNumero.value).padStart(8,"0"));
-         ipcRenderer.send('traerVenta',idVenta)
+        let venta = await axios.get(`${URL}ventas/${idVenta}`)
+        venta = venta.data
+        if (venta.length === 0) {
+            venta = await axios.get(`${URL}presupuesto/${idVenta}`);
+            venta = venta.data;
+        }
+        traerVenta(venta);
      }else{
          ipcRenderer.send('get-clientes',(razon.value).toUpperCase())
      }
@@ -64,21 +73,22 @@ let cliente
 ipcRenderer.on('get-clientes',(e,args)=>{
     traerTodasLasVentas(JSON.parse(args))
 })
-ipcRenderer.on('traerVenta',async (e,args)=>{
-    if (JSON.parse(args).length !== 0) {
-        cliente = await buscarCliente(JSON.parse(args)[0].cliente)
+const traerVenta = async(venta)=>{
+    if (venta.length !== 0) {
+        console.log(venta)
+        cliente = await buscarCliente(venta.cliente)
         tbody.innerHTML = ``
-        listarVentas(JSON.parse(args)[0]) 
+        listarVentas(venta[0]) 
     }else{
         alert("No se encontro ninguna Venta")
     }
-
-})
+}
 
 
 function listarVentas(venta) {
         tbody.innerHTML += `<tr class="titulo"><td>${cliente.cliente}</td></tr>`
         let total = 0;
+        console.log(venta.productos)
         venta.productos.forEach(({objeto,cantidad})=>{
             const fecha = mostrarFecha(venta.fecha)
             tbody.innerHTML += `
@@ -107,12 +117,9 @@ function listarVentas(venta) {
 }
 
 const buscarCliente = async (id) =>{
-    let retornar
-    await ipcRenderer.invoke('get-cliente',id).then((a)=>{
-        retornar = JSON.parse(a)
-    })
-    return retornar
-
+    let cliente = await axios.get(`${URL}clientes/id/${id}`)
+    cliente = cliente.data
+    return cliente
 }
 
 const desde = document.querySelector('#desde')
@@ -140,7 +147,7 @@ ipcRenderer.on('traerVentasIdYFechas',(e,args)=>{
     })
     lista.forEach(async venta=>{
         cliente = await buscarCliente(venta.cliente)
-        listarVentas(venta)
+        listarVentas(venta[0])
     })
 })
 

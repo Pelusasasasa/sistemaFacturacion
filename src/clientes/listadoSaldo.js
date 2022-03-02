@@ -1,7 +1,10 @@
-const { ipcRenderer } = require("electron");
+
 const tbody = document.querySelector('.tbody')
 let situacion = "blanco";
 let Clientes = {}
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
 
 document.addEventListener('keydown',(event) =>{
     if (event.key === "Alt") {
@@ -34,12 +37,14 @@ const mostrarNegro = ()=>{
     saldoP.classList.remove('none')
 }
 
-
-ipcRenderer.send('traerSaldo')
-ipcRenderer.on('traerSaldo',(e,args)=>{
-    Clientes = JSON.parse(args)
+const traerSaldo = async()=>{
+    Clientes = await axios.get(`${URL}clientes`)
+    Clientes = Clientes.data;
+    console.log(Clientes)
     mostrarLista(Clientes)
-})
+}
+traerSaldo()
+
 const descargar = document.querySelector('.descargar')
 const tabla = document.querySelector('#tabla')
 
