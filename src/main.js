@@ -423,6 +423,8 @@ ipcMain.on('traerVentasIdYFechas', async(e,args)=>{
     const ventas = args[0]
     const desde = args[1]
     const hasta = DateTime.fromISO(args[2]).endOf('day')
+    console.log(hasta)
+    console.log(desde)
     const lista = await probar(ventas,desde,hasta)
     e.reply('traerVentasIdYFechas',JSON.stringify(lista))
 })
@@ -572,29 +574,11 @@ ipcMain.on('traerDolar',async e=>{
 //FIN NUMEROS
 
 //INICIO USUARIOS
-
-//Traer Todos los usuarios
-ipcMain.on('traerUsuarios', async (e, args) => {
-    let usuarios = await axios.get(`${URL}usuarios`)
-    usuarios = usuarios.data
-    e.reply("traerUsuarios", JSON.stringify(usuarios))
-})
-
-//Agregamos un usuario
-ipcMain.on('agregarUsuario', async (e, args) => {
-    const usuario = await axios.post(`${URL}usuarios`,args)
-})
-
 //traer un usuario
 ipcMain.handle('traerUsuario',async(e,id)=>{
     let usuario = await axios.get(`${URL}usuarios/${id}`)
     usuario = usuario.data
     return JSON.stringify(usuario)
-})
-
-ipcMain.handle('modificarUsuario',async(e,args)=>{
-    const a = await axios.put(`${URL}usuarios/${args._id}`,args)
-    return JSON.stringify(a.data)
 })
 
 //FIN USUARIOS

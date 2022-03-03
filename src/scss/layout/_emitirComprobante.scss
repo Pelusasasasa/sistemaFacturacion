@@ -41,12 +41,6 @@
     #codigo,#precio,#descripcion {
       padding: 1rem;
     }
-    // #codigo,#precio{
-    //   width: 40%;
-    // }
-    // #descripcion{
-    //   width: 150%;
-    // }
     #codigoC{
       width: 5rem;
     }
@@ -155,6 +149,10 @@
          text-align: end;
         }
       }
+    }
+
+    .enNegro{
+      color: black;
     }
   }
 

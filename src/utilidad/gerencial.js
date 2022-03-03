@@ -1,4 +1,8 @@
 const { ipcRenderer } = require("electron/renderer");
+const axios = require("axios");
+const { DateTime } = require("luxon");
+require("dotenv").config;
+const URL = process.env.URL;
 
 const hasta = document.querySelector('#hasta')
 const desde = document.querySelector('#desde')
@@ -25,22 +29,18 @@ desde.value = fechaDeHoy
 hasta.value = fechaDeHoy
 
 
-buscar.addEventListener('click',e=>{
-    ipcRenderer.send('traerVentasCanceladas',[desde.value,hasta.value])
-})
-
-ipcRenderer.on('traerVentasCanceladas',(e,args)=>{
-    const ventas = JSON.parse(args)
-    tbody.innerHTML = ""
-    console.log(ventas)
-    ventas.forEach((venta)=>{
+buscar.addEventListener('click',async e=>{
+    const desdeFecha = new Date(desde.value);
+    let hastaFecha = DateTime.fromISO(hasta.value).endOf('day');
+    let ventasCanceladas = await axios.get(`${URL}cancelados/${desdeFecha}/${hastaFecha}`);
+    ventasCanceladas = ventasCanceladas.data;
+    tbody.innerHTML = "";
+    ventasCanceladas.forEach((venta)=>{
         listarVentasCanceladas(venta)
     })
-
 })
 
 const listarVentasCanceladas = async (venta)=>{
-    let cliente
     let vendedor = venta.vendedor
     let fecha = new Date(venta.fecha)
     let dia = fecha.getDate()
@@ -51,15 +51,15 @@ const listarVentasCanceladas = async (venta)=>{
     let segundos = fecha.getSeconds()
     dia = dia < 10 ? `0${dia}` : dia ;
     mes = mes < 10 ? `0${mes}` : mes ;
-    await ipcRenderer.invoke('get-cliente',venta.cliente).
-        then((clienteTraido)=>{
-            cliente = JSON.parse(clienteTraido).cliente})
+    let cliente = await axios.get(`${URL}clientes/id/${venta.cliente}`)
+    cliente = cliente.data;
+
            
         venta.productos.forEach(({cantidad,objeto}) => {
         tbody.innerHTML += `
             <tr>
                 <td>${dia}/${mes}/${anio}</td>
-                <td class = "cliente">${cliente}</td>
+                <td class = "cliente">${cliente.cliente}</td>
                 <td>${objeto._id}</td>
                 <td>${objeto.descripcion}</td>
                 <td>${cantidad}</td>

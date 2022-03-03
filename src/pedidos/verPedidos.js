@@ -1,18 +1,17 @@
 const { ipcRenderer } = require("electron")
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
-
 const tbody = document.querySelector("tbody")
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
 
 
-
-let pedidos = []
+let arreglo
 //Mandamos a llamar a pedidos
-ipcRenderer.send('traerpedidos')
-//recibimos los pedidos
-ipcRenderer.on('traerPedidos',(e,args)=>{
-    pedidos = JSON.parse(args)
-
+const traerPedidos = async()=>{
+    let pedidos = await axios.get(`${URL}pedidos`)
+    pedidos = pedidos.data;
     for(let [index,pedido] of pedidos.entries()){
         let fecha = new Date(pedido.fecha)
         const stock =(pedido.stock !== undefined) ? pedido.stock : 0; 
@@ -30,8 +29,11 @@ ipcRenderer.on('traerPedidos',(e,args)=>{
         </tr>
         `
     }
+    arreglo = await pedidos
+}
+traerPedidos()
 
-})
+
 
 let id
 let seleccionado
@@ -44,7 +46,7 @@ tbody.addEventListener("click" , e =>{
     const identificador = id.id
     let pedidoIdentificado = {}
 
-    for(let pedido of pedidos){
+    for(let pedido of arreglo){
         (pedido._id === identificador) && (pedidoIdentificado=pedido)
     }
     const tds = id.querySelector('.estado')
@@ -54,7 +56,6 @@ tbody.addEventListener("click" , e =>{
     estado.focus()
 
     //hacemos que se seleccione todo el input
-    console.log(estado)
     selecciona_value(estado.id)
 
     //se ejecuta cuando escribimos en el input
@@ -67,20 +68,24 @@ tbody.addEventListener("click" , e =>{
 
 //apretamos el boton y mandamos los cambios
 const guardar = document.querySelector('.guardar')
-guardar.addEventListener('click', e=>{
-    ipcRenderer.send('modificar-pedidos',pedidos)
+guardar.addEventListener('click', async e=>{
+    for (let pedido of arreglo) {
+        pedido.estadoPedido = document.getElementById(pedido._id).children[8].children[0].value;
+        await axios.put(`${URL}pedidos/${pedido._id}`,pedido)
+    }
     location.reload()
 })
 
 //Eliminar un pedido
 const eliminarPedido = document.querySelector('.eliminarPedido')
-eliminarPedido.addEventListener("click", e =>{
+eliminarPedido.addEventListener("click", async e =>{
         if (id) {
-            ipcRenderer.send("eliminarPedido",id.id)
+            await axios.delete(`${URL}pedidos/${id.id}`);
             location.reload()
         }else{
             dialogs.alert('Pedido no seleccionado')
         }
+
 
 })
 

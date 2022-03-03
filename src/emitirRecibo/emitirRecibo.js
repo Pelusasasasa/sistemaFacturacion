@@ -269,7 +269,7 @@ const hacerRecibo = async()=>{
     recibo.abonado = saldoAfavor.value
     const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2));
 
-    ipcRenderer.send('modificamosLasVentas',nuevaLista);
+    //ipcRenderer.send('modificamosLasVentas',nuevaLista);
     
     //Tomamos el cliente y agregamos a su lista Ventas la venta y tambien modificamos su saldo
     const _id = recibo.cliente;
@@ -281,8 +281,8 @@ const hacerRecibo = async()=>{
     let listaVentas = clienteTraido.listaVentas;
     listaVentas[0] === "" ? (listaVentas[0] = recibo.nro_comp) : (listaVentas.push(recibo.nro_comp));
     clienteTraido.listaVentas = listaVentas;
-    await axios.put(`${URL}clientes/${_id}`,clienteTraido);
-    await axios.post(`${URL}ventas`,recibo);
+    // await axios.put(`${URL}clientes/${_id}`,clienteTraido);
+    // await axios.post(`${URL}ventas`,recibo);
 
     const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
     const impresora = recibo.tipo_comp === "Recibos" ? "SAM4S GIANT-100" : undefined;
@@ -395,7 +395,7 @@ cancelar.addEventListener('click',e=>{
 });
 
 const subirAAfip = async(venta)=>{
-
+    console.log(await afip.ElectronicBilling.getAliquotTypes())
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
     (ultimoElectronica === 0) && (ultimoElectronica=1); 
@@ -407,28 +407,29 @@ const subirAAfip = async(venta)=>{
         'CantReg': 1,
         'CbteTipo': venta.cod_comp,
         'Concepto': 1,
-        'DocTipo': venta.cod_doc,
+        'DocTipo': 20,
         'DocNro': venta.dnicuit,
         'CbteDesde': 1,
         'CbteHasta': ultimoElectronica+1,
         'CbteFch': parseInt(fecha.replace(/-/g, '')),
-        'ImpTotal': venta.precioFinal,
+        'ImpTotal': parseFloat(venta.precioFinal),
         'ImpTotConc': 0,
-        'ImpNeto': (parseFloat(venta.precioFinal) - parseFloat(venta.precioFinal)*21/100).toFixed(2),
+        'ImpNeto': parseFloat((parseFloat(venta.precioFinal)/1.21).toFixed(2)),
         'ImpOpEx': 0,
-        'ImpIVA':(parseFloat(venta.precioFinal)*21/100).toFixed(2),
+        'ImpIVA':parseFloat((parseFloat(venta.precioFinal) - parseFloat(venta.precioFinal)/1.21).toFixed(2)),
         'ImpTrib': 0,
         'MonId': 'PES',
         'PtoVta': 5,
         'MonCotiz' 	: 1,
-        "Iva":[
+        "Iva":[],
+        }
+        data.Iva.push(
             {
                 "Id": 5,
-                "BaseImp": (parseFloat(venta.precioFinal) - parseFloat(venta.precioFinal)*21/100).toFixed(2),
-                "Importe": (parseFloat(venta.precioFinal)*21/100).toFixed(2)
+                "BaseImp": parseFloat((parseFloat(venta.precioFinal)/1.21).toFixed(2)),
+                "Importe": parseFloat((parseFloat(venta.precioFinal) - parseFloat(venta.precioFinal)/1.21).toFixed(2))
             }
-        ]
-        }
+        )
         console.log(data)
         const res = await afip.ElectronicBilling.createNextVoucher(data); //creamos la factura electronica
 

@@ -1,14 +1,17 @@
 const { ipcRenderer } = require("electron")
 const tipoConexion = require('./config.js')
-
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
 const Dialogs = require("dialogs");
 const Driver = require("driver.js");
 const dialogs = Dialogs()
 let vendedores = []
-ipcRenderer.send('traerUsuarios')
-ipcRenderer.on('traerUsuarios',(e,args)=>{
-    vendedores = JSON.parse(args)
-})
+const traerVendedores = async()=>{
+    vendedores = await axios.get(`${URL}usuarios`);
+    vendedores=vendedores.data;
+};
+traerVendedores();
 
 const listaPedidos = document.querySelector('.listaPedidos')
 const body = document.querySelector('body')

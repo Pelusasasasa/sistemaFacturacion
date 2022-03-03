@@ -1,4 +1,8 @@
 const { ipcRenderer } = require("electron");
+const axios = require("axios");
+const { DateTime } = require("luxon");
+require("dotenv").config;
+const URL = process.env.URL;
 
 const fecha = new Date()
 let dia = fecha.getDate()
@@ -34,18 +38,24 @@ hasta.value = fechaHoy;
 let listaTicketFactura = []
 let listaNotaCredito = []
 
-buscar.addEventListener('click',e=>{
-    ipcRenderer.send('traerVentasEntreFechas',[desde.value,hasta.value])
+buscar.addEventListener('click',async e=>{
+
+    const desdeFecha = new Date(desde.value)
+    let hastaFecha = DateTime.fromISO(hasta.value).endOf('day')
+    let ventas = await axios.get(`${URL}ventas/${desdeFecha}/${hastaFecha}`)
+    ventas = ventas.data
+    let presupuesto = await axios.get(`${URL}presupuesto/${desdeFecha}/${hastaFecha}`)
+    presupuesto = presupuesto.data;
+    ventasTraidas([...ventas,...presupuesto]);
 })
 
-ipcRenderer.on('traerVentasEntreFechas',(e,args)=>{
-    let ventas = JSON.parse(args)
+const ventasTraidas = (ventas)=>{
     ventas = ventas.filter(venta => venta.tipo_comp !== "Presupuesto" || venta.tipo_comp !== "Recibos" || venta.tipo_comp !== "Recibos_P");
     listaTicketFactura = ventas.filter(venta=>venta.tipo_comp === "Ticket Factura");
     listaNotaCredito = ventas.filter(venta=>venta.tipo_comp !== "Ticket Factura");
     (listaNotaCredito.length > 0) && listar(listaNotaCredito);
     listar(listaTicketFactura);
-})
+}
 
 const listar = (ventas)=>{
     let cliente;
@@ -67,11 +77,10 @@ const listar = (ventas)=>{
 
         let year = fecha.getFullYear();
         const [gravado21,iva21,gravado105,iva105] = sacarIvas(venta.productos)
-       
-        await ipcRenderer.invoke('get-cliente',venta.cliente).then((args)=>{
-            cliente = JSON.parse(args);
-            cond_iva = (cliente.cond_iva) ? (cliente.cond_iva) : "Consumidor Final";
-        })
+        
+        let cliente = await axios.get(`${URL}clientes/id/${venta.cliente}`)
+        cliente = cliente.data
+        cond_iva = (cliente.cond_iva) ? (cliente.cond_iva) : "Consumidor Final";
 
         if (diaVentaAnterior === day) {
             totalgravado21 += await gravado21

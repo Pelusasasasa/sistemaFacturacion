@@ -1,4 +1,8 @@
-const { ipcRenderer, ipcMain } = require("electron");
+const { ipcRenderer } = require("electron");
+const axios = require("axios");
+const { DateTime } = require("luxon");
+require("dotenv").config;
+const URL = process.env.URL;
 
 const nombre = document.querySelector('.nombre')
 const direccion = document.querySelector('.direccion')
@@ -85,11 +89,14 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
     nombre.innerHTML = cliente.cliente
     direccion.innerHTML = `${cliente.direccion}-${cliente.localidad}`;
     telefono.innerHTML = cliente.telefono;
-    await ipcRenderer.invoke('traerVentasClienteEntreFechas',[cliente._id,desde.value,hasta.value]).then((args)=>{
-        nuevaLista = []
-        listaVentas = JSON.parse(args)
-    })
-
+    const desdeFecha = new Date(desde.value)
+    const hastaFecha = DateTime.fromISO(hasta.value).endOf('day')
+    let ventas = await axios.get(`${URL}ventas/cliente/${cliente._id}/${desdeFecha}/${hastaFecha}`)
+    ventas = ventas.data;
+    let presupuestos = await axios.get(`${URL}presupuesto/cliente/${cliente._id}/${desdeFecha}/${hastaFecha}`);
+    presupuestos = presupuestos.data;
+    nuevaLista = [];
+    listaVentas = [...ventas,...presupuestos];
     listarVentas(listaVentas,situacion)
 })
 
@@ -111,9 +118,10 @@ function listarVentas(ventas,situacion) {
             return venta
         }
     })
+    console.log(ventas)
     tbody.innerHTML = ""
     const aux = (situacion === "blanco") ? "Ticket Factura" : "Presupuesto";
-    let listaAux = ventas
+    let listaAux = ventas;
     if (aux === "Presupuesto") {
        listaAux = listaAux.filter(e=>{
             return (e.tipo_comp === aux || e.tipo_comp === "Recibos_P")
@@ -124,7 +132,7 @@ function listarVentas(ventas,situacion) {
         })
     }
     let saldoAnterior = 0
-
+    console.log(listaAux)
     listaAux.forEach(venta =>{
         if (situacion === "negro") {
             saldoAnterior += (venta.tipo_comp === "Presupuesto") ? venta.precioFinal: 0

@@ -6,7 +6,10 @@ const cambiar = document.querySelector('.cambiarBoton')
 const impirmir = document.querySelector('.imprimirBoton')
 const Dialogs = require("dialogs");
 const { dialog } = require("electron/main");
-const dialogs = Dialogs()
+const dialogs = Dialogs();
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
 let seleccionado
 
 
@@ -18,13 +21,9 @@ body.addEventListener('keydown',e=>{
     }
 })
 
-const promesaStockNegativo = new Promise((resolve,reject)=>{
-    ipcRenderer.on('stockNegativo',(e,args)=>{
-        resolve(JSON.parse(args))
-    })
-})
-
-promesaStockNegativo.then((productos)=>{
+const promesaStockNegativo = async()=>{
+    let productos = await axios(`${URL}productos/stockNegativo`)
+    productos = productos.data
     productos.sort((a,b)=>{
         if (a.descripcion > b.descripcion) {
             return 1
@@ -35,11 +34,12 @@ promesaStockNegativo.then((productos)=>{
         return 0
     })
     listarProductos(productos)
-})
+}
+promesaStockNegativo()
+
 
 
 function listarProductos(lista) {
-    console.log(lista)
     lista.forEach(producto => {
         tbody.innerHTML += `
             <tr id="${producto._id}">
@@ -50,7 +50,6 @@ function listarProductos(lista) {
             </tr>
         `
         inputseleccionado(tbody.firstElementChild)
-
     });
 }
 
@@ -68,8 +67,11 @@ tbody.addEventListener('click',e=>{
 })
 
 cambiar.addEventListener('click',e=>{
-    dialogs.prompt("Nuevo Stock",valor=>{
-        ipcRenderer.send('cambiarStock',[seleccionado.id,valor])
+    dialogs.prompt("Nuevo Stock",async valor=>{
+        let producto = await axios.get(`${URL}productos/${seleccionado.id}`)
+        producto = producto.data;
+        producto.stock = valor;
+        await axios.put(`${URL}productos/${seleccionado.id}`,producto)
         location.reload()
     })
 })

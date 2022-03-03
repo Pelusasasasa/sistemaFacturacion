@@ -1,5 +1,8 @@
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
 
 function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -8,7 +11,6 @@ function getParameterByName(name) {
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
-
 const { ipcRenderer } = require("electron");
 const vendedor = getParameterByName('vendedor')
 const nombre = document.querySelector("#nombre");
@@ -16,23 +18,7 @@ const numero = document.querySelector("#telefono");
 const codigo = document.querySelector("#codigo");
 const cantidad = document.querySelector('#cantidad');
 const descripcion = document.querySelector('#descripcion')
-const Pedido = {}
-
-codigo.addEventListener('keydown',e=>{
-    if(e.key === "Enter" || e.key === "Tab"){  
-        ipcRenderer.send('get-producto',e.target.value)
-    }else if((codigo.value.length === 3 || codigo.value.length === 7) && e.key !== "-" && e.key !== "Backspace"){
-        codigo.value = codigo.value + "-"
-    }
-
-})
-
-//asignamos a cliente un nombre
-let cliente = nombre.value
-nombre.addEventListener('change',e =>{
-    cliente = nombre.value
-    Pedido.cliente = cliente
-})
+const tbody = document.querySelector('#tbody');
 
 //al precionar enter le damos el foco a numero
 nombre.addEventListener('keypress',e=>{
@@ -48,26 +34,20 @@ numero.addEventListener('keypress',e=>{
     }
 })
 
-//asignamos a telefono un numero
-let telefono = numero.value
-numero.addEventListener('change',e =>{
-    telefono = numero.value
-    Pedido.telefono = telefono
-})
-
-codigo.addEventListener('keypress', (e) => {
+codigo.addEventListener('keypress', async (e) => {
     if (e.key === 'Enter') {
         if (codigo.value === "") {
             ipcRenderer.send('abrir-ventana',"productos")
         }else if(codigo.value === "999-999"){
             cantidad.classList.remove('none')
             descripcion.classList.remove('none')
+            descripcion.focus();
         }else{
-            ipcRenderer.send('get-producto',codigo.value)
-            ipcRenderer.once('get-producto',(e,args)=>{
-                if (JSON.parse(args) !== "") {
+            let producto = await axios.get(`${URL}productos/${codigo.value}`)
+            producto = producto.data;
+                if (producto !== "") {
                     dialogs.prompt('Cantidad',async valor=>{
-                        await mostrarVentas(JSON.parse(args),valor)
+                        await mostrarVentas(producto,valor)
                         codigo.value="";
                         codigo.focus()
                     })
@@ -75,9 +55,15 @@ codigo.addEventListener('keypress', (e) => {
                     alert("El producto no existe")
                     codigo.value = ""
                 }
-            })
         }
+    }else if((codigo.value.length === 3 || codigo.value.length === 7) && e.key !== "-" && e.key !== "Backspace"){
+        codigo.value = codigo.value + "-"
+    }
+})
 
+descripcion.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        cantidad.focus();
     }
 })
 
@@ -86,8 +72,15 @@ cantidad.addEventListener('keypress',e=>{
         const producto = {
             _id: "999-999",
             descripcion:descripcion.value,
+            stock:"0"
         }
         mostrarVentas(producto,cantidad.value)
+        cantidad.classList.add('none')
+        cantidad.value = "";
+        descripcion.value = "";
+        descripcion.classList.add('none');
+        codigo.value = "";
+        codigo.focus();
     }
     
 })
@@ -98,30 +91,34 @@ ipcRenderer.on('mando-el-producto',(e,args) => {
 })
 
 function mostrarVentas(objeto,cantidad) {
-    resultado.innerHTML += `
+    tbody.innerHTML += `
         <tr>
         <td>${objeto._id}</td>
         <td>${cantidad}</td>
         <td>${objeto.descripcion}</td>
-        <td>${cliente}</td>
-        <td>${telefono}</td>
+        <td>${nombre.value}</td>
+        <td>${numero.value}</td>
+        <td>${objeto.stock}</td>
         </tr>
     `
-
-    Pedido.codigo = objeto._id
-    Pedido.cantidad = cantidad
-    Pedido.stock = objeto.stock
-    Pedido.producto = objeto.descripcion
-
-
-
 }
-const body = document.querySelector('form')
+
 const grabar = document.querySelector(".grabar");
-grabar.addEventListener('click', e =>{
+grabar.addEventListener('click', async e =>{
     //Mandar Pedido a La Base de Datos
-    Pedido.vendedor = vendedor
-    ipcRenderer.send('Pedido',Pedido)
+    const trs = document.querySelectorAll('#tbody tr');
+    trs.forEach(async td=>{
+        const Pedido = {};
+        Pedido.fecha = new Date();
+        Pedido.codigo = td.children[0].innerHTML;
+        Pedido.cantidad = td.children[1].innerHTML; 
+        Pedido.producto = td.children[2].innerHTML; 
+        Pedido.cliente = td.children[3].innerHTML;
+        Pedido.value = td.children[4].innerHTML;
+        Pedido.stock = td.children[5].innerHTML;
+        Pedido.vendedor = vendedor; 
+        await axios.post(`${URL}pedidos`,Pedido)
+    })
     window.location.href = '../index.html'
 })
 

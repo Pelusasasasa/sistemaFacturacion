@@ -1,5 +1,6 @@
-const { ipcRenderer } = require("electron")
+
 const axios = require("axios");
+const { DateTime } = require("luxon");
 require("dotenv").config;
 const URL = process.env.URL;
 
@@ -64,18 +65,16 @@ buscar.addEventListener('click',async e=>{
         }
         traerVenta(venta);
      }else{
-         ipcRenderer.send('get-clientes',(razon.value).toUpperCase())
+        let texto = razon.value === "" ? "A Consumidor Final" : razon.value;
+        let clientes = await axios.get(`${URL}clientes/${texto}`);
+        clientes = clientes.data;
+        traerTodasLasVentas(clientes)
      }
 })
 
 let cliente
-
-ipcRenderer.on('get-clientes',(e,args)=>{
-    traerTodasLasVentas(JSON.parse(args))
-})
 const traerVenta = async(venta)=>{
     if (venta.length !== 0) {
-        console.log(venta)
         cliente = await buscarCliente(venta.cliente)
         tbody.innerHTML = ``
         listarVentas(venta[0]) 
@@ -88,7 +87,7 @@ const traerVenta = async(venta)=>{
 function listarVentas(venta) {
         tbody.innerHTML += `<tr class="titulo"><td>${cliente.cliente}</td></tr>`
         let total = 0;
-        console.log(venta.productos)
+        console.log(venta)
         venta.productos.forEach(({objeto,cantidad})=>{
             const fecha = mostrarFecha(venta.fecha)
             tbody.innerHTML += `
@@ -125,31 +124,41 @@ const buscarCliente = async (id) =>{
 const desde = document.querySelector('#desde')
 const hasta = document.querySelector('#hasta')
 let ventas = []
-function traerTodasLasVentas(lista) {
+async function traerTodasLasVentas(lista) {
     ventas = []
     lista.forEach(cliente=>{
         ventas = ventas.concat(cliente.listaVentas)
     })
-    ipcRenderer.send('traerVentasIdYFechas',[ventas,desde.value,hasta.value])
-}
+    let retornar = [];
+    const desdeFecha = desde.value
+    const hastaFecha = DateTime.fromISO(hasta.value).endOf('day')
+    for await (const Venta of ventas){
+        let ventaARetornar = await axios.get(`${URL}ventas/${Venta}/${desdeFecha}/${hastaFecha}`)
+        ventaARetornar = ventaARetornar.data;
+        if (ventaARetornar.length === 0) {
+            ventaARetornar = await axios.get(`${URL}presupuesto/${Venta}/${desdeFecha}/${hastaFecha}`);
+            ventaARetornar = ventaARetornar.data
 
-ipcRenderer.on('traerVentasIdYFechas',(e,args)=>{
-    let lista = JSON.parse(args)
-    console.log(lista)
+        }
+        if(ventaARetornar[0] !== undefined){
+            retornar.push(ventaARetornar[0])
+    }
+    }
     tbody.innerHTML = ``;
-    if(lista.length === 0){
+    if(retornar.length === 0){
         alert("No hay ventas, fijarse nombre y fechas")
     }
-    lista = lista.filter(venta=>{
+    retornar = retornar.filter(venta=>{
         if(venta.tipo_comp !== "Recibos" && venta.tipo_comp !== "Recibos_P"){
             return venta
         }
     })
-    lista.forEach(async venta=>{
+
+    retornar.forEach(async venta=>{
         cliente = await buscarCliente(venta.cliente)
-        listarVentas(venta[0])
-    })
-})
+        listarVentas(venta)
+    })  
+}
 
 const mostrarFecha = (string) =>{
     const ponerFecha = new Date(string)

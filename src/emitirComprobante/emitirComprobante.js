@@ -77,6 +77,8 @@ function mostrarNegro() {
     const bodyNegro = document.querySelector('.emitirComprobante')
     const saldoNegro = document.querySelector(".saldoNegro")
     const saldo = document.querySelector(".saldo")
+    const table = document.querySelector('.table');
+    table.classList.add('enNegro')
     const ventaNegro = document.querySelector(".ventaNegro")
     const ticketFactura = document.querySelector('.ticketFactura')
     const parteNegra = document.querySelector('.parteNegra')
@@ -679,7 +681,7 @@ ticketFactura.addEventListener('click',async (e) =>{
         alert("Ningun producto cargado")
     }else{
       venta.productos = listaProductos;
-      const [gravado21,gravado105,iva21,iva105,cant_iva] = gravadoMasIva(venta.productos);
+      const [iva21,iva105,gravado21,gravado105,cant_iva] = gravadoMasIva(venta.productos);
       console.log(gravado21,gravado105,iva21,iva105,cant_iva)
      tipoVenta = "Ticket Factura";
      verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
@@ -721,7 +723,7 @@ ticketFactura.addEventListener('click',async (e) =>{
             await movimientoProducto(producto.cantidad,producto.objeto)
         };
         actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-        // const afip = await subirAAfip(venta)
+        const afip = await subirAAfip(venta)
 
         await ipcRenderer.send('nueva-venta',venta);
         ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100",afip]);
@@ -747,8 +749,7 @@ ticketFactura.addEventListener('click',async (e) =>{
     let gravado105 = 0 
     ventas.forEach(({objeto,cantidad}) =>{
         if (objeto.iva === "N") {
-            gravado21 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)/1.21)
-            console.log(parseFloat(cantidad)*(parseFloat(objeto.precio_venta)/1.21))    
+            gravado21 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)/1.21) 
             totalIva21 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.21)
         }else{
             gravado105 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta/1.105))
@@ -1042,9 +1043,9 @@ const subirAAfip = async(venta)=>{
         'CbteFch': parseInt(fecha.replace(/-/g, '')),
         'ImpTotal': venta.precioFinal,
         'ImpTotConc': 0,
-        'ImpNeto': (venta.gravado21+venta.gravado105).toFixed(2),
+        'ImpNeto': parseFloat((venta.gravado21+venta.gravado105).toFixed(2)),
         'ImpOpEx': 0,
-        'ImpIVA': (venta.iva21+venta.iva105).toFixed(2), //Importe total de IVA
+        'ImpIVA': parseFloat((venta.iva21+venta.iva105).toFixed(2)), //Importe total de IVA
         'ImpTrib': 0,
         'MonId': 'PES',
         'PtoVta': 5,
