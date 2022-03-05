@@ -2,7 +2,6 @@ const { ipcRenderer } = require("electron");
 
 const conector = new ConectorPlugin();
 ipcRenderer.on('imprimir',(e,args)=>{
-    console.log("first")
     const [Venta,Cliente,,,,,valoresQR] = JSON.parse(args)
     ponerValores(Cliente,Venta,valoresQR)
 })

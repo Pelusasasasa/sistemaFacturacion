@@ -7,12 +7,19 @@ function getParameterByName(name) {
     results = regex.exec(location.search);
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
+const { ipcRenderer } = require("electron");
+const axios = require("axios");
+const { DateTime } = require("luxon");
+require("dotenv").config;
+const URL = process.env.URL;
 
 const Dialogs = require("dialogs");
-const dialogs = Dialogs()
+const dialogs = Dialogs();
+
+//Es lo que viene en la URL
 let vendedor = getParameterByName('vendedor')
 let empresa = getParameterByName('empresa')
-const { ipcRenderer, Main } = require("electron");
+
 const usuario = document.querySelector(".usuario")
 const textoUsuario = document.createElement("P")
 textoUsuario.innerHTML = vendedor
@@ -138,19 +145,18 @@ let Preciofinal = 0
 venta.vendedor = vendedor
 
 //abrimos una ventana para buscar el cliente
-codigoC.addEventListener('keypress', (e) =>{
+codigoC.addEventListener('keypress', async(e) =>{
     if (e.key === 'Enter'  ) {
         if ( codigoC.value!=="") {
-            ipcRenderer.invoke('get-cliente',(codigoC.value).toUpperCase()).then((args)=>{
-                cliente = JSON.parse(args)
+            let cliente = await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`);
+            cliente = cliente.data;
                 if (cliente === "") {
                     alert("Cliente no encontrado")
                     codigoC.value = ""
                 }else{
-                    ponerInputsClientes(JSON.parse(args))
+                    ponerInputsClientes(cliente)
                     codigoC.value === "9999" ? buscarCliente.focus() : observaciones.focus()
                 }
-            })
         }else{
             ipcRenderer.send('abrir-ventana',"clientes")
         }
@@ -176,7 +182,7 @@ observaciones.addEventListener('keypress',e=>{
 
 
 //Cuando buscamos un producto
-codigo.addEventListener('keypress',(e) => {
+codigo.addEventListener('keypress',async (e) => {
 
     if((codigo.value.length===3 || codigo.value.length===7) && e.key != "Backspace" && e.key !== "-" && e.key !== "Enter"){
         codigo.value = codigo.value + "-"
@@ -236,13 +242,12 @@ codigo.addEventListener('keypress',(e) => {
                     }
                 })
             }else{
-
-            ipcRenderer.send('get-producto',e.target.value)
-            ipcRenderer.once('get-producto',(a,args)=>{
-                if (JSON.parse(args).length === 0) {
-                        alert("No existe ese Producto")
+            let producto = await axios.get(`${URL}productos/${e.target.value}`);
+            producto = producto.data;
+                if (producto.length === 0) {
+                        alert("No existe ese Producto");
                         codigo.value = "";
-                        codigo.focus()
+                        codigo.focus();
                 }else{
                     dialogs.prompt("Cantidad",async valor=>{
                         if (valor === undefined || valor === "" || parseFloat(valor) === 0) {
@@ -253,22 +258,13 @@ codigo.addEventListener('keypress',(e) => {
                                 await alert("La cantidad de este producto no puede ser en decimal")
                                 codigo.focus()
                             }else{
-                                await mostrarVentas(JSON.parse(args),valor)
-                                e.target.value=""
-                                codigo.focus()
-                                }
-                        }
-
-                        })   
-                }
-            })
-        }
+                                await mostrarVentas(producto,valor);
+                                e.target.value="";
+                                codigo.focus();
+                            }}})}}
         }else{
             ipcRenderer.send('abrir-ventana',"productos")
-        }
-        
-    }
-})
+        }}})
 
 ipcRenderer.on('mando-el-producto',(e,args) => {
     const {producto,cantidad} = JSON.parse(args);
@@ -359,7 +355,6 @@ const inputseleccionado = (e) =>{
 
 //INICIO PARTE DE DESCUENTO
 
-
 //aplicamos el descuento
 const descuento = document.querySelector('#descuento')
 const descuentoN = document.querySelector('#descuentoN')
@@ -401,7 +396,7 @@ function inputCobrado(numero) {
 
 
 //Vemos el numero para saber de la ultima factura a o b
-let texto =""
+let texto = "";
 
 //Vemos si la venta es cc, contando, presupuesto
 let tipoPago = "Ninguno"
@@ -552,23 +547,20 @@ function redondear(numero) {
 
  async function traerNumeroDeFactura(texto,mostrar) {
     let retornar;
-     await ipcRenderer.invoke('traerNumeros',texto).then((args)=>{
-        mostrar && (mostrar.value = JSON.parse(args))
-        retornar = JSON.parse(args)
-    })
-    return retornar
+    let numeros = await axios.get(`${URL}tipoVenta`);
+    numeros=numeros.data;
+    mostrar && (mostrar.value = numeros[texto])
+    return numeros[texto]
 }
 
 
 const tamanioVentas = async(tipoVenta)=>{//tipoVenta = Presupuesto o Ticket Factura
-    let retornar
-    await ipcRenderer.invoke('tamanioVentas',tipoVenta).then(async(args)=>{
-        retornar = await JSON.parse(args)
-    })
-    return retornar
+    tipoVenta === "presupuesto" ? tamanio = await axios.get(`${URL}presupuesto`)  : tamanio = await axios.get(`${URL}ventas`)
+    tamanio = tamanio.data + 1;
+    return tamanio
 }
 
-function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
+async function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
     let numero
     let tipoFactura
     let [n1,n2] = comprobante.split('-')
@@ -589,7 +581,11 @@ function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
         numero = numero.toString().padStart(8,0)
         tipoFactura = verQueVentaEs("Ticket Factura",codigoComp)
     }
-    ipcRenderer.send('modificar-numeros',[numero,tipoFactura])
+    let numeros = await axios.get(`${URL}tipoVenta`)
+    numeros = numeros.data;
+    numeros[tipoFactura] = numero;
+    await axios.put(`${URL}tipoventa`,numeros)
+    // ipcRenderer.send('modificar-numeros',[numero,tipoFactura])
 }
 
 //ponemos el atributo pagado
@@ -602,12 +598,20 @@ function verSiPagoONo(texto) {
  }
 
 //pasamos el saldo en negro
-function sumarSaldoAlClienteEnNegro(precio,codigo){
-    ipcRenderer.send('sumarSaldoNegro',[precio,codigo])
+async function sumarSaldoAlClienteEnNegro(precio,codigo){
+    let cliente = await axios.get(`${URL}clientes/id/${codigo}`)
+    cliente = cliente.data;
+    let saldo_p = (parseFloat(precio) + parseFloat(cliente.saldo_p)).toFixed(2);
+    cliente.saldo_p = saldo_p;
+    await axios.put(`${URL}clientes/${codigo}`,cliente);
 }
 
-function sumarSaldoAlCliente(precio,codigo) {
-    ipcRenderer.send('sumarSaldo',[precio,codigo])
+async function sumarSaldoAlCliente(precio,codigo) {
+    let cliente = await axios.get(`${URL}clientes/id/${codigo}`)
+    cliente = cliente.data;
+    let saldo = (parseFloat(precio)+parseFloat(cliente.saldo)).toFixed(2)
+    cliente.saldo = saldo;
+    await axios.put(`${URL}clientes/${codigo}`,cliente)
 }
 const sacarIdentificadorTabla = (arreglo)=>{
     arreglo.forEach(producto=>{
@@ -722,11 +726,12 @@ ticketFactura.addEventListener('click',async (e) =>{
             sacarStock(producto.cantidad,producto.objeto)
             await movimientoProducto(producto.cantidad,producto.objeto)
         };
-        actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+        actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp);
         const afip = await subirAAfip(venta)
-
+        console.log(venta)
         await ipcRenderer.send('nueva-venta',venta);
-        ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100",afip]);
+        //await imprimirVenta([venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100",afip]);
+        // ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100",afip]);
 
         if (borraNegro) {
             ipcRenderer.on('clienteModificado',async(e,args)=>{
@@ -734,7 +739,7 @@ ticketFactura.addEventListener('click',async (e) =>{
             })
 
         };
-        !borraNegro && (window.location = '../index.html');
+        //!borraNegro && (window.location = '../index.html');
 
         }
     }
@@ -937,6 +942,7 @@ const borrarCuentaCorriente = async (numero)=>{
 const {DBFFile} = require ('dbffile');
 const { exit } = require('process');
 
+
 const imprimirTikectFactura = async(venta,cliente)=>{
 
     const tipo_doc = (venta.cod_doc === 96) ? 67 : 50;
@@ -1086,6 +1092,7 @@ const subirAAfip = async(venta)=>{
         }
         const textoQR = btoa(unescape(encodeURIComponent(qr)));//codificamos lo que va en el QR
         const QR = await generarQR(textoQR,res.CAE,res.CAEFchVto)
+        console.log("a")
         return {
             QR,
             cae:res.CAE,
@@ -1212,3 +1219,100 @@ function selecciona_value(idInput) {
         descuentoN.value = (nuevoTotal*parseFloat(descuento.value)/100).toFixed(2)
         codigo.focus()
     }
+
+    const imprimirVenta = (arreglo)=>{
+
+const conector = new ConectorPlugin();
+
+
+const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
+    console.log(Venta)
+    const fechaVenta = new Date(Venta.fecha)
+    let dia = fechaVenta.getDate()
+    let mes = fechaVenta.getMonth()+1;
+    let horas = fechaVenta.getHours()
+    let minutos = fechaVenta.getMinutes()
+    let segundos = fechaVenta.getSeconds()
+    mes = mes<10 ? `0${mes}` : mes;
+    let anio = fechaVenta.getFullYear()
+    const comprobante = verTipoComp(Venta.cod_comp)
+    conector.cortar()
+    conector.establecerTamanioFuente(2,2);
+    conector.establecerFuente(ConectorPlugin.Constantes.FuenteC)
+    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
+    conector.texto("*ELECTRO AVENIDA*\n")
+    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
+    conector.establecerTamanioFuente(1,1);
+    conector.texto("GIANOVI MARINA ISABEL\n");
+    conector.texto("INGRESO BRUTOS: 27165767433\n")
+    conector.texto("C.U.I.T Nro: 27165767433\n");
+    conector.texto("AV.9 DE JULION-3380 (3228);CHAJARI E.R.\n");
+    conector.texto("INICIO DE ACTIVIDADES: 02-03-07\n");
+    conector.texto("IVA RESPONSABLE INSCRIPTO\n");
+    conector.texto("------------------------------------------\n");
+    conector.texto(`${comprobante}   0005-${Venta.nro_comp}\n`);
+    conector.texto(`FECHA: ${dia}-${mes}-${anio}    Hora:${horas}:${minutos}:${segundos}\n`);
+    conector.texto("------------------------------------------\n");
+    conector.texto(`${Cliente.cliente}\n`);
+    conector.texto(`${Cliente.cuit}\n`);
+    conector.texto(`${Cliente.cond_iva}\n`);
+    conector.texto(`${Cliente.direccion}   ${Cliente.localidad}\n`);
+    conector.texto("------------------------------------------\n");
+    conector.texto("CANTIDAD/PRECIO UNIT (%IVA)\n")
+    conector.texto("DESCRIPCION           (%B.I)       IMPORTE\n")  
+    conector.texto("------------------------------------------\n");
+    Venta.productos && Venta.productos.forEach(({cantidad,objeto})=>{
+        conector.texto(`${cantidad}/${objeto.precio_venta}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
+        conector.texto(`${objeto.descripcion.slice(0,30)}       ${(parseFloat(cantidad)*parseFloat(objeto.precio_venta)).toFixed(2)}\n`)
+    })
+    conector.feed(2);
+    conector.establecerTamanioFuente(2,1);
+    conector.texto("TOTAL       $" +  Venta.precioFinal + "\n");
+    conector.establecerTamanioFuente(1,1);
+    conector.texto("Recibimos(mos)\n");
+    conector.texto("Contado     $" + Venta.precioFinal + "\n");
+    conector.establecerTamanioFuente(2,1);
+    conector.texto("CAMBIO      $0.00\n");
+    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
+    conector.texto("*MUCHA GRACIAS*\n")
+    conector.qrComoImagen("Soy el contenido del código QR");
+    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
+    conector.establecerTamanioFuente(1,1);
+    conector.texto("CAE:" + "                  " + "Vencimiento CAE:" + "\n")
+    conector.texto(cae + "           " + vencimientoCae + "\n")
+    conector.feed(3)
+    conector.cortar()
+
+    conector.imprimirEn("Microsoft Print to PDF")
+        .then(respuestaAlImprimir => {
+                //  printer.execute()
+                 console.log("first")
+            if (respuestaAlImprimir === true) {
+                console.log("Impreso correctamente");
+            } else {
+                console.log("Error. La respuesta es: " + respuestaAlImprimir);
+            }
+        });
+   }
+
+
+
+const verTipoComp = (codigoComprobante)=>{
+    if (codigoComprobante === 6) {
+        return "Cod: 006 - Factura B"
+    }else if(codigoComprobante === 1){
+        return "Cod: 002 - Factura A"
+    }else if(codigoComprobante === 3){
+        return "Cod: 003 - Nota Credito A"
+    }else if(codigoComprobante === 4){
+        return "Cod: 004 - Recibos A"
+    }else if(codigoComprobante === 8){
+        return "Cod: 008 - Nota Credito B"
+    }else if(codigoComprobante === 9){
+        return "Cod: 009 - Recibos B"
+    }
+}
+
+const [Venta,Cliente,,,,,valoresQR] = arreglo
+ponerValores(Cliente,Venta,valoresQR)
+}

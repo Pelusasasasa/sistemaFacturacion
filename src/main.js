@@ -188,8 +188,8 @@ ipcMain.on('get-clientes', async (e, args = "") => {
 
 //traemos un cliente
 ipcMain.handle('get-cliente', async (e, args) => {
-    let cliente = await axios.get(`${URL}clientes/id/${args}`)
-    cliente = cliente.data
+    let cliente = await axios.get(`${URL}clientes/id/${args}`);
+    cliente = cliente.data;
     return JSON.stringify(cliente)
 })
 

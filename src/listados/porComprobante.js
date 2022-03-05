@@ -32,12 +32,11 @@ buscar.addEventListener('click',async e=>{
     const desdefecha = new Date(desde.value)
     let hastafecha = DateTime.fromISO(hasta.value).endOf('day')
     let tickets = await axios.get(`${URL}ventas/${desdefecha}/${hastafecha}`)
-    tickets = tickets.data
+    tickets = tickets.data;
+    console.log(tickets)
     let presupuesto = await axios.get(`${URL}presupuesto/${desdefecha}/${hastafecha}`)
     presupuesto = presupuesto.data;
     ventas = [...tickets,...presupuesto];
-    
-    // ipcRenderer.send('traerVentasEntreFechas',[desde.value,hasta.value])
 })
 
 
