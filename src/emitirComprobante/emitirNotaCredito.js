@@ -227,18 +227,11 @@ factura.addEventListener('click',async e=>{
         ipcRenderer.send('traerVenta',facturaOriginal.value);
         await ipcRenderer.on('traerVenta',async(e,args)=>{
             const ventaRelacionada = await JSON.parse(args);
-            afip = await subirAAfip(venta,ventaRelacionada[0])
+            // afip = await subirAAfip(venta,ventaRelacionada[0])
             ipcRenderer.send('nueva-venta',venta)
-            ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100",afip])
-            location.reload();
-        })
-
-        // imprimirTikectFactura(venta,cliente)
-        // imprimirItem(venta,cliente)
-
-        }
-    }
-})
+            //ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100",afip])
+            location.href="../index.html";
+        })}}})
 
 const traerNumeroComprobante = async(codigo)=>{
     let retornar

@@ -124,3 +124,8 @@ ipcRenderer.on("validarUsuario",(e,args)=>{
             }}
         })
 })
+
+const salir = document.querySelector('.salir');
+salir.addEventListener('click',e=>{
+    window.close();
+})

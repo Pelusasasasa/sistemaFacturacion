@@ -123,14 +123,14 @@ listar.addEventListener('click',e=>{
     seleccionado.classList.toggle('seleccionado')
     if (seleccionado) {
         lista.forEach(listar=>{
-            listar.nro_comp === seleccionado.id && mostrarDetalles(listar.productos,listar.vendedor);
+            listar.nro_comp === seleccionado.id && mostrarDetalles(listar.nro_comp,listar.tipo_comp);
         })
     }
 })
 
 const listarLista = (lista,situacion,tipo)=>{
     let aux
-    (situacion === "negro") ? (aux = "Presupuesto") : (aux = "Ticket Factura")
+    (situacion === "negro") ? (aux = "Presupuesto") : (aux = "Ticket Factura");
     listaGlobal = lista.filter(e=>{
         if (aux === "Presupuesto") {
             return  (e.tipo_comp === aux ||  e.tipo_comp === "Recibos_P")   
@@ -139,30 +139,11 @@ const listarLista = (lista,situacion,tipo)=>{
         }
     })
     listar.innerHTML = '';
-    let saldoAcumulativo = 0;
     listaGlobal.forEach(venta => {
         vendedor = venta.vendedor
-        let importe = 0.0;
-        let saldo = 0;
-        let pagado = 0;
-        if (venta.tipo_comp !== "Recibos") {
-            importe = (venta.precioFinal).toFixed(2);
-            saldo = ((venta.precioFinal - venta.abonado).toFixed(2))
-        }else if(tipo === "Recibos"){
-            importe = (venta.precioFinal).toFixed(2);
-            saldo = ((venta.precioFinal - venta.abonado).toFixed(2))
-        }
-        if ((venta.tipo_comp === "Presupuesto" || venta.tipo_comp === "Ticket Factura") && tipo === "historica") {
-            pagado = "0.00";
-        }else if (((venta.tipo_comp === "Ticket Factura" || venta.tipo_comp === "Presupuesto") && tipo === "compensada")) {
-            pagado = (parseFloat(venta.abonado)).toFixed(2)
-        }else if((venta.tipo_comp === "Recibos" || venta.tipo_comp === "Recibos_P") && venta.abonado !== "0" && tipo === "compensada" ){
-            pagado = parseFloat(venta.abonado).toFixed(2)
-        }else{
-            pagado = parseFloat(venta.precioFinal).toFixed(2)
-        }
-
-        saldoAcumulativo = (venta.tipo_comp === "Presupuesto" || venta.tipo_comp === "Ticket Factura" ) ? saldoAcumulativo + venta.precioFinal : saldoAcumulativo-venta.precioFinal
+        let importe = venta.importe;
+        let saldo = venta.saldo;
+        let pagado = venta.pagado;
         if (venta.length !== 0) {
             let fecha = new Date(venta.fecha)
             if (tipo === "compensada") {
@@ -195,12 +176,14 @@ const listarLista = (lista,situacion,tipo)=>{
 }
 
 const detalle = document.querySelector('.detalle')
-function mostrarDetalles(lista,vendedor) {
+async function mostrarDetalles(id,tipo) {
     detalle.innerHTML = ''
-    if ((lista.length === 0)) {
+    let venta = tipo === "Presupuesto" ? await axios.get(`${URL}presupuesto/${id}`) : await axios.get(`${URL}ventas/${id}`);
+    venta = venta.data[0];
+    if ((venta.tipo_comp === "Recibos" || venta.tipo_comp === "Recibos_P")) {
         detalle.innerHTML = `<h3>Vendedor del recibo: ${vendedor}</h3>`
     }else{
-    lista.forEach((producto) =>{
+    venta.productos.forEach((producto) =>{
         let {objeto,cantidad} = producto 
         detalle.innerHTML += `
         <tr>
@@ -209,9 +192,8 @@ function mostrarDetalles(lista,vendedor) {
             <td>${parseFloat(cantidad).toFixed(2)}</td>
             <td>${(parseFloat(objeto.precio_venta)).toFixed(2)}</td>
             <td>${(objeto.precio_venta*cantidad).toFixed(2)}</td>
-            <td>${vendedor}</td>
+            <td>${venta.vendedor}</td>
         </tr>
-        
         `
         })
     }
@@ -222,47 +204,31 @@ let total = 0
 let saldoABorrar = 0
 
 
-    actualizar.addEventListener('click',e=>{
-
+    actualizar.addEventListener('click',async e=>{
         if (seleccionado) {
-
-
-        nuevaLista.find(e=>{
-            if (e.nro_comp === seleccionado.id) {
-                ventaAModificar=e;
+            console.log(seleccionado)
+            let venta = await axios.get(`${URL}ventas/${seleccionado.id}`);
+            venta = venta.data;
+            venta = venta.length === 0 ? (await axios.get(`${URL}presupuesto/${seleccionado.id}`)).data[0] : venta;
+            let cuentaCompensada = (await axios.get(`${URL}cuentaComp/id/${seleccionado.id}`)).data[0];
+            console.log(venta.cliente)
+            let cliente = (await axios.get(`${URL}clientes/id/${venta.cliente}`)).data
+            let saldo = parseFloat(cliente.saldo_p) - parseFloat(cuentaCompensada.importe);
+            let total = 0;
+             for await(let {objeto,cantidad} of venta.productos){
+                let producto = (await axios.get(`${URL}productos/${objeto._id}`)).data
+                objeto.precio_venta = producto.precio_venta;
+                total += parseFloat(cantidad)*parseFloat(objeto.precio_venta);
+                venta.precioFinal = total;
+                cuentaCompensada.importe = parseFloat(parseFloat(total).toFixed(2));
+                cuentaCompensada.saldo = parseFloat((parseFloat(total) -cuentaCompensada.pagado).toFixed(2));
             }
-        })
-        ventaAModificar.productos.forEach(async producto=>{
-            console.log(producto)
-                let productoModificado = await axios.get(`${URL}productos/${producto.objeto._id}`)
-                productoModificado = productoModificado.data;
-                if(producto.objeto._id === productoModificado._id){
-                    producto.objeto.precio_venta = productoModificado.precio_venta
-                    mostrarDetalles(ventaAModificar.productos);
-                    let total1=sacarTotal(ventaAModificar.productos);
-                    ventaAModificar.precioFinal = total1.toFixed(2);
-                    let venta = await axios.get(`${URL}ventas/${ventaAModificar.nro_comp}`);
-                    if(venta.data.length === 0){
-                        venta = await axios.get(`${URL}presupuesto/${ventaAModificar.nro_comp}`)
-                        venta = venta.data[0];
-                    }else{
-                        venta = venta.data[0]
-                    }
-                    let saldoABorrar = venta.precioFinal;
-                    venta.precioFinal = ventaAModificar.precioFinal;
-                    venta.productos = ventaAModificar.productos;
-                    venta.tipo_comp === "Ticket Factura" ? await axios.put(`${URL}ventas/${venta._id}`,venta) : await axios.put(`${URL}presupuesto/${venta._id}`,venta);
-                    let cliente = await axios.get(`${URL}clientes/id/${venta.cliente}`);
-                    cliente = cliente.data;
-                    let total = 0
-                    total = venta.precioFinal
-                    total = (parseFloat(total) - parseFloat(saldoABorrar) + parseFloat(cliente.saldo_p)).toFixed(2)
-                    cliente.saldo_p = total
-                     await axios.put(`${URL}clientes/${venta.cliente}`,cliente);
-                    // ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"CD"])
-                    // })
-            location.reload()
-            }})
+            venta.tipo_comp === "Presupuesto" ? await axios.put(`${URL}presupuesto/${venta.nro_comp}`,venta) : await axios.put(`${URL}ventas/${venta.nro_comp}`,venta);
+            await axios.put(`${URL}cuentaComp/id/${cuentaCompensada.nro_comp}`,cuentaCompensada);  
+            saldo += parseFloat(cuentaCompensada.importe);
+            cliente.saldo_p = saldo.toFixed(2);
+            await axios.put(`${URL}clientes/${cliente._id}`,cliente)
+           // location.reload();
         }else{
             alert("Venta no seleccionada")
         }
@@ -307,13 +273,8 @@ const ponerDatosCliente = async (Cliente)=>{
     saldo.value = (parseFloat(Cliente.saldo)).toFixed(2)
     saldo_p.value = (parseFloat(Cliente.saldo_p)).toFixed(2)
     listaVentas=Cliente.listaVentas
-
-    await ipcRenderer.invoke('traerVentas',listaVentas).then((args)=>{
-        console.log(JSON.parse(args))
-        lista = JSON.parse(args)
-    })
-        lista.forEach(venta =>{
-            (venta.pagado === false || (venta.tipo_comp === "Recibos" && (venta.precioFinal < 0 || parseFloat(venta.abonado) > 0 ))) && nuevaLista.push(venta);
-        })
-        listarLista(nuevaLista,situacion,tipo)
+    let compensadas = await axios.get(`${URL}cuentaComp/cliente/${Cliente._id}`);
+    lista = compensadas.data
+    nuevaLista=lista
+    listarLista(lista,situacion,tipo)
 }

@@ -90,3 +90,21 @@
 .flecha.arriba{
   transform: rotate(315deg);
 }
+
+
+.boton{
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  .salir{
+    margin-right: 10rem;
+    border: .1rem solid black;
+    border-radius: 7.5rem;
+    padding: 1rem;
+    font-size: 3rem;
+    &:hover{
+      cursor: pointer;
+      transform: scale(1.2);
+    }
+  }
+}
