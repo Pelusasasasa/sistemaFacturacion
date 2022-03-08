@@ -14,7 +14,8 @@ const compensada = document.querySelector('.compensada')
 const historica = document.querySelector('.historica')
 const actualizar = document.querySelector('.actualizar')
 
-let nuevaLista=[]
+let listaCompensada=[];
+let listaHistorica=[];
 let lista=[]
 let clienteTraido = {}
 let listaGlobal=[]
@@ -27,14 +28,14 @@ historica.addEventListener('click',e=>{
     historica.classList.add("disable")
     compensada.classList.remove('disable')
     tipo = "historica"
-    listarLista(lista,situacion,tipo)
+    listarLista(listaHistorica,situacion,tipo)
 })
 
 compensada.addEventListener('click',e=>{
     compensada.classList.add("disable")
     historica.classList.remove('disable')
     tipo = "compensada"
-    listarLista(nuevaLista,situacion,tipo)
+    listarLista(listaCompensada,situacion,tipo)
 })
 
 document.addEventListener('keydown',(event) =>{
@@ -43,7 +44,7 @@ document.addEventListener('keydown',(event) =>{
            if (e.key === "F9" && situacion === "blanco") {
                mostrarNegro();
                situacion = 'negro';
-               listarLista(nuevaLista,situacion,tipo);
+               tipo === "compensada" ? listarLista(listaCompensada,situacion,tipo) : listarLista(listaHistorica,situacion,tipo);
            }
        })
    }
@@ -55,7 +56,7 @@ document.addEventListener('keydown',(event) =>{
           if (e.key === "F3" && situacion === "negro") {
               ocultarNegro();
               situacion = 'blanco';
-              listarLista(nuevaLista,situacion,tipo);
+              tipo === "compensada" ? listarLista(listaCompensada,situacion,tipo) : listarLista(listaHistorica,situacion,tipo);
           }
       })
   }
@@ -122,7 +123,7 @@ listar.addEventListener('click',e=>{
     sacarSeleccion && sacarSeleccion.classList.remove('seleccionado')
     seleccionado.classList.toggle('seleccionado')
     if (seleccionado) {
-        lista.forEach(listar=>{
+        listaCompensada.forEach(listar=>{
             listar.nro_comp === seleccionado.id && mostrarDetalles(listar.nro_comp,listar.tipo_comp);
         })
     }
@@ -164,9 +165,9 @@ const listarLista = (lista,situacion,tipo)=>{
                 <td>${fecha.getUTCDate()}/${fecha.getUTCMonth()+1}/${fecha.getUTCFullYear()}</td>
                     <td>${venta.tipo_comp}</td>
                     <td>${venta.nro_comp}</td>
-                    <td class = "importe">${importe}</td>
-                    <td class = "pagado">${pagado}</td>
-                    <td class = "saldo">${(saldoAcumulativo).toFixed(2)}</td>
+                    <td class = "importe">${venta.debe}</td>
+                    <td class = "pagado">${venta.haber}</td>
+                    <td class = "saldo">${(venta.saldo.toFixed(2))}</td>
                     <td>${venta.observaciones}</td>
                 </tr>
             `
@@ -205,13 +206,16 @@ let saldoABorrar = 0
 
 
     actualizar.addEventListener('click',async e=>{
+        console.log(listaHistorica)
         if (seleccionado) {
-            console.log(seleccionado)
+            const a = listaHistorica.map(e=>e.nro_comp).indexOf(seleccionado.id);
+            const b = listaHistorica.slice(a+1);
+
             let venta = await axios.get(`${URL}ventas/${seleccionado.id}`);
             venta = venta.data;
             venta = venta.length === 0 ? (await axios.get(`${URL}presupuesto/${seleccionado.id}`)).data[0] : venta;
             let cuentaCompensada = (await axios.get(`${URL}cuentaComp/id/${seleccionado.id}`)).data[0];
-            console.log(venta.cliente)
+            let cuentaHistorica = (await axios.get(`${URL}cuentaHisto/id/${seleccionado.id}`)).data[0];
             let cliente = (await axios.get(`${URL}clientes/id/${venta.cliente}`)).data
             let saldo = parseFloat(cliente.saldo_p) - parseFloat(cuentaCompensada.importe);
             let total = 0;
@@ -221,14 +225,27 @@ let saldoABorrar = 0
                 total += parseFloat(cantidad)*parseFloat(objeto.precio_venta);
                 venta.precioFinal = total;
                 cuentaCompensada.importe = parseFloat(parseFloat(total).toFixed(2));
-                cuentaCompensada.saldo = parseFloat((parseFloat(total) -cuentaCompensada.pagado).toFixed(2));
+                cuentaCompensada.saldo = parseFloat((parseFloat(total) - cuentaCompensada.pagado).toFixed(2));
             }
+            cuentaHistorica.saldo -= cuentaHistorica.debe;
+            cuentaHistorica.debe = cuentaCompensada.importe;
             venta.tipo_comp === "Presupuesto" ? await axios.put(`${URL}presupuesto/${venta.nro_comp}`,venta) : await axios.put(`${URL}ventas/${venta.nro_comp}`,venta);
-            await axios.put(`${URL}cuentaComp/id/${cuentaCompensada.nro_comp}`,cuentaCompensada);  
             saldo += parseFloat(cuentaCompensada.importe);
+            cuentaHistorica.saldo = parseFloat((parseFloat(cuentaHistorica.saldo) + parseFloat(cuentaHistorica.debe)).toFixed(2))
+               let ultimoSaldo = cuentaHistorica.saldo;
+               b.forEach(async e=>{
+                   console.log(e.saldo);
+                   console.log(e.debe);
+                e.saldo= (e.tipo_comp === "Recibos" || e.tipo_comp === "Recibos_P") ?  parseFloat((ultimoSaldo - e.haber).toFixed(2)) : parseFloat((e.debe + ultimoSaldo).toFixed(2));
+                ultimoSaldo = e.saldo;
+                console.log(ultimoSaldo)
+                // await axios.put(`${URL}cuentaHisto/id/${e.nro_comp}`,e)
+            })
             cliente.saldo_p = saldo.toFixed(2);
-            await axios.put(`${URL}clientes/${cliente._id}`,cliente)
-           // location.reload();
+            // await axios.put(`${URL}cuentaHisto/id/${cuentaHistorica.nro_comp}`,cuentaHistorica);
+            // await axios.put(`${URL}cuentaComp/id/${cuentaCompensada.nro_comp}`,cuentaCompensada);  
+            // await axios.put(`${URL}clientes/${cliente._id}`,cliente)
+            // location.reload();
         }else{
             alert("Venta no seleccionada")
         }
@@ -273,8 +290,9 @@ const ponerDatosCliente = async (Cliente)=>{
     saldo.value = (parseFloat(Cliente.saldo)).toFixed(2)
     saldo_p.value = (parseFloat(Cliente.saldo_p)).toFixed(2)
     listaVentas=Cliente.listaVentas
-    let compensadas = await axios.get(`${URL}cuentaComp/cliente/${Cliente._id}`);
-    lista = compensadas.data
-    nuevaLista=lista
-    listarLista(lista,situacion,tipo)
+    let compensadas = (await axios.get(`${URL}cuentaComp/cliente/${Cliente._id}`)).data;
+    let historicas = (await axios.get(`${URL}cuentaHisto/cliente/${Cliente._id}`)).data;
+    listaCompensada=compensadas;
+    listaHistorica = historicas;
+    listarLista(compensadas,situacion,tipo)
 }

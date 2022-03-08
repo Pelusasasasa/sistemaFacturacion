@@ -606,7 +606,6 @@ async function sumarSaldoAlClienteEnNegro(precio,codigo,valorizado){
     cliente = cliente.data;
     let saldo_p = (parseFloat(precio) + parseFloat(cliente.saldo_p)).toFixed(2);
     cliente.saldo_p = saldo_p;
-    console.log(cliente)
     await axios.put(`${URL}clientes/${codigo}`,cliente);
 }
 
@@ -653,6 +652,7 @@ presupuesto.addEventListener('click',async (e)=>{
             if (venta.tipo_pago !== "PP") {
                 venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,venta.cliente,valorizado.checked);
                 venta.tipo_pago === "CC" && ponerEnCuentaCorrienteCompensada(venta,valorizado.checked);
+                venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,valorizado.checked,saldo_p.value);
 
             for (let producto of venta.productos){
                     if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
@@ -664,7 +664,7 @@ presupuesto.addEventListener('click',async (e)=>{
                 }
             }
 
-            actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+            await actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
             ipcRenderer.send('nueva-venta',venta);
             if (impresion.checked) {
                 if (venta.tipo_pago === "CC") {
@@ -719,6 +719,7 @@ ticketFactura.addEventListener('click',async (e) =>{
         }else{
         venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente);
         venta.tipo_pago === "CC" && ponerEnCuentaCorrienteCompensada(venta,true);
+        venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,cliente.saldo);
         venta.empresa = inputEmpresa.value;
         for(let producto of venta.productos){
            if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
@@ -1203,7 +1204,7 @@ function selecciona_value(idInput) {
             Preciofinal = (Preciofinal - (parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)).toFixed(2)) 
             listaProductos.forEach(e=>{
                 if (productoSeleccionado.id === e.objeto.identificadorTabla) {
-                        listaProductos = listaProductos.splice(e=>e.objeto.identificadorTabla === productoSeleccionado.id)
+                        listaProductos = listaProductos.filter(e=>e.objeto.identificadorTabla !== productoSeleccionado.id);
                         totalPrecioProducos -= (e.objeto.precio_venta*e.cantidad);
                 }
             })
@@ -1214,7 +1215,7 @@ function selecciona_value(idInput) {
         listaProductos.forEach(({objeto,cantidad})=>{
             nuevoTotal += (objeto.precio_venta * cantidad);
         })
-        total.value = (nuevoTotal - (nuevoTotal*parseFloat(descuento.value)/100)).toFixed(2)
+        total.value = parseFloat(descuento.value) !== 0 ? (nuevoTotal - (nuevoTotal*parseFloat(descuento.value)/100)).toFixed(2) : nuevoTotal;
         descuentoN.value = (nuevoTotal*parseFloat(descuento.value)/100).toFixed(2)
         codigo.focus()
     }
@@ -1328,4 +1329,18 @@ const ponerEnCuentaCorrienteCompensada = async(venta,valorizado)=>{
     cuenta.saldo = valorizado ? parseFloat(venta.precioFinal) : 0.1;
     cuenta.observaciones = venta.observaciones;
     await axios.post(`${URL}cuentaComp`,cuenta)
+}
+
+//inicio historica
+const ponerEnCuentaCorrienteHistorica = async(venta,valorizado,saldo)=>{
+    const id = (await axios.get(`${URL}cuentaHisto`)).data + 1;
+    const cuenta = {}
+    cuenta._id = id;
+    cuenta.codigo = venta.cliente;
+    cuenta.cliente = buscarCliente.value;
+    cuenta.tipo_comp = venta.tipo_comp;
+    cuenta.nro_comp = venta.nro_comp;
+    cuenta.debe = valorizado ? parseFloat(venta.precioFinal) : 0.1;
+    cuenta.saldo = parseFloat(saldo) + cuenta.debe;
+    await axios.post(`${URL}cuentaHisto`,cuenta);
 }

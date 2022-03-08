@@ -125,10 +125,10 @@ const listarLista = (lista,situacion)=>{
     let aux
     (situacion === "negro") ? (aux = "Presupuesto") : (aux = "Ticket Factura")
     listaGlobal = lista.filter(e=>e.tipo_comp === aux)
-    listar.innerHTML = " "
+    listar.innerHTML = " ";
     listaGlobal.forEach(venta => {
         if (venta.length !== 0) {
-            let saldo = parseFloat(venta.precioFinal) - parseFloat(venta.abonado)
+            let saldo = parseFloat(venta.importe) - parseFloat(venta.pagado)
             let fecha = new Date(venta.fecha) 
             let dia = fecha.getDate()
             let mes = fecha.getMonth();
@@ -136,16 +136,15 @@ const listarLista = (lista,situacion)=>{
             
             mes = (mes === 0 ) ? (mes + 1) : mes;
             mes = (mes < 10) ? `0${mes}` : mes;
-
             dia = (dia < 10) ? `0${dia}` : dia ;
-            
+
             listar.innerHTML += `
                 <tr id="${venta.nro_comp}">
                 <td> ${ dia } / ${ mes } / ${ anio } </td>
                 <td> ${ venta.tipo_comp } </td>
                 <td> ${ venta.nro_comp } </td>
-                <td> ${ ( venta.precioFinal ).toFixed ( 2 ) } </td>
-                <td> ${ parseFloat ( ( venta.abonado ) ).toFixed ( 2 ) } </td>
+                <td> ${ ( venta.importe ).toFixed ( 2 ) } </td>
+                <td> ${ parseFloat ( ( venta.pagado ) ).toFixed ( 2 ) } </td>
                 <td> <input type="text" id = ${ venta.nro_comp } name = "pagadoActual"> </td>
                 <td class = "saldop"> ${ saldo.toFixed( 2 ) } </td>
                 <td> ${ venta.observaciones } </td>
@@ -268,9 +267,6 @@ const hacerRecibo = async()=>{
     saldoFavor = (saldoAfavor.value !== "") && parseFloat(saldoAFavor.value);
     recibo.abonado = saldoAfavor.value
     const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2));
-
-    //ipcRenderer.send('modificamosLasVentas',nuevaLista);
-    
     //Tomamos el cliente y agregamos a su lista Ventas la venta y tambien modificamos su saldo
     const _id = recibo.cliente;
     let clienteTraido = await axios.get(`${URL}clientes/id/${_id}`);
@@ -281,14 +277,14 @@ const hacerRecibo = async()=>{
     let listaVentas = clienteTraido.listaVentas;
     listaVentas[0] === "" ? (listaVentas[0] = recibo.nro_comp) : (listaVentas.push(recibo.nro_comp));
     clienteTraido.listaVentas = listaVentas;
-    // await axios.put(`${URL}clientes/${_id}`,clienteTraido);
-    // await axios.post(`${URL}ventas`,recibo);
-
-    const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
-    const impresora = recibo.tipo_comp === "Recibos" ? "SAM4S GIANT-100" : undefined;
-    //arregloParaImprimir contiene todos las ventas que tiene pagadas y total contiene el total del recibo
-    ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,impresora,afip,arregloParaImprimir,total.value]);
-    location.href = "../index.html"
+    await axios.put(`${URL}clientes/${_id}`,clienteTraido);
+    await axios.post(`${URL}ventas`,recibo);
+    ponerEnCuentaCorrienteHistorica(recibo)
+    //const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
+    // const impresora = recibo.tipo_comp === "Recibos" ? "SAM4S GIANT-100" : undefined;
+    // //arregloParaImprimir contiene todos las ventas que tiene pagadas y total contiene el total del recibo
+    // ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,impresora,afip,arregloParaImprimir,total.value]);
+    //location.href = "../index.html"
 }
 
 const traerUltimoNroRecibo = async ()=>{
@@ -342,30 +338,14 @@ const inputsCliente = async (cliente)=>{
     }else if(situacion === "negro" && parseFloat(cliente.saldo_p) > 0){
         saldoAFavor.setAttribute("disabled","")
     }
-
-    await traerVentas(cliente.listaVentas)
-    listarLista(nuevaLista,situacion)
+    let conpensada = (await axios.get(`${URL}cuentaComp/cliente/${cliente._id}`)).data;
+    nuevaLista = conpensada
+    listarLista(conpensada,situacion)
     trSeleccionado = listar.firstElementChild
     if (trSeleccionado) {
         inputSeleccionado = trSeleccionado.children[5].children[0]  
     }
-}
-
-const traerVentas = async(lista)=>{
-    nuevaLista = [];
-    for(let elemento of lista){
-        let venta = await axios.get(`${URL}ventas/${elemento}`);
-        venta = venta.data[0];
-        let presupuesto = await axios.get(`${URL}presupuesto/${elemento}`);
-        presupuesto = presupuesto.data[0];
-        venta !== undefined && nuevaLista.push(venta);
-        presupuesto !== undefined && nuevaLista.push(presupuesto);
-    };
-    nuevaLista = nuevaLista.filter((venta)=>{
-        return (venta.pagado === false)
-    })
-
-}
+}   
 
 const tamanioVentas = async()=>{
     let retornar
@@ -378,11 +358,16 @@ const tamanioVentas = async()=>{
 const modificarVentas = (lista)=>{
     const trs = document.querySelectorAll('tbody tr')
     trs.forEach(tr=>{
-        nuevaLista.forEach(venta=>{
+        nuevaLista.forEach(async venta=>{
             if(tr.id === venta.nro_comp){
-                venta.abonado = (tr.children[5].children[0].value !== "") ? (parseFloat(tr.children[4].innerHTML) + parseFloat(tr.children[5].children[0].value)).toFixed(2) : venta.abonado; 
-                venta.pagado = (parseFloat(venta.abonado) === venta.precioFinal) ? true : false;
-
+                venta.pagado = (tr.children[5].children[0].value !== "") ? parseFloat((parseFloat(tr.children[4].innerHTML) + parseFloat(tr.children[5].children[0].value)).toFixed(2)) : parseFloat(venta.pagado);
+                venta.saldo = parseFloat(tr.children[6].innerHTML);
+                if(venta.importe === venta.pagado){
+                    await axios.delete(`${URL}cuentaComp/id/${venta.nro_comp}`);
+                }else{
+                    await axios.put(`${URL}cuentaComp/id/${venta.nro_comp}`,venta);
+                }
+                
             }
         })
     })
@@ -430,7 +415,6 @@ const subirAAfip = async(venta)=>{
                 "Importe": parseFloat((parseFloat(venta.precioFinal) - parseFloat(venta.precioFinal)/1.21).toFixed(2))
             }
         )
-        console.log(data)
         const res = await afip.ElectronicBilling.createNextVoucher(data); //creamos la factura electronica
 
         const qr = {
@@ -471,4 +455,17 @@ const verCodComp = (condicionIva) =>{
     }else{
         return 9
     }
+}
+
+const ponerEnCuentaCorrienteHistorica = async(recibo)=>{
+    const cuenta = {};
+    const id = (await axios.get(`${URL}cuentaHisto`)).data + 1;
+    cuenta._id = id;
+    cuenta.codigo = recibo.cliente;
+    cuenta.cliente = cliente.cliente;
+    cuenta.tipo_comp = recibo.tipo_comp;
+    cuenta.nro_comp = recibo.nro_comp;
+    cuenta.haber = parseFloat(recibo.precioFinal);
+    cuenta.saldo = cuenta.tipo_comp === "Recibos" ? parseFloat((parseFloat(cliente.saldo) - cuenta.haber).toFixed(2))  : parseFloat((parseFloat(cliente.saldo_p) - cuenta.haber).toFixed(2));
+    await axios.post(`${URL}cuentaHisto`,cuenta)
 }
