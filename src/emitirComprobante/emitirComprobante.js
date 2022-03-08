@@ -691,7 +691,7 @@ ticketFactura.addEventListener('click',async (e) =>{
       venta.productos = listaProductos;
       const [iva21,iva105,gravado21,gravado105,cant_iva] = gravadoMasIva(venta.productos);
      tipoVenta = "Ticket Factura";
-     let tipoPago = verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
+     let tipoPago = await verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
      if (tipoPago === "Ninguno") {
         alert("Seleccionar un modo de venta")
         }else{
@@ -719,7 +719,7 @@ ticketFactura.addEventListener('click',async (e) =>{
         }else{
         venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente);
         venta.tipo_pago === "CC" && ponerEnCuentaCorrienteCompensada(venta,true);
-        venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,cliente.saldo);
+        venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
         venta.empresa = inputEmpresa.value;
         for(let producto of venta.productos){
            if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
@@ -1342,5 +1342,6 @@ const ponerEnCuentaCorrienteHistorica = async(venta,valorizado,saldo)=>{
     cuenta.nro_comp = venta.nro_comp;
     cuenta.debe = valorizado ? parseFloat(venta.precioFinal) : 0.1;
     cuenta.saldo = parseFloat(saldo) + cuenta.debe;
+    console.log(cuenta)
     await axios.post(`${URL}cuentaHisto`,cuenta);
 }

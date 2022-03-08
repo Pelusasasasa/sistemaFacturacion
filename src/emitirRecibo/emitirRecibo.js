@@ -265,7 +265,7 @@ const hacerRecibo = async()=>{
     const aux = (situacion === "negro") ? "saldo_p" : "saldo"
     let saldoFavor = 0;
     saldoFavor = (saldoAfavor.value !== "") && parseFloat(saldoAFavor.value);
-    recibo.abonado = saldoAfavor.value
+    recibo.abonado = saldoAfavor.value;
     const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2));
     //Tomamos el cliente y agregamos a su lista Ventas la venta y tambien modificamos su saldo
     const _id = recibo.cliente;
@@ -279,12 +279,13 @@ const hacerRecibo = async()=>{
     clienteTraido.listaVentas = listaVentas;
     await axios.put(`${URL}clientes/${_id}`,clienteTraido);
     await axios.post(`${URL}ventas`,recibo);
-    ponerEnCuentaCorrienteHistorica(recibo)
-    //const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
-    // const impresora = recibo.tipo_comp === "Recibos" ? "SAM4S GIANT-100" : undefined;
-    // //arregloParaImprimir contiene todos las ventas que tiene pagadas y total contiene el total del recibo
+    saldoAfavor.value !== "" && ponerEnCuentaCorrienteCompensada(recibo);
+    ponerEnCuentaCorrienteHistorica(recibo);
+    const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
+    const impresora = recibo.tipo_comp === "Recibos" ? "SAM4S GIANT-100" : undefined;
+    // arregloParaImprimir contiene todos las ventas que tiene pagadas y total contiene el total del recibo
     // ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,impresora,afip,arregloParaImprimir,total.value]);
-    //location.href = "../index.html"
+    location.href = "../index.html"
 }
 
 const traerUltimoNroRecibo = async ()=>{
@@ -455,6 +456,19 @@ const verCodComp = (condicionIva) =>{
     }else{
         return 9
     }
+}
+
+const ponerEnCuentaCorrienteCompensada = async(recibo)=>{
+    const cuenta = {};
+    const id = (await axios.get(`${URL}cuentaComp`)).data + 1;
+    cuenta._id = id;
+    cuenta.codigo = recibo.cliente;
+    cuenta.cliente = cliente.cliente;
+    cuenta.tipo_comp = recibo.tipo_comp;
+    cuenta.nro_comp = recibo.nro_comp;
+    cuenta.importe = saldoAfavor.value;
+    cuenta.saldo = saldoAfavor.value;
+    await axios.post(`${URL}cuentaComp`,cuenta);
 }
 
 const ponerEnCuentaCorrienteHistorica = async(recibo)=>{

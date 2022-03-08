@@ -8,6 +8,10 @@ function getParameterByName(name) {
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
 
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
+
 const vendedor = getParameterByName('vendedor')
 
 const Dialogs = require("dialogs");
@@ -32,7 +36,8 @@ const original = document.querySelector('#original')
 const factura = document.querySelector('.factura');
 const cancelar = document.querySelector('.cancelar');
 const borrarProducto = document.querySelector('.borrarProducto')
-const facturaOriginal = document.querySelector('#original')
+const facturaOriginal = document.querySelector('#original');
+const radios = document.querySelectorAll('input[name=tipo]');
 
 let cliente = {};
 let venta = {};
@@ -67,6 +72,16 @@ ipcRenderer.on('mando-el-cliente',(e,args)=>{
     ponerInputsClientes(cliente)
     
 })
+
+const verTipoPago = async ()=>{
+    let a = "NINGUNO"
+    await radios.forEach(async e=>{
+         a = await e.checked ? e.value : a;
+    })
+    return a
+}
+
+
 
  //Ponemos valores a los inputs
  function ponerInputsClientes(cliente) {
@@ -192,11 +207,13 @@ descuento.addEventListener('blur',e=>{
 
 factura.addEventListener('click',async e=>{
     e.preventDefault();
-    console.log(facturaOriginal)
+    venta.tipo_pago = await verTipoPago();
     if (facturaOriginal.value === "") {
         alert("No se escribio el numero de la factura Original")
     }else if(listaProductos.length === 0){
         alert("No se cargo productos")
+    }else if(venta.tipo_pago === "NINGUNO"){
+        alert("Elegir tipo de pago");
     }else{
         const venta = {};
         venta.fecha = new Date()
@@ -210,7 +227,6 @@ factura.addEventListener('click',async e=>{
         venta.comprob = venta.nro_comp;
         venta.productos = listaProductos;
         venta.numeroAsociado = facturaOriginal.value;
-        venta.tipo_pago = "CD";
         venta.cod_doc = (cliente.cuit.length > 8) ? 80 : 96;
         venta.dnicuit = cliente.cuit;
         venta.conIva = cliente.cond_iva;
@@ -219,19 +235,20 @@ factura.addEventListener('click',async e=>{
         venta.descuento = parseFloat(descuentoN.value);
         venta.precioFinal = parseFloat(total.value);
         venta.vendedor = vendedor
-        if (parseFloat(precioFinal)>10000 && buscarCliente.value === "A CONSUMIDOR FINAL" && dnicuit.value === "00000000"  && direccion.value === "CHAJARI") {
-            alert("Factura mayor a 10000, poner valores clientes")
-        }else{
-        actualizarNroCom(venta.nro_comp,venta.cod_comp)
-        let afip
-        ipcRenderer.send('traerVenta',facturaOriginal.value);
-        await ipcRenderer.on('traerVenta',async(e,args)=>{
-            const ventaRelacionada = await JSON.parse(args);
-            // afip = await subirAAfip(venta,ventaRelacionada[0])
+         if (parseFloat(precioFinal)>10000 && buscarCliente.value === "A CONSUMIDOR FINAL" && dnicuit.value === "00000000"  && direccion.value === "CHAJARI") {
+             alert("Factura mayor a 10000, poner valores clientes")
+         }else{
+            actualizarNroCom(venta.nro_comp,venta.cod_comp)
+            let afip
+            let ventaRelacionada = (await axios.get(`${URL}ventas/${args}`)).data;
+            if (ventaRelacionada.length === 0) {
+                ventaRelacionada = (await axios.get(`${URL}presupuesto/${args}`)).data;
+            }
+            afip = await subirAAfip(venta,ventaRelacionada[0])
             ipcRenderer.send('nueva-venta',venta)
-            //ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100",afip])
+            ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100",afip])
             location.href="../index.html";
-        })}}})
+        }}})
 
 const traerNumeroComprobante = async(codigo)=>{
     let retornar
