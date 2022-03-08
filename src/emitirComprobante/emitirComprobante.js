@@ -439,22 +439,23 @@ function verQueVentaEs(tipo,cod_comp) {
 
 //numero de comprobante de ticket factura
 async function traerUltimoNroComprobante(tipoCom,codigoComprobante,tipo_pago) {
-
+        //tipoCom = Pesupuesto
+        //ver que venta es retorna el atributo del bojeto guardado en la BD
         if (tipoCom==="Ticket Factura") {
             const numeroFactura = verQueVentaEs(tipoCom,codigoComprobante)
-            const tipoVenta = await traerNumeroDeFactura(numeroFactura)
+            let tipoVenta = ((await axios.get(`${URL}tipoVenta`)).data)[numeroFactura];
             return tipoVenta
         }else if(tipoCom === "Presupuesto" & tipo_pago==="CD"){
             const numeroFactura =  verQueVentaEs("Contado")
-            const tipoVenta =  await traerNumeroDeFactura(numeroFactura)
+            const tipoVenta = ((await axios.get(`${URL}tipoVenta`)).data)[numeroFactura];
             return tipoVenta
         }else if(tipoCom === "Presupuesto" & tipo_pago === "CC"){
             const numeroFactura = verQueVentaEs("Cuenta Corriente")
-            const tipoVenta = await traerNumeroDeFactura(numeroFactura)
+            const tipoVenta = ((await axios.get(`${URL}tipoVenta`)).data)[numeroFactura];
             return tipoVenta
         }else if(tipoCom === "Presupuesto" & tipo_pago === "PP"){
             const numeroFactura = verQueVentaEs("Presupuesto")
-            const tipoVenta = await traerNumeroDeFactura(numeroFactura)
+            const tipoVenta = ((await axios.get(`${URL}tipoVenta`)).data)[numeroFactura];
             return tipoVenta
         }
     }
@@ -479,20 +480,13 @@ function codDoc(dniocuit) {
     return 99
 }
 
-//propiedad tipo_pago retoranos un cd o cc dependiendo
-function tipopago(tipo) {
-    if (tipo === "Cuenta Corriente") {
-        return "CC"
-    }else if(tipo === "Contado"){
-        return "CD"
-    }else if(tipo === "Presupuesto"){
-        return "PP"
-    }
-}
-
 //Vamos a descontar el stock 
-function sacarStock(cantidad,objeto) {
-    ipcRenderer.send('descontarStock',[cantidad,objeto._id])
+async function sacarStock(cantidad,objeto) {
+    let producto = (await axios.get(`${URL}productos/${objeto._id}`)).data;
+    const descontar = parseInt(producto.stock) - parseFloat(cantidad);
+    producto.stock = descontar.toFixed(2);
+    await axios.put(`${URL}productos/${objeto._id}`,producto);
+
 }
 
 //INICIO MOVPRODUCTOS
@@ -535,10 +529,10 @@ function verNumero(condicion) {
 
 //Vemos el numero de factura para las tarjetas
 const numeroDeFactura = document.querySelector('.numeroDeFactura')
-numeroDeFactura.addEventListener('click', () =>{
+numeroDeFactura.addEventListener('click', async () =>{
     const mostrar = document.querySelector('#numeroFactura')
     texto = verNumero(cliente.cond_iva)
-    traerNumeroDeFactura(texto,mostrar)
+    mostrar.value = ((await axios.get(`${URL}tipoVenta`)).data)[texto];
 })
 
 
@@ -549,8 +543,7 @@ function redondear(numero) {
 }
  async function traerNumeroDeFactura(texto,mostrar) {
     let retornar;
-    let numeros = await axios.get(`${URL}tipoVenta`);
-    numeros=numeros.data;
+    let numeros = (await axios.get(`${URL}tipoVenta`)).data;
     mostrar && (mostrar.value = numeros[texto])
     return numeros[texto]
 }
@@ -566,10 +559,12 @@ async function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
     let numero
     let tipoFactura
     let [n1,n2] = comprobante.split('-')
-    if (comprobante.split('-').length === 2) {
-    n2 = parseFloat(n2)+1
-    n2 = n2.toString().padStart(8,0)
-    numero = n1+'-'+n2
+    n2 = parseFloat(n2)+1;
+    n2 = n2.toString().padStart(8,0);
+    numero = n1+'-'+n2;
+    console.log(comprobante.split('-')[0] !== "0005")
+    if (comprobante.split('-')[0] !== "0005") {
+
 
     if (tipo_pago==="CD") {
         tipoFactura = verQueVentaEs("Contado",codigoComp)
@@ -579,8 +574,6 @@ async function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
         tipoFactura = verQueVentaEs("Presupuesto",codigoComp)
     }
     }else{
-        numero = parseFloat(n1)+1
-        numero = numero.toString().padStart(8,0)
         tipoFactura = verQueVentaEs("Ticket Factura",codigoComp)
     }
     let numeros = await axios.get(`${URL}tipoVenta`)
@@ -588,15 +581,6 @@ async function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
     numeros[tipoFactura] = numero;
     await axios.put(`${URL}tipoventa`,numeros)
 }
-
-//ponemos el atributo pagado
-function verSiPagoONo(texto) {
-    if (texto === "CD"){
-        return true
-    }else{
-        return false
-    }
- }
 
 //pasamos el saldo en negro
 async function sumarSaldoAlClienteEnNegro(precio,codigo,valorizado){
@@ -625,55 +609,66 @@ const sacarIdentificadorTabla = (arreglo)=>{
 //Aca mandamos la venta en presupuesto
 const presupuesto = document.querySelector('.presupuesto')
 presupuesto.addEventListener('click',async (e)=>{
+    
     e.preventDefault()
-    if (listaProductos.length===0) {
-        alert("Cargar Productos")
-    }else{
-        venta.productos = listaProductos;
-        let tipoPago = await verElTipoDeVenta(tiposVentas); //vemos si es contado,cuenta corriente o presupuesto en el input[radio]
-        if (tipoPago === "Ninguno") {
-                alert("Seleccionar un modo de venta")
+
+    if (confirm("Presupuesto?")) {
+
+        if (listaProductos.length===0) {
+            //Avisamos que no se puede hacer una venta sin productos
+            alert("Cargar Productos")
+
         }else{
-            venta.nombreCliente = buscarCliente.value;
-            tipoVenta="Presupuesto"
-            venta._id = await tamanioVentas("presupuesto")
-            venta.descuento = (descuentoN.value);
-            venta.precioFinal = redondear(total.value);
-            venta.tipo_comp = tipoVenta;
-            venta.tipo_pago = tipopago(tipoPago);
-            venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.cod_comp,venta.tipo_pago);
-            venta.empresa = inputEmpresa.value;
-            venta.pagado = verSiPagoONo(venta.tipo_pago);//Ejecutamos para ver si la venta se pago o no
-            let valorizadoImpresion = "valorizado"
-            if (!valorizado.checked && venta.tipo_pago === "CC") {
-            valorizadoImpresion="no valorizado"
-            }
-            sacarIdentificadorTabla(venta.productos);
-            if (venta.tipo_pago !== "PP") {
-                venta.tipo_pago === "CC" && sumarSaldoAlClienteEnNegro(venta.precioFinal,venta.cliente,valorizado.checked);
-                venta.tipo_pago === "CC" && ponerEnCuentaCorrienteCompensada(venta,valorizado.checked);
-                venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,valorizado.checked,saldo_p.value);
 
-            for (let producto of venta.productos){
-                    if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
-                        producto.objeto.precio_venta = parseFloat(producto.cantidad) * (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
-                        producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
+            venta.productos = listaProductos;
+            venta.tipo_pago = await verElTipoDeVenta(tiposVentas); //vemos si es CD,CC o PP en el input[radio]
+            if (venta.tipo_pago === "Ninguno") {
+                    alert("Seleccionar un modo de venta")
+            }else{
+                venta.nombreCliente = buscarCliente.value;
+                tipoVenta="Presupuesto"
+                venta._id = await tamanioVentas("presupuesto")
+                venta.descuento = (descuentoN.value);
+                venta.precioFinal = redondear(total.value);
+                venta.tipo_comp = tipoVenta;
+                
+                //Le pasamos que es un presupuesto contado CD
+                venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.cod_comp,venta.tipo_pago);
+                venta.empresa = inputEmpresa.value;
+                let valorizadoImpresion = "valorizado"
+                if (!valorizado.checked && venta.tipo_pago === "CC") {
+                valorizadoImpresion="no valorizado"
+                }
+                sacarIdentificadorTabla(venta.productos);
+                //si la venta es CC Sumamos un saldo al cliente y ponemos en cuenta corriente compensada y historica
+                 if (venta.tipo_pago === "CC") {
+                     sumarSaldoAlClienteEnNegro(venta.precioFinal,venta.cliente,valorizado.checked);
+                     ponerEnCuentaCorrienteCompensada(venta,valorizado.checked);
+                     ponerEnCuentaCorrienteHistorica(venta,valorizado.checked,saldo_p.value);
+                    if (venta.tipo_pago !== "PP") {
+                        //sacamos el stock y tambien creamos el movimiento de producto
+                        for (let producto of venta.productos){
+                                if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
+                                    producto.objeto.precio_venta = parseFloat(producto.cantidad) * (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
+                                    producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
+                                }
+                                sacarStock(producto.cantidad,producto.objeto)
+                                await movimientoProducto(producto.cantidad,producto.objeto)
+                            }
                     }
-                    sacarStock(producto.cantidad,producto.objeto)
-                    await movimientoProducto(producto.cantidad,producto.objeto)
-                }
+                 }
+    
+                 await actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+                 ipcRenderer.send('nueva-venta',venta);
+                 if (impresion.checked) {
+                     if (venta.tipo_pago === "CC") {
+                         ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",,{},valorizadoImpresion])
+                     }else{
+                         ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",,{},valorizadoImpresion])
+                     }
+                 }
+                 window.location = "../index.html"
             }
-
-            await actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-            ipcRenderer.send('nueva-venta',venta);
-            if (impresion.checked) {
-                if (venta.tipo_pago === "CC") {
-                    ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",,{},valorizadoImpresion])
-                }else{
-                    ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",,{},valorizadoImpresion])
-                }
-            }
-            window.location = "../index.html"
         }
     }
 })
@@ -682,6 +677,7 @@ presupuesto.addEventListener('click',async (e)=>{
 const ticketFactura = document.querySelector('.ticketFactura')
 ticketFactura.addEventListener('click',async (e) =>{
     e.preventDefault()
+   if (confirm("Ticket Factura?")) {
     const stockNegativo = listaProductos.find(producto=>producto.cantidad < 0)
     if(stockNegativo){
         alert("Ticket Factura no puede ser productos en negativo");
@@ -691,8 +687,8 @@ ticketFactura.addEventListener('click',async (e) =>{
       venta.productos = listaProductos;
       const [iva21,iva105,gravado21,gravado105,cant_iva] = gravadoMasIva(venta.productos);
      tipoVenta = "Ticket Factura";
-     let tipoPago = await verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
-     if (tipoPago === "Ninguno") {
+     venta.tipo_pago = await verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
+     if (venta.tipo_pago === "Ninguno") {
         alert("Seleccionar un modo de venta")
         }else{
         venta.nombreCliente = buscarCliente.value;
@@ -705,8 +701,6 @@ ticketFactura.addEventListener('click',async (e) =>{
         numeroComprobante(tipoVenta);
         venta.cod_comp = verCodComprobante(tipoVenta)
         venta.nro_comp = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp)
-        venta.pagado = verSiPagoONo(venta.tipo_pago)
-        venta.tipo_pago = tipopago(tipoPago)   
         venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
         venta.comprob = venta.nro_comp;
         venta.gravado21 = gravado21;
@@ -744,6 +738,7 @@ ticketFactura.addEventListener('click',async (e) =>{
         }
     }
     }
+   }
  })
 
  //sacamos el gravado y el iva
@@ -850,7 +845,7 @@ cancelar.addEventListener('click',async e=>{
     if (confirm("Desea cancelar el Presupuesto")) {
         if (listaProductos.length !== 0) {
             const ventaCancelada = {}
-    
+            
             if (cliente._id) {
                 ventaCancelada.cliente = cliente._id
             }
@@ -865,11 +860,8 @@ cancelar.addEventListener('click',async e=>{
 
 // Vemos el tamanio de los Cancelados
 const tamanioCancelados = async() =>{
-    let retornar
-    await ipcRenderer.invoke('tamanioCancelado').then((tamanio)=>{
-        retornar =  tamanio
-    })
-        return `${retornar + 1}`
+    let tamanio = (await axios.get(`${URL}cancelados/tamanio`)).data;
+    return `${tamanio + 1}`;
 }
 
 const fs = require('fs');
@@ -1315,6 +1307,7 @@ const verTipoComp = (codigoComprobante)=>{
 const [Venta,Cliente,,,,,valoresQR] = arreglo
 ponerValores(Cliente,Venta,valoresQR)
 }
+
 //Inicio Compensada
 const ponerEnCuentaCorrienteCompensada = async(venta,valorizado)=>{
     const cuenta = {};

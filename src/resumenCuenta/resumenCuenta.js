@@ -12,7 +12,6 @@ const tbody = document.querySelector('.tbody');
 const saldoActual = document.querySelector('#saldoActual');
 const imprimir = document.querySelector('.imprimir')
 const desde = document.querySelector('#desde')
-const hasta = document.querySelector('#hasta')
 const ocultar = document.querySelector('.seccion-buscador')
 const volver = document.querySelector('.volver');
 
@@ -25,9 +24,7 @@ day = day < 10 ? `0${day}`: day;
 month = month < 10 ? `0${month}`: month;
 
 const date = `${year}-${month}-${day}`
-
 desde.value = date;
-hasta.value = date
 
 let situacion = "blanco";
 let listaVentas = [];
@@ -89,20 +86,17 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
     nombre.innerHTML = cliente.cliente
     direccion.innerHTML = `${cliente.direccion}-${cliente.localidad}`;
     telefono.innerHTML = cliente.telefono;
-    const desdeFecha = new Date(desde.value)
-    const hastaFecha = DateTime.fromISO(hasta.value).endOf('day')
-    let ventas = await axios.get(`${URL}ventas/cliente/${cliente._id}/${desdeFecha}/${hastaFecha}`)
-    ventas = ventas.data;
-    let presupuestos = await axios.get(`${URL}presupuesto/cliente/${cliente._id}/${desdeFecha}/${hastaFecha}`);
-    presupuestos = presupuestos.data;
+    let cuentas = (await axios.get(`${URL}cuentaHisto/cliente/${cliente._id}`)).data
+    cuentas = cuentas.filter(e=> {
+        return (e.fecha >= desde.value)
+    });
     nuevaLista = [];
-    listaVentas = [...ventas,...presupuestos];
+    listaVentas = cuentas;
     listarVentas(listaVentas,situacion)
 })
 
 function listarVentas(ventas,situacion) {
     ventas.sort(function(a,b){
-        console.log(a.fecha > b.fecha)
         if (a.fecha > b.fecha) {
             return 1
         }else if(a.fecha < b.fecha){
@@ -110,15 +104,6 @@ function listarVentas(ventas,situacion) {
         }
         return 0
     });
-    ventas = ventas.filter(venta=>venta.tipo_pago !== "CD")
-    ventas = ventas.filter(venta => {
-        if (((venta.tipo_comp === "Presupuesto" || venta.tipo_comp === "Ticket Factura"))) {
-            return venta
-        }else if((venta.pagado === true) && (venta.tipo_comp === "Recibos" || venta.tipo_comp === "Recibos_P")){
-            return venta
-        }
-    })
-    console.log(ventas)
     tbody.innerHTML = ""
     const aux = (situacion === "blanco") ? "Ticket Factura" : "Presupuesto";
     let listaAux = ventas;
@@ -132,20 +117,17 @@ function listarVentas(ventas,situacion) {
         })
     }
     let saldoAnterior = 0
-    console.log(listaAux)
     listaAux.forEach(venta =>{
         if (situacion === "negro") {
             saldoAnterior += (venta.tipo_comp === "Presupuesto") ? venta.precioFinal: 0
             let abonado = venta.abonado !== "" ? parseFloat(venta.abonado) : 0
             abonado = venta.precioFinal > parseFloat(venta.abonado) ? 0 : abonado
             saldoAnterior -= (venta.tipo_comp === "Recibos_P") ? venta.precioFinal  - abonado: 0
-            console.log(saldoAnterior);
         }else{
             saldoAnterior += (venta.tipo_comp === "Ticket Factura") ? venta.precioFinal: 0
             let abonado = venta.abonado !== "" ? parseFloat(venta.abonado) : 0
             abonado = venta.precioFinal > parseFloat(venta.abonado) ? 0 : abonado
             saldoAnterior -= (venta.tipo_comp === "Recibos") ? venta.precioFinal  - abonado: 0
-            console.log(saldoAnterior);
         }
     })
     parseFloat(saldoAnterior.toFixed(2))
@@ -158,32 +140,20 @@ function listarVentas(ventas,situacion) {
 
         tbody.innerHTML += `<tr><td></td><td></td><td></td><td></td><td>Saldo Anterior</td><td>${saldoAnterior}</td></tr>`
         listaAux.forEach(venta => {
-            let haber = 0;
-            let debe = 0
-            if (situacion === "negro") {
-                debe = (venta.tipo_comp === "Presupuesto" && venta.tipo_pago === "CC") ? (parseFloat(venta.precioFinal)) : 0;
-                haber = (venta.tipo_comp === "Recibos_P") ? (parseFloat(venta.precioFinal)) : 0;
-            }else{
-                debe = (venta.tipo_comp === "Ticket Factura" && venta.tipo_pago === "CC") ? (parseFloat(venta.precioFinal)) : 0
-                haber =  (venta.tipo_comp === "Recibos") ? (parseFloat(venta.precioFinal)) : 0
-            }
-
-            let saldito = parseFloat(saldoAnterior) - haber + debe;
-            saldoAnterior = parseFloat(saldoAnterior) - haber + debe;
             const fecha = new Date(venta.fecha);
             const dia = fecha.getDate();
             const mes = fecha.getMonth() + 1;
             const anio = fecha.getUTCFullYear();
            
-            
+            console.log(venta)
             tbody.innerHTML += `
                 <tr>
                     <td>${dia}/${mes}/${anio}</td>
                     <td>${venta.tipo_comp === "Recibos_P" ? "Recibos" : venta.tipo_comp}</td>
                     <td>${venta.nro_comp}</td>
-                    <td>${(debe === 0.00) ?  "" : debe.toFixed(2)}</td>
-                    <td>${(haber === 0.00) ? "" : haber.toFixed(2)}</td>
-                    <td>${(saldito).toFixed(2)}</td>
+                    <td>${(venta.debe === 0.00) ?  "" : venta.debe.toFixed(2)}</td>
+                    <td>${(venta.haber === 0.00) ? "" : venta.haber.toFixed(2)}</td>
+                    <td>${(venta.saldo).toFixed(2)}</td>
                 </tr>
             `
 

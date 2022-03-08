@@ -32,8 +32,7 @@ hasta.value = fechaDeHoy
 buscar.addEventListener('click',async e=>{
     const desdeFecha = new Date(desde.value);
     let hastaFecha = DateTime.fromISO(hasta.value).endOf('day');
-    let ventasCanceladas = await axios.get(`${URL}cancelados/${desdeFecha}/${hastaFecha}`);
-    ventasCanceladas = ventasCanceladas.data;
+    let ventasCanceladas = (await axios.get(`${URL}cancelados/${desdeFecha}/${hastaFecha}`)).data;
     tbody.innerHTML = "";
     ventasCanceladas.forEach((venta)=>{
         listarVentasCanceladas(venta)
@@ -51,15 +50,12 @@ const listarVentasCanceladas = async (venta)=>{
     let segundos = fecha.getSeconds()
     dia = dia < 10 ? `0${dia}` : dia ;
     mes = mes < 10 ? `0${mes}` : mes ;
-    let cliente = await axios.get(`${URL}clientes/id/${venta.cliente}`)
-    cliente = cliente.data;
-
            
         venta.productos.forEach(({cantidad,objeto}) => {
         tbody.innerHTML += `
             <tr>
                 <td>${dia}/${mes}/${anio}</td>
-                <td class = "cliente">${cliente.cliente}</td>
+                <td class = "cliente">${venta.cliente}</td>
                 <td>${objeto._id}</td>
                 <td>${objeto.descripcion}</td>
                 <td>${cantidad}</td>
