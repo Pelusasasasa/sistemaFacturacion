@@ -201,7 +201,9 @@ descuento.addEventListener('blur',e=>{
 
 factura.addEventListener('click',async e=>{
     e.preventDefault();
+    const venta = {};
     venta.tipo_pago = await verTipoPago();
+    console.log(venta.tipo_pago)
     if (facturaOriginal.value === "") {
         alert("No se escribio el numero de la factura Original")
     }else if(listaProductos.length === 0){
@@ -209,11 +211,12 @@ factura.addEventListener('click',async e=>{
     }else if(venta.tipo_pago === "NINGUNO"){
         alert("Elegir tipo de pago");
     }else{
-        const venta = {};
+
         venta.fecha = new Date()
         venta.cliente = codigoC.value;
         //Traemos el tamanio de ventas de la BD para el _id
-        venta._id = await tamanioVentas();
+        venta._id = await tamanioVentas() + 1 ;
+        venta.nombrecliente = buscarCliente.value;
         venta.tipo_comp = "Nota Credito";
         venta.observaciones = observaciones.value;
         venta.descuento = descuentoN.value;
@@ -221,12 +224,16 @@ factura.addEventListener('click',async e=>{
         venta.nro_comp = await traerNumeroComprobante(venta.cod_comp)
         venta.comprob = venta.nro_comp;
         venta.productos = listaProductos;
+        const [iva21,iva105,gravado21,gravado105,cant_iva] = gravadoMasIva(venta.productos);
+        venta.iva21 = iva21;
+        venta.iva105 = iva105;
+        venta.gravado21 = gravado21;
+        venta.gravado105 = gravado105;
+        venta.cant_iva = cant_iva;
         venta.numeroAsociado = facturaOriginal.value;
-        venta.cod_doc = (cliente.cuit.length > 8) ? 80 : 96;
-        venta.dnicuit = cliente.cuit;
-        venta.conIva = cliente.cond_iva;
-        venta.pagado = true;
-        venta.abonado = "0";
+        venta.dnicuit = dnicuit.value;
+        venta.cod_doc = (venta.dnicuit.length > 8) ? 80 : 96;
+        venta.conIva = conIva.value;
         venta.descuento = parseFloat(descuentoN.value);
         venta.precioFinal = parseFloat(total.value);
         venta.vendedor = vendedor;
@@ -238,21 +245,20 @@ factura.addEventListener('click',async e=>{
             await actualizarNroCom(venta.nro_comp,venta.cod_comp)
             
             //Traemos la venta relacionada con la nota de credito
-            let ventaRelacionada = (await axios.get(`${URL}ventas/${args}`)).data;
+            let ventaRelacionada = (await axios.get(`${URL}ventas/${venta.numeroAsociado}`)).data;
             if (ventaRelacionada.length === 0) {
-                ventaRelacionada = (await axios.get(`${URL}presupuesto/${args}`)).data;
+                ventaRelacionada = (await axios.get(`${URL}presupuesto/${venta.numeroAsociado}`)).data;
             }
-
             //mandamos para que sea compensada
-            ponerEnCuentaCorrienteCompensada(venta,true);
+            venta.tipo_pago === "CC" &&  ponerEnCuentaCorrienteCompensada(venta,true);
             //Mandamos par que sea historica
-            ponerEnCuentaCorrienteHistorica(venta,true,saldo.value)
+            venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
             //mandamos la venta
             ipcRenderer.send('nueva-venta',venta)
             //subimos a la afip la factura electronica
             let afip = await subirAAfip(venta,ventaRelacionada[0]);
             //Imprimos el ticket
-            imprimirVenta([venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100",afip])
+            imprimirVenta([venta,cliente,false,1,"ticket-factura",,afip])
             location.href="../index.html";
         }}})
 
@@ -260,7 +266,7 @@ const traerNumeroComprobante = async(codigo)=>{
     let retornar
     const tipo = (codigo === "008") ? "Ultima N Credito B" : "Ultima N Credito A"
     let numeros = (await axios.get(`${URL}tipoVenta`)).data;
-    let retornar = `0005-${numeros[tipo]}`
+    retornar = `${numeros[tipo]}`
     return retornar
 }
 
@@ -272,10 +278,10 @@ const actualizarNroCom = async(comprobante,codigo)=>{
     }else{
         tipoFactura = "Ultima N Credito A"
     }
-    numero = comprobante
+    numero = comprobante.split('-')[1];
     numero = (parseFloat(numero) + 1).toString().padStart(8,0)
     let numeros = (await axios.get(`${URL}tipoVenta`)).data;
-    numeros[tipoFactura] = numero;
+    numeros[tipoFactura] = `0005-${numero}`;
     await axios.put(`${URL}tipoventa`,numeros);
 }
 
@@ -400,7 +406,30 @@ dnicuit.addEventListener('focus',e=>{
     selecciona_value(dnicuit.id)
 })
 
+ //sacamos el gravado y el iva
+ const gravadoMasIva = (ventas)=>{
+    let totalIva105 = 0
+    let totalIva21=0
+    let gravado21 = 0 
+    let gravado105 = 0 
+    ventas.forEach(({objeto,cantidad}) =>{
+        if (objeto.iva === "N") {
+            gravado21 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)/1.21) 
+            totalIva21 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.21)
+        }else{
+            gravado105 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta/1.105))
+            totalIva105 += parseFloat(cantidad)*(parseFloat(objeto.precio_venta)-(parseFloat(objeto.precio_venta))/1.105)
+        }
+    })
+    let cantIva = 1
+    if (gravado105 !== 0 && gravado21 !== 0) {
+        cantIva = 2;
+    }
+    return [parseFloat(totalIva21.toFixed(2)),parseFloat(totalIva105.toFixed(2)),parseFloat(gravado21.toFixed(2)),parseFloat(gravado105.toFixed(2)),cantIva]
+ }
+
 const subirAAfip = async(venta,ventaAsociada)=>{
+    console.log(ventaAsociada)
     const ventaAnterior = await afip.ElectronicBilling.getVoucherInfo(parseFloat(ventaAsociada.nro_comp),5,parseFloat(ventaAsociada.cod_comp)); 
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));

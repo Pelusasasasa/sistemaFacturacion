@@ -86,24 +86,22 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
     nombre.innerHTML = cliente.cliente
     direccion.innerHTML = `${cliente.direccion}-${cliente.localidad}`;
     telefono.innerHTML = cliente.telefono;
-    let cuentas = (await axios.get(`${URL}cuentaHisto/cliente/${cliente._id}`)).data
+    let cuentas = (await axios.get(`${URL}cuentaHisto/cliente/${cliente._id}`)).data;
+    let ventasAnteriores = cuentas.filter(e=>e.fecha < desde.value);
+    let saldoAnterior = 0;
+     await ventasAnteriores.forEach(e=>{
+        saldoAnterior = ((e.tipo_comp === "Presupuesto" || e.tipo_comp === "Ticket Factura") ? (saldoAnterior + e.debe ): (saldoAnterior - e.haber));
+    })
+    console.log(saldoAnterior)
     cuentas = cuentas.filter(e=> {
         return (e.fecha >= desde.value)
     });
     nuevaLista = [];
     listaVentas = cuentas;
-    listarVentas(listaVentas,situacion)
+    listarVentas(listaVentas,situacion,saldoAnterior)
 })
 
-function listarVentas(ventas,situacion) {
-    ventas.sort(function(a,b){
-        if (a.fecha > b.fecha) {
-            return 1
-        }else if(a.fecha < b.fecha){
-            return -1
-        }
-        return 0
-    });
+function listarVentas(ventas,situacion,saldoAnterior) {
     tbody.innerHTML = ""
     const aux = (situacion === "blanco") ? "Ticket Factura" : "Presupuesto";
     let listaAux = ventas;
@@ -116,28 +114,6 @@ function listarVentas(ventas,situacion) {
             return (e.tipo_comp === aux || e.tipo_comp === "Recibos")
         })
     }
-    let saldoAnterior = 0
-    listaAux.forEach(venta =>{
-        if (situacion === "negro") {
-            saldoAnterior += (venta.tipo_comp === "Presupuesto") ? venta.precioFinal: 0
-            let abonado = venta.abonado !== "" ? parseFloat(venta.abonado) : 0
-            abonado = venta.precioFinal > parseFloat(venta.abonado) ? 0 : abonado
-            saldoAnterior -= (venta.tipo_comp === "Recibos_P") ? venta.precioFinal  - abonado: 0
-        }else{
-            saldoAnterior += (venta.tipo_comp === "Ticket Factura") ? venta.precioFinal: 0
-            let abonado = venta.abonado !== "" ? parseFloat(venta.abonado) : 0
-            abonado = venta.precioFinal > parseFloat(venta.abonado) ? 0 : abonado
-            saldoAnterior -= (venta.tipo_comp === "Recibos") ? venta.precioFinal  - abonado: 0
-        }
-    })
-    parseFloat(saldoAnterior.toFixed(2))
-    if (situacion === "negro") {
-        saldoAnterior = (cliente.saldo_p - saldoAnterior).toFixed(2);
-    }else{
-        saldoAnterior = (cliente.saldo - saldoAnterior).toFixed(2);
-    }
-    
-
         tbody.innerHTML += `<tr><td></td><td></td><td></td><td></td><td>Saldo Anterior</td><td>${saldoAnterior}</td></tr>`
         listaAux.forEach(venta => {
             const fecha = new Date(venta.fecha);
@@ -145,7 +121,6 @@ function listarVentas(ventas,situacion) {
             const mes = fecha.getMonth() + 1;
             const anio = fecha.getUTCFullYear();
            
-            console.log(venta)
             tbody.innerHTML += `
                 <tr>
                     <td>${dia}/${mes}/${anio}</td>

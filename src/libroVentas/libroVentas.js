@@ -65,8 +65,18 @@ const listar = (ventas)=>{
     let totaliva21 = 0;
     let totaliva105 = 0;
     let total = 0
-    let diaVentaAnterior = new Date((ventas[0].fecha)).getDate()
-
+    let diaVentaAnterior = new Date((ventas[0].fecha)).getDate();
+    diaVentaAnterior = diaVentaAnterior < 10 ? `0${diaVentaAnterior}` : diaVentaAnterior;
+    let tamanioVentas = ventas.length - 1;
+    ventas.sort((a,b)=>{
+        if (a.tipo_comp > b.tipo_comp) {
+            return 1
+        }
+        if (a.tipo_comp < b.tipo_comp) {
+            return -1
+        }
+        return 0
+    })
     ventas.forEach(async venta => {
         let fecha = new Date(venta.fecha)
         let day = fecha.getDate();
@@ -74,21 +84,53 @@ const listar = (ventas)=>{
         month = (month===0) ? month + 1 : month;
         day = (day < 10) ? `0${day}` : day;
         month = (month < 10) ? `0${month}` : month;
-
         let year = fecha.getFullYear();
-        const [gravado21,iva21,gravado105,iva105] = sacarIvas(venta.productos)
         
         let cliente = await axios.get(`${URL}clientes/id/${venta.cliente}`)
         cliente = cliente.data
         cond_iva = (cliente.cond_iva) ? (cliente.cond_iva) : "Consumidor Final";
 
-        if (diaVentaAnterior === day) {
-            totalgravado21 += await gravado21
-            totaliva21 += await iva21
-            totalgravado105 += await gravado105
-            totaliva105 += await iva105
-            total += await venta.precioFinal
+
+        if (venta.tipo_comp !== "Ticket Factura") {
+            gravado105 = 0;
+            gravado21 = 0;
+            iva105 = 0;
+            iva21 = 0;
         }else{
+            gravado105 = venta.gravado105;
+            gravado21 = venta.gravado21;
+            iva105 = venta.iva105;
+            iva21 = venta.iva21;
+        }
+        tbody.innerHTML += await `
+            <tr>
+                <td>${day}/${month}/${year}</td>
+                <td>${venta.nombreCliente}</td>
+                <td>${cond_iva}</td>
+                <td>${cliente.cuit}</td>
+                <td>${venta.tipo_comp}</td>
+                <td>${venta.nro_comp}</td>
+                <td>${gravado21}</td>
+                <td>${iva21}</td>
+                <td>${gravado105}</td>
+                <td>${iva105}</td>
+                <td>${venta.precioFinal}<td>
+            </tr>
+        `
+        if (diaVentaAnterior === day && (ventas.indexOf(venta) !== tamanioVentas)) {
+            totalgravado21 +=  venta.gravado21
+            totaliva21 +=  venta.iva21
+            totalgravado105 +=  venta.gravado105
+            totaliva105 +=  venta.iva105
+            total +=  venta.precioFinal
+        }else{
+
+            if ((ventas.indexOf(venta) === tamanioVentas) && ventas.tipo_comp === "Ticket Factura") {
+                totalgravado105 += venta.gravado105;
+                totalgravado21 += venta.gravado21;
+                totaliva105 += venta.ivatotaliva105;
+                totaliva21 += venta.iva21;
+            }
             tbody.innerHTML += await `
                 <tr>
                     <td></td>
@@ -111,40 +153,6 @@ const listar = (ventas)=>{
             totalgravado105 = 0
             totaliva105 = 0
         }
-        tbody.innerHTML += await `
-            <tr>
-                <td>${day}/${month}/${year}</td>
-                <td>${venta.nombreCliente}</td>
-                <td>${cond_iva}</td>
-                <td>${cliente.cuit}</td>
-                <td>${venta.tipo_comp}</td>
-                <td>0003-${venta.nro_comp}</td>
-                <td>${gravado21}</td>
-                <td>${iva21}</td>
-                <td>${gravado105}</td>
-                <td>${iva105}</td>
-                <td>${venta.precioFinal}<td>
-            </tr>
-        `
        
     });
-}
-
-const sacarIvas = (productos)=>{
-    let gravado21 = 0;
-    let iva21 = 0;
-    let gravado105 = 0;
-    let iva105 = 0;
-    productos.forEach(({objeto,cantidad})=>{
-        if (objeto.iva === "N") {
-            gravado21 = parseFloat(gravado21.toFixed(2)) + parseFloat(((cantidad * parseFloat(objeto.precio_venta))/1.21).toFixed(2))
-            iva21 += parseFloat((parseFloat(gravado21)*21/100).toFixed(2))
-        }else{
-            gravado105 = parseFloat(gravado105.toFixed(2)) + parseFloat(((cantidad * parseFloat(objeto.precio_venta))/1.105).toFixed(2))
-            iva105 += parseFloat((parseFloat(gravado105)*10.5/100).toFixed(2))
-        }
-
-    })
-
-    return [gravado21,iva21,gravado105,iva105]
 }

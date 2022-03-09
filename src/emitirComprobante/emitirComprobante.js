@@ -734,7 +734,7 @@ ticketFactura.addEventListener('click',async (e) =>{
             })
 
         };
-        !borraNegro && (window.location = '../index.html');
+        //!borraNegro && (window.location = '../index.html');
         }
     }
     }
@@ -928,103 +928,8 @@ ipcRenderer.once('venta',(e,args)=>{
 
 const borrarCuentaCorriente = async (numero)=>{
     ventaAnterior.tipo_pago === "CC" && await ipcRenderer.send('borrarVentaACliente',[venta.cliente,numero]);
-    //ipcRenderer.send('eliminar-venta',numero)
 }   
 
-const {DBFFile} = require ('dbffile');
-const { exit } = require('process');
-
-
-const imprimirTikectFactura = async(venta,cliente)=>{
-
-    const tipo_doc = (venta.cod_doc === 96) ? 67 : 50;
-    let cond_iva = 67;
-    let tipo_fact = 66;
-    if (cliente.cond_iva==="Inscripto") {
-        cond_iva = 73
-    }else if (cliente.cond_iva==="Exento") {
-        cond_iva = 69
-    } else if (cliente.cond_iva==="Monotributista") {
-        cond_iva = 77
-    }else{
-        cond_iva=67
-    };
-    (cond_iva===73) && (tipo_fact = 65);
-
-    let tipo_pago = ""
-
-    if (venta.tipo_pago === "CD") {
-        tipo_pago = "Contado";
-    }else if (venta.tipo_pago === "CC") {
-        tipo_pago = "Cuenta Corriente"
-    }else{
-        tipo_pago = "Presupuesto"
-    }
-
-    let fieldDescriptors = [
-        { name: 'Ref', type: 'B', size: 8},
-        { name: 'Codigo', type: 'C', size: 255 },
-        { name: 'Nombre', type: 'C', size: 255 },
-        { name: 'Cuit', type: 'C', size: 255 },
-        { name: 'Cod_iva', type: 'B', size: 8},
-        { name: 'Tipo_doc', type: 'B', size: 8},
-        { name: 'Tipo_fact', type: 'B', size: 8},
-        { name: 'Domicilio', type: 'C', size: 255 },
-        { name: 'Descuento', type: 'B', size: 8 ,decimalPlaces: 2},
-        { name: 'Tipo_pago', type: 'C', size: 255 },
-        { name: 'Vendedor', type: 'C', size: 255 },
-        { name: 'Empresa', type: 'C', size: 255 }
-    ];
-
-    let records = [
-        { Ref: venta.nro_comp,
-          Codigo: cliente._id,
-          Nombre:cliente.cliente,
-          Cuit:cliente.cuit,
-          Cod_iva:cond_iva,
-          Tipo_doc: parseFloat(tipo_doc),
-          Tipo_fact:tipo_fact,
-          Domicilio:cliente.direccion,
-          Descuento:(parseFloat(venta.descuento)),
-          Tipo_pago: tipo_pago,
-          Vendedor:venta.vendedor,
-          Empresa: venta.empresa
-        },
-    ];
-    ipcRenderer.send('fiscal',{fieldDescriptors,records})
-}
-
-const imprimirItem = async(venta,cliente)=>{
-    const datosAGuardar = [];
-    let fieldDescriptors = [
-        { name: 'ref', type: 'B', size: 8},
-        { name: 'descripcio', type: 'C', size: 255 },
-        { name: 'cantidad', type: 'B', size: 8, decimalPlaces: 2 },
-        { name: 'monto', type: 'B', size: 8, decimalPlaces: 2 },
-        { name: 'iva', type: 'B', size: 8, decimalPlaces: 2 },
-    ]
-    venta.productos.forEach(({objeto,cantidad})=>{
-
-        let iva = 21
-        if (objeto.iva === "N") {
-            iva = 21.00
-        }else{
-            iva = 10.50
-        }
-
-        const item = {
-            ref: venta.nro_comp,
-            descripcio: objeto.descripcion,
-            cantidad: cantidad,
-            monto: (parseFloat(objeto.precio_venta)*cantidad).toFixed(2),
-            iva: iva
-        }
-        datosAGuardar.push(item)
-    })
-    
-    ipcRenderer.send('item',{fieldDescriptors,datosAGuardar})
-
-}
 
 const subirAAfip = async(venta)=>{
     console.log(venta)
@@ -1256,16 +1161,16 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     conector.texto("------------------------------------------\n");
     Venta.productos && Venta.productos.forEach(({cantidad,objeto})=>{
         conector.texto(`${cantidad}/${objeto.precio_venta}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
-        conector.texto(`${objeto.descripcion.slice(0,30)}       ${(parseFloat(cantidad)*parseFloat(objeto.precio_venta)).toFixed(2)}\n`)
+        conector.texto(`${objeto.descripcion.slice(0,30)}    ${(parseFloat(cantidad)*parseFloat(objeto.precio_venta)).toFixed(2)}\n`)
     })
     conector.feed(2);
     conector.establecerTamanioFuente(2,1);
-    conector.texto("TOTAL            $" +  Venta.precioFinal + "\n");
+    conector.texto("TOTAL        $" +  Venta.precioFinal + "\n");
     conector.establecerTamanioFuente(1,1);
     conector.texto("Recibimos(mos)\n");
     conector.texto(`${venta.tipoPago === "CD" ? `Contado          ${Venta.precioFinal}`  : "Cuenta Corriente"}` + "\n");
     conector.establecerTamanioFuente(2,1);
-    conector.texto("CAMBIO           $0.00\n");
+    conector.texto("CAMBIO         $0.00\n");
     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
     conector.texto("*MUCHA GRACIAS*\n")
     conector.qrComoImagen("Soy el contenido del código QR");
