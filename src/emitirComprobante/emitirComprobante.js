@@ -1121,6 +1121,7 @@ const imprimirVenta = (arreglo)=>{
 
 const conector = new ConectorPlugin();
 const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
+    console.log(Venta)
     const fechaVenta = new Date(Venta.fecha)
     let dia = fechaVenta.getDate()
     let mes = fechaVenta.getMonth()+1;
@@ -1146,7 +1147,7 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     conector.texto("INICIO DE ACTIVIDADES: 02-03-07\n");
     conector.texto("IVA RESPONSABLE INSCRIPTO\n");
     conector.texto("------------------------------------------\n");
-    conector.texto(`${comprobante}   0005-${Venta.nro_comp}\n`);
+    conector.texto(`${comprobante}   ${Venta.nro_comp}\n`);
     conector.texto(`FECHA: ${dia}-${mes}-${anio}    Hora:${horas}:${minutos}:${segundos}\n`);
     conector.texto("------------------------------------------\n");
     conector.texto(`${buscarCliente.value}\n`);
@@ -1168,12 +1169,12 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     conector.texto("TOTAL        $" +  Venta.precioFinal + "\n");
     conector.establecerTamanioFuente(1,1);
     conector.texto("Recibimos(mos)\n");
-    conector.texto(`${venta.tipoPago === "CD" ? `Contado          ${Venta.precioFinal}`  : "Cuenta Corriente"}` + "\n");
+    conector.texto(`${venta.tipo_pago === "CD" ? `Contado          ${Venta.precioFinal}`  : "Cuenta Corriente"}` + "\n");
     conector.establecerTamanioFuente(2,1);
     conector.texto("CAMBIO         $0.00\n");
     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
     conector.texto("*MUCHA GRACIAS*\n")
-    conector.qrComoImagen("Soy el contenido del código QR");
+    conector.qrComoImagen(QR);
     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
     conector.establecerTamanioFuente(1,1);
     conector.texto("CAE:" + "                  " + "Vencimiento CAE:" + "\n")
@@ -1181,7 +1182,7 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     conector.feed(3)
     conector.cortar()
 
-    conector.imprimirEn("Microsoft Print to PDF")
+    conector.imprimirEn("SAMAS GIANT-100")
         .then(respuestaAlImprimir => {
             if (respuestaAlImprimir === true) {
                 console.log("Impreso correctamente");

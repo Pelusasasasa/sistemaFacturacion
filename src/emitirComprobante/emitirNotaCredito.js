@@ -259,7 +259,7 @@ factura.addEventListener('click',async e=>{
             let afip = await subirAAfip(venta,ventaRelacionada[0]);
             //Imprimos el ticket
             imprimirVenta([venta,cliente,false,1,"ticket-factura",,afip])
-            location.href="../index.html";
+            //location.href="../index.html";
         }}})
 
 const traerNumeroComprobante = async(codigo)=>{
@@ -577,6 +577,7 @@ const imprimirVenta = (arreglo)=>{
 
     const conector = new ConectorPlugin();
     const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
+        console.log(Venta)
         const fechaVenta = new Date(Venta.fecha)
         let dia = fechaVenta.getDate()
         let mes = fechaVenta.getMonth()+1;
@@ -602,34 +603,33 @@ const imprimirVenta = (arreglo)=>{
         conector.texto("INICIO DE ACTIVIDADES: 02-03-07\n");
         conector.texto("IVA RESPONSABLE INSCRIPTO\n");
         conector.texto("------------------------------------------\n");
-        conector.texto(`${comprobante}   0005-${Venta.nro_comp}\n`);
+        conector.texto(`${comprobante}   ${Venta.nro_comp}\n`);
         conector.texto(`FECHA: ${dia}-${mes}-${anio}    Hora:${horas}:${minutos}:${segundos}\n`);
         conector.texto("------------------------------------------\n");
         conector.texto(`${buscarCliente.value}\n`);
         conector.texto(`${dnicuit.value}\n`);
         conector.texto(`${conIva.value}\n`);
         conector.texto(`${direccion.value}   ${localidad.value}\n`);
-        venta.numeroAsociado && console.log("Numero Asociado")
-        venta.numeroAsociado && conector.texto(`${venta.numeroAsociado}\n`);
+        Venta.numeroAsociado && conector.texto(`${venta.numeroAsociado}\n`);
         conector.texto("------------------------------------------\n");
         conector.texto("CANTIDAD/PRECIO UNIT (%IVA)\n")
         conector.texto("DESCRIPCION           (%B.I)       IMPORTE\n")  
         conector.texto("------------------------------------------\n");
         Venta.productos && Venta.productos.forEach(({cantidad,objeto})=>{
             conector.texto(`${cantidad}/${objeto.precio_venta}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
-            conector.texto(`${objeto.descripcion.slice(0,30)}       ${(parseFloat(cantidad)*parseFloat(objeto.precio_venta)).toFixed(2)}\n`)
+            conector.texto(`${objeto.descripcion.slice(0,30)}     ${(parseFloat(cantidad)*parseFloat(objeto.precio_venta)).toFixed(2)}\n`)
         })
         conector.feed(2);
         conector.establecerTamanioFuente(2,1);
-        conector.texto("TOTAL            $" +  Venta.precioFinal + "\n");
+        conector.texto("TOTAL       $" +  Venta.precioFinal + "\n");
         conector.establecerTamanioFuente(1,1);
         conector.texto("Recibimos(mos)\n");
-        conector.texto(`${venta.tipoPago === "CD" ? `Contado          ${Venta.precioFinal}`  : "Cuenta Corriente"}` + "\n");
+        conector.texto(`${venta.tipo_pago === "CD" ? `Contado          ${Venta.precioFinal}`  : "Cuenta Corriente"}` + "\n");
         conector.establecerTamanioFuente(2,1);
-        conector.texto("CAMBIO           $0.00\n");
+        conector.texto("CAMBIO        $0.00\n");
         conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
         conector.texto("*MUCHA GRACIAS*\n")
-        conector.qrComoImagen("Soy el contenido del código QR");
+        conector.qrComoImagen(QR);
         conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
         conector.establecerTamanioFuente(1,1);
         conector.texto("CAE:" + "                  " + "Vencimiento CAE:" + "\n")
@@ -637,7 +637,7 @@ const imprimirVenta = (arreglo)=>{
         conector.feed(3)
         conector.cortar()
     
-        conector.imprimirEn("Microsoft Print to PDF")
+        conector.imprimirEn("SAMAS GIANT-100")
             .then(respuestaAlImprimir => {
                 if (respuestaAlImprimir === true) {
                     console.log("Impreso correctamente");
