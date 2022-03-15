@@ -259,9 +259,12 @@ factura.addEventListener('click',async e=>{
             let afip = await subirAAfip(venta,ventaRelacionada[0]);
             //Imprimos el ticket
             imprimirVenta([venta,cliente,false,1,"ticket-factura",,afip])
-            //location.href="../index.html";
+            await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
+            location.href="../index.html";
         }}})
 
+
+//Trae el numero de comrpobante dependiendo de si es nota de credito A o B
 const traerNumeroComprobante = async(codigo)=>{
     let retornar
     const tipo = (codigo === "008") ? "Ultima N Credito B" : "Ultima N Credito A"
@@ -270,6 +273,7 @@ const traerNumeroComprobante = async(codigo)=>{
     return retornar
 }
 
+//actualiza el numero de comprobante a uno mas
 const actualizarNroCom = async(comprobante,codigo)=>{
     let numero
     let tipoFactura
@@ -610,7 +614,7 @@ const imprimirVenta = (arreglo)=>{
         conector.texto(`${dnicuit.value}\n`);
         conector.texto(`${conIva.value}\n`);
         conector.texto(`${direccion.value}   ${localidad.value}\n`);
-        Venta.numeroAsociado && conector.texto(`${venta.numeroAsociado}\n`);
+        Venta.numeroAsociado && conector.texto(`Comp Original Nº: ${venta.numeroAsociado}\n`);
         conector.texto("------------------------------------------\n");
         conector.texto("CANTIDAD/PRECIO UNIT (%IVA)\n")
         conector.texto("DESCRIPCION           (%B.I)       IMPORTE\n")  

@@ -726,7 +726,9 @@ ticketFactura.addEventListener('click',async (e) =>{
         actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp);
         const afip = await subirAAfip(venta)
         await ipcRenderer.send('nueva-venta',venta);
+        const cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
         await imprimirVenta([venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100",afip]);
+        await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
 
         if (borraNegro) {
             ipcRenderer.on('clienteModificado',async(e,args)=>{
@@ -1121,7 +1123,6 @@ const imprimirVenta = (arreglo)=>{
 
 const conector = new ConectorPlugin();
 const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
-    console.log(Venta)
     const fechaVenta = new Date(Venta.fecha)
     let dia = fechaVenta.getDate()
     let mes = fechaVenta.getMonth()+1;
