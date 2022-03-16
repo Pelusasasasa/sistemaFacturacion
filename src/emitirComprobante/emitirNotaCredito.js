@@ -641,7 +641,7 @@ const imprimirVenta = (arreglo)=>{
         conector.feed(3)
         conector.cortar()
     
-        conector.imprimirEn("SAMAS GIANT-100")
+        conector.imprimirEn("SAM4S GIANT-100")
             .then(respuestaAlImprimir => {
                 if (respuestaAlImprimir === true) {
                     console.log("Impreso correctamente");

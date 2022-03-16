@@ -87,6 +87,6 @@ const fecha = document.querySelector('.fecha')
 
     ipcRenderer.on('imprimir',(e,args)=>{
         [venta,cliente,,,,valorizado] = JSON.parse(args)
-        console.log(valorizado);
+        console.log(JSON.parse(args))
         listar(venta,cliente,valorizado)
     })

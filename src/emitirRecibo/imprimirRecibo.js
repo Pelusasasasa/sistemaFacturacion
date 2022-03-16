@@ -1,13 +1,14 @@
 const {ipcRenderer} = require('electron')
 
 ipcRenderer.on('imprimir',(e,args)=>{
-    const [Venta,Cliente,,,,,,arreglo,total] = JSON.parse(args)
+    const [Venta,Cliente,,,,arreglo,total] = JSON.parse(args)
     console.log(JSON.parse(args))
     listar(Venta,Cliente,arreglo,total)
 })
 
 const listar = (venta,Cliente,lista,precio)=>{
-
+console.log(lista)
+console.log(precio)
 const numero = document.querySelector('.numero')
 const fecha = document.querySelector('.fecha');
 const cliente = document.querySelector('.cliente')

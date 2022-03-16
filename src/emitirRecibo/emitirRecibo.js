@@ -106,7 +106,7 @@ vendedor.innerHTML = `<h3>${Vendedor}</h3>`
 codigo.addEventListener('keypress', async (e)=>{
     if (e.key === 'Enter') {
         if (codigo.value !== "") {
-            let cliente = (await axios.get(`${URL}clientes/id/${codigo.value.toUpperCase()}`)).data;
+            cliente = (await axios.get(`${URL}clientes/id/${codigo.value.toUpperCase()}`)).data;
             if ((cliente === "")) {
                 alert("Cliente no encontrado")
                 codigo.value = "";
@@ -287,7 +287,7 @@ const hacerRecibo = async()=>{
     const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
     const impresora = recibo.tipo_comp === "Recibos" ? "SAM4S GIANT-100" : undefined;
     // arregloParaImprimir contiene todos las ventas que tiene pagadas y total contiene el total del recibo
-    // ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,impresora,afip,arregloParaImprimir,total.value]);
+    ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,arregloParaImprimir,total.value]);
     location.href = "../index.html"
 }
 

@@ -238,31 +238,27 @@ ipcMain.on('imprimir-venta',async(e,args)=>{
         copies: cantidad,
     };
     if (tipo === "Recibos_P") {
-        abrirVentana("emitirRecibo/imprimirRecibo.html",1000,900)
+        abrirVentana("emitirRecibo/imprimirRecibo.html",1000,900);
 
-    }else if(tipo === "ticket-factura" || tipo === "Recibos"){
+    }else if(tipo === "Recibos"){
         abrirVentana("emitirComprobante/imprimirTicket.html",800,200);
     }else{
-        console.log("b")
-        abrirVentana("emitirComprobante/imprimir.html",1000,500)
+        abrirVentana("emitirComprobante/imprimir.html",1000,500);
 
     }
-    await imprimir(options,args)
+    await imprimir(options,args);
 })
 
 //funcion para imprimir presupuesto
 const imprimir = (opciones,args)=>{
     nuevaVentana.webContents.on('did-finish-load', function() {
         nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
-        if(args[0].tipo_comp !== "Ticket Factura" || args[0].tipo_comp !== "Recibos"){
             nuevaVentana.webContents.print(opciones,(success, errorType) => {
                     if (success) {
                         ventanaPrincipal.focus()
-                        //nuevaVentana.close();
+                        nuevaVentana.close();
                     }
-              })
-        }
-
+        })
     });
 }   
 

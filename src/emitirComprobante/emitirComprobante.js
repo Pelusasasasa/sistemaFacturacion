@@ -607,7 +607,6 @@ const sacarIdentificadorTabla = (arreglo)=>{
 //Aca mandamos la venta en presupuesto
 const presupuesto = document.querySelector('.presupuesto')
 presupuesto.addEventListener('click',async (e)=>{
-    
     e.preventDefault()
 
     if (confirm("Presupuesto?")) {
@@ -659,13 +658,20 @@ presupuesto.addEventListener('click',async (e)=>{
                  await actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
                  ipcRenderer.send('nueva-venta',venta);
                  if (impresion.checked) {
+                     let cliente = {
+                         _id:codigoC.value,
+                         cliente: buscarCliente.value,
+                         cuit: dnicuit.value,
+                         direccion: direccion.value,
+                         localidad: localidad.value
+                     }
                      if (venta.tipo_pago === "CC") {
-                         ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",,{},valorizadoImpresion])
+                         ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion])
                      }else{
-                         ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",,{},valorizadoImpresion])
+                         ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion])
                      }
                  }
-                 window.location = "../index.html"
+                 window.location = "../index.html";
             }
         }
     }
@@ -725,7 +731,7 @@ ticketFactura.addEventListener('click',async (e) =>{
         const afip = await subirAAfip(venta)
         await ipcRenderer.send('nueva-venta',venta);
         const cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
-        await imprimirVenta([venta,cliente,false,1,"ticket-factura","SAM4S GIANT-100",afip]);
+        await imprimirVenta([venta,cliente,afip]);
         await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
 
         if (borraNegro) {
@@ -1179,7 +1185,7 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     conector.feed(3)
     conector.cortar()
 
-    conector.imprimirEn("SAMAS GIANT-100")
+    conector.imprimirEn("SAM4S GIANT-100")
         .then(respuestaAlImprimir => {
             if (respuestaAlImprimir === true) {
                 console.log("Impreso correctamente");
