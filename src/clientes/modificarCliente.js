@@ -1,4 +1,7 @@
 const { ipcRenderer } = require("electron")
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
 
 const nombre = document.querySelector('#nombre')
 const localidad = document.querySelector('#localidad')
@@ -84,6 +87,7 @@ ipcRenderer.on('datos-clientes',(e,args)=>{
 const modificar = document.querySelector('.modificar')
 modificar.addEventListener('click', (e)=>{
     e.preventDefault()
+    modificar.classList.add('none')
     const inputs = document.querySelectorAll('input')
     const selects = document.querySelector('#conIva')
         selects.toggleAttribute('disabled')

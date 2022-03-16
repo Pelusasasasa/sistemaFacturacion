@@ -147,11 +147,11 @@ botonEnviar.addEventListener('click',async e =>{
         observacion: observaciones.value,
         listaVenta: listaVenta.value
     }
-    const inicial = ((nombre.value)[0]).toUpperCase()
-    let numero = await axios.get(`${URL}clientes/crearCliente/${inicial}`)
-    cliente._id = numero.data
-    await axios.post(`${URL}clientes`,cliente)
-    window.close()
+    const inicial = ((nombre.value)[0]).toUpperCase();
+    let numero = await axios.get(`${URL}clientes/crearCliente/${inicial}`);
+    const id = numero.data;
+    await axios.post(`${URL}clientes`,cliente);
+    window.close();
     
 });
 
