@@ -217,10 +217,8 @@ codigo.addEventListener('keypress',async (e) => {
                 const precio = document.querySelector('.parte-producto_precio')
                 let descripcion = document.querySelector('.parte-producto_descripcion')
                 descripcion.classList.remove('none')
-                ipcRenderer.send('get-producto',"888-888");
-                ipcRenderer.on('get-producto',(e,args)=>{
-                    descripcion.children[0].value = JSON.parse(args).descripcion;
-                })
+                let producto = (await axios.get(`${URL}productos/888-888`)).data;
+                descripcion.children[0].value = producto.descripcion;
                 precio.classList.remove('none')
                 precio.children[0].focus()
                 precio.addEventListener('keypress',e=>{
@@ -733,10 +731,8 @@ ticketFactura.addEventListener('click',async (e) =>{
         if (borraNegro) {
             ipcRenderer.on('clienteModificado',async(e,args)=>{
                 await borrarCuentaCorriente(ventaDeCtaCte)
-            })
-
-        };
-        //!borraNegro && (window.location = '../index.html');
+            })};
+        !borraNegro && (window.location = '../index.html');
         }
     }
     }
@@ -919,7 +915,7 @@ ipcRenderer.once('venta',(e,args)=>{
     ipcRenderer.on('traerVenta',async (e,args)=>{
         const venta = JSON.parse(args)[0]
         ventaAnterior = venta
-        const cliente = JSON.parse(await ipcRenderer.invoke('get-cliente',venta.cliente))
+        let cliente = (await axios.get(`${URL}clientes/id/${venta.cliente}`)).data;
         ponerInputsClientes(cliente)
         venta.productos.forEach(producto =>{
             const {objeto,cantidad} = producto;

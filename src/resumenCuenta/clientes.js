@@ -1,8 +1,12 @@
 const {ipcRenderer} = require('electron');
 const buscarCliente = document.querySelector('#buscarCliente')
 const resultado = document.querySelector('#resultado')
-let clientes = ''
+let clientes = '';
 let texto;  
+
+const axios = require('axios');
+require('dotenv').config();
+const URL = process.env.URL;
 
 const body = document.querySelector('body')
 body.addEventListener('keypress',e=>{
@@ -15,9 +19,8 @@ body.addEventListener('keypress',e=>{
 let situacion = "blanco"
 
 
-ipcRenderer.on('traerSaldo',async(e,args) =>{
-    console.log("b");
-    let clientes = JSON.parse(args);
+const listarClientes = async(lista) =>{
+    let clientes = lista;
     clientes = clientes.sort(function(a,b){
         let A = a.cliente.toUpperCase()
         let B = b.cliente.toUpperCase()
@@ -33,7 +36,6 @@ ipcRenderer.on('traerSaldo',async(e,args) =>{
     });
 
    clientes = (situacion === "blanco") ? retornarClientes(clientes,"saldo") : retornarClientes(clientes,"saldo_p");
-   console.log(clientes)
     for(let cliente of clientes){
         let nombre = cliente.cliente.toLowerCase();
         if(nombre.indexOf(texto) !== -1){
@@ -56,8 +58,7 @@ ipcRenderer.on('traerSaldo',async(e,args) =>{
     const primerCliente = resultado.firstElementChild.id
     let tr = document.getElementById(primerCliente)
     tr.classList.add('seleccionado')
-
-})
+}
 
 function recorrerConFlechas(e) {
         if (e.key === "ArrowDown") {
@@ -98,13 +99,11 @@ ipcRenderer.on('situacion',async(e,args)=>{
 })
 
 //compramaos si en el input de buscar el texto que escribimos es igual al nombre de algun cliente
-const filtrar = ()=>{
-    console.log("a");
+const filtrar =async ()=>{
     resultado.innerHTML='';
     texto = buscarCliente.value.toLowerCase();
-
-    ipcRenderer.send('traerSaldo',texto);
-
+    let clientes = (await axios.get(`${URL}clientes`)).data;
+    listarClientes(clientes)
 }
 filtrar()
 

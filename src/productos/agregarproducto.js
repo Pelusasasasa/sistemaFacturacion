@@ -1,3 +1,6 @@
+const axios = require('axios');
+require('dotenv').config();
+const URL = process.env.URL;
 
 const codigo = document.querySelector('#codigo');
 const codFabrica = document.querySelector('#cod-fabrica');
@@ -24,6 +27,7 @@ let letraIva = "N"
 let costoT = 0 //costo total
 let precioV = 0 //Precio Venta
 let dolar = 0
+
 const {ipcRenderer} = require('electron');
 
 //No enviar el formulario al apretar enter
@@ -42,17 +46,14 @@ ipcRenderer.on('traerDolar',(e,args)=>{
     dolar = parseFloat(args)
 })
 
-codigo.addEventListener('blur',e=>{
+codigo.addEventListener('blur',async e=>{
     if(codigo.value !== ""){
-        ipcRenderer.send('get-producto',codigo.value);
-        ipcRenderer.on('get-producto',(e,args)=>{
-            const producto = JSON.parse(args)
+        let producto = (await axios.get(`${URL}productos/${codigo.value}`)).data;
             if(producto !== ""){
                 alert("El codigo ya es utilizador por " + producto.descripcion)
                 codigo.value = "";
                 codigo.focus(); 
             }
-        })
     }
 })
 
@@ -111,12 +112,10 @@ agregar.addEventListener('click' , (e) =>{
         precio_venta: precioVenta.value,
         unidad: unidad.value
     }
-    ipcRenderer.send('nuevo-producto',producto)
-    formularioProducto.reset();
-})
 
-ipcRenderer.on('producto-guardado', (e,args) =>{
-    console.log(JSON.parse(args))
+    //Enviamos el producto al servidor
+    await axios.post(`${URL}productos`,producto)
+    formularioProducto.reset();
 })
 
 

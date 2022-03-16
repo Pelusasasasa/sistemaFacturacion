@@ -95,7 +95,7 @@ modificar.addEventListener('click', (e)=>{
 
 const nuevoCliente = {}
 const guardar = document.querySelector('.guardar')
-guardar.addEventListener('click',e =>{
+guardar.addEventListener('click',async e =>{
     for(let i of moroso){
         i.checked && (condicion=i.value)
     }
@@ -115,7 +115,7 @@ guardar.addEventListener('click',e =>{
     nuevoCliente.cond_fact = conFact.value 
     nuevoCliente.lim_compra = parseFloat(limite.value) 
     console.log(nuevoCliente)
-    ipcRenderer.send('modificarCliente',nuevoCliente)
+    await axios.put(`${URL}clientes/${nuevoCliente._id}`,nuevoCliente);
     window.close()
 })
 

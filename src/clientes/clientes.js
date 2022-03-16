@@ -59,7 +59,6 @@ const filtrar = async ()=>{
     let clientes = await axios.get(`${URL}clientes/${texto}`);
     clientes = clientes.data;
     ponerClientes(clientes)
-    //ipcRenderer.send('get-clientes',texto);
 }
 filtrar()
 
@@ -99,13 +98,13 @@ const inputseleccionado = (e) =>{
 }
 
 
-eliminar.addEventListener('click',e=>{
+eliminar.addEventListener('click',async e=>{
     e.preventDefault()
     const clienteEliminar = document.querySelector('.seleccionado')
     if (clienteEliminar ) {
         const cliente = clienteEliminar.children[1].innerHTML;
         if(confirm("Eliminar Cliente " + cliente)){
-            ipcRenderer.send('eliminar-cliente',clienteEliminar.id);
+            await axios.delete(`${URL}clientes/${clienteEliminar.id}`);
             location.reload()
         }
     }else{

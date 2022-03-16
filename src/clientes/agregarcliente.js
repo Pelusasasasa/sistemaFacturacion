@@ -151,7 +151,6 @@ botonEnviar.addEventListener('click',async e =>{
     let numero = await axios.get(`${URL}clientes/crearCliente/${inicial}`)
     cliente._id = numero.data
     await axios.post(`${URL}clientes`,cliente)
-    //ipcRenderer.send('nuevo-cliente',cliente);
     window.close()
     
 });

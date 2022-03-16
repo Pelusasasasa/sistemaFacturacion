@@ -1,4 +1,4 @@
-const { ipcRenderer } = require("electron");
+
 const tbody = document.querySelector('.tbody')
 const body = document.querySelector('body')
 const salir = document.querySelector('.salirBoton')
@@ -12,8 +12,6 @@ require("dotenv").config;
 const URL = process.env.URL;
 let seleccionado
 
-
-ipcRenderer.send('stockNegativo')
 
 body.addEventListener('keydown',e=>{
     if (e.key === "Escape") {

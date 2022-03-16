@@ -40,7 +40,6 @@ const mostrarNegro = ()=>{
 const traerSaldo = async()=>{
     Clientes = await axios.get(`${URL}clientes`)
     Clientes = Clientes.data;
-    console.log(Clientes)
     mostrarLista(Clientes)
 }
 traerSaldo()

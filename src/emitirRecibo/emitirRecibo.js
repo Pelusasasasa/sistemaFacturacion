@@ -103,13 +103,16 @@ let arregloParaImprimir = [];
 vendedor.innerHTML = `<h3>${Vendedor}</h3>`
 
 
-codigo.addEventListener('keypress', (e)=>{
+codigo.addEventListener('keypress', async (e)=>{
     if (e.key === 'Enter') {
         if (codigo.value !== "") {
-            ipcRenderer.invoke('get-cliente',(codigo.value).toUpperCase()).then((args)=>{
-            cliente = JSON.parse(args);
-            (cliente === "") ? alert("Cliente no encontrado") : inputsCliente(cliente);
-            })
+            let cliente = (await axios.get(`${URL}clientes/id/${codigo.value.toUpperCase()}`)).data;
+            if ((cliente === "")) {
+                alert("Cliente no encontrado")
+                codigo.value = "";
+            }else{
+                inputsCliente(cliente);
+            }
         }else{
             ipcRenderer.send('abrir-ventana',"clientes")
         }

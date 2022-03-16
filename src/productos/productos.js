@@ -78,7 +78,6 @@ async function filtrar(){
     }
     productos = productos.data
     ponerProductos(productos);
-    //ipcRenderer.send('get-productos',[texto,select.value]);
 }
 
 const ponerProductos = productos =>{
@@ -177,10 +176,10 @@ ingresarMov.addEventListener('click', e => {
 
 //Eliminar un producto
 const eliminar = document.querySelector('.eliminar')
-eliminar.addEventListener('click',e=>{
+eliminar.addEventListener('click',async e=>{
     if (seleccionado) {
        if ( confirm('Quieres eliminar producto')) {
-        ipcRenderer.send('eliminar-producto',seleccionado.id)
+        await axios.delete(`${URL}productos/${seleccionado.id}`)
         location.reload()
        }
     }else{
