@@ -258,7 +258,7 @@ factura.addEventListener('click',async e=>{
             //subimos a la afip la factura electronica
             let afip = await subirAAfip(venta,ventaRelacionada[0]);
             //Imprimos el ticket
-            imprimirVenta([venta,cliente,false,1,"ticket-factura",,afip])
+            imprimirVenta([venta,cliente,afip])
             await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
             location.href="../index.html";
         }}})
@@ -669,6 +669,6 @@ const imprimirVenta = (arreglo)=>{
         }
     }
     
-    const [Venta,Cliente,,,,,valoresQR] = arreglo
+    const [Venta,Cliente,valoresQR] = arreglo
     ponerValores(Cliente,Venta,valoresQR)
     }

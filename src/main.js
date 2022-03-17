@@ -34,8 +34,12 @@ global.nuevaVentana = null;
 global.ventanaPrincipal = null
 
 app.on('window-all-closed',()=>{
-    app.quit()
-})
+    if (process.platform !== "darwin") {
+        app.quit();    
+    }
+});
+
+
 function crearVentanaPrincipal() {
     ventanaPrincipal = new BrowserWindow({  
         //width: 7000,
@@ -87,38 +91,6 @@ ipcMain.on('get-productos', async (e, args=["","descripcion"]) => {
     e.reply('get-productos', JSON.stringify(productos))
 })
 
-//Cambiamos el codigo de un producto
-ipcMain.on('cambio-codigo',async(e,args)=>{
-    const [idViejo,idNuevo] = args;
-    const productos = await axios.get(`${URL}productos/${idViejo}`)
-    const nuevoProducto=productos.data
-    nuevoProducto._id=idNuevo
-
-    await axios.post(`${URL}productos`,nuevoProducto)   
-    await axios.delete(`${URL}productos/${idViejo}`)
- })
-
-
-//Cambiar stock de un producto
-ipcMain.on('cambiarStock',async (e,arreglo)=>{
-    const [id,nuevoStock] = arreglo;
-    let producto = await axios.get(`${URL}productos/${id}`)
-    producto = producto.data;
-    producto.stock = nuevoStock;
-    await axios.put(`${URL}productos/${id}`,producto)
-})
-
-//descontamos el stock
-ipcMain.on('descontarStock', async (e, args) => {
-    const [ cantidad , id] = args;
-    let producto = await axios.get(`${URL}productos/${id}`)
-    producto = producto.data
-    const descontar = parseInt(producto.stock) - parseInt(cantidad)
-    producto.stock = descontar.toFixed(2)
-    await axios.put(`${URL}productos/${id}`,producto)
-})
-
-
 //mandamos el producto a emitir comprobante
 ipcMain.on('mando-el-producto', async (e, args) => {
     let producto = await axios.get(`${URL}productos/${args._id}`);
@@ -128,15 +100,6 @@ ipcMain.on('mando-el-producto', async (e, args) => {
         cantidad: args.cantidad
     }))
 })
-
-
-//probar imagenes 
-ipcMain.on('traerImagen',async(e,args)=>{
-    let path = await axios.get(`${URL}productos/imagenes/imagen`)
-    path = path.data;
-    e.reply("traerImagen",JSON.stringify(path))
-})
-
 //FIN PRODUCTOS
 
 
@@ -165,17 +128,9 @@ ipcMain.on('abrir-ventana-modificar-cliente', (e, args) => {
 
 //mandamos el cliente a emitir comprobante
 ipcMain.on('mando-el-cliente', async (e, args) => {
-    let cliente = await axios.get(`${URL}clientes/id/${args}`)
-    cliente = cliente.data
+    let cliente = (await axios.get(`${URL}clientes/id/${args}`)).data
     ventanaPrincipal.webContents.send('mando-el-cliente', JSON.stringify(cliente))
     ventanaPrincipal.focus()
-})
-
-//Buscar Cliente por el cuit o dni
-ipcMain.on('buscar-cliente',async (e,args)=>{
-    let cliente = await axios.get(`${URL}clientes/cuit/${args}`)
-    cliente = cliente.data
-    e.reply('buscar-cliente',JSON.stringify(cliente))
 })
 
 ipcMain.on('borrarVentaACliente',async (e,args)=>{
@@ -262,25 +217,6 @@ const imprimir = (opciones,args)=>{
     });
 }   
 
-//buscamos las ventas
-ipcMain.handle('traerVentas' ,async (e,args)=>{
-    const lista=[]
-    for (const id of args) {
-        let venta = await axios.get(`${URL}ventas/${id}`)
-        venta = venta.data;
-        if(venta.length !== 0){
-            lista.push(venta[0])
-        }else{
-            let presupuesto = await axios.get(`${URL}presupuesto/${id}`)
-            presupuesto = presupuesto.data;
-            if (presupuesto.length !== 0) {
-                lista.push(presupuesto[0])
-            }
-        }
-    }
-    return (JSON.stringify(lista))
-})
-
 //Mandamos la modificacion de la venta
 ipcMain.on('ventaModificada',async (e,[args,id])=>{
      let venta = await axios.get(`${URL}ventas/${id}`)
@@ -317,60 +253,6 @@ ipcMain.on('ventaModificada',async (e,[args,id])=>{
     ipcMain.on('eliminar-venta',async(e,id)=>{
     })
 //FIN VENTAS
-
-//INICIO NUMEROS
-
-//mandamos el tipo de comprobante
-ipcMain.on('mando-tipoCom', async (e, args) => {
-    let numeros = await axios.get(`${URL}tipoVenta`)
-    numeros=numeros.data
-    e.reply('numeroComp', JSON.stringify(numeros[0][args]))
-})
-
-//Traer los numeros
-ipcMain.handle('traerNumeros', async (e,args) => {
-    let numeros = await axios.get(`${URL}tipoVenta`);
-    numeros=numeros.data;
-    return JSON.stringify(numeros[args])
-})
-
-//traemos los numeros actuales
-ipcMain.on('recibir-numeros', async (e, args) => {
-    let numeros = await axios.get(`${URL}tipoVenta`);
-    numeros=numeros.data
-    e.reply('numeros-enviados', JSON.stringify(numeros))
-})
-
-//Ver un numero en especials
-ipcMain.on('vernumero', async (e, args) => {
-    let numero = await axios.get(`${URL}tipoVenta`)
-    numero = numero.data;
-    e.reply('numeromandado', JSON.stringify(numero[args]))
-})
-
-//modificamos los numeros manualmente
-ipcMain.on('enviar-numero', async (e, args) => {
-    await axios.put(`${URL}tipoVenta`,args)
-})
-
-//modificamos los numeros
-ipcMain.on('modificar-numeros',async(e,args)=>{
-    [numero,tipo] = args
-    let numeros = await axios.get(`${URL}tipoVenta`)
-    numeros = numeros.data;
-    numeros[tipo] = numero;
-    await axios.put(`${URL}tipoventa`,numeros)
-})
-
-//llevar los dolares al crear un producto
-ipcMain.on('traerDolar',async e=>{
-    let numeros = await axios.get(`${URL}tipoVenta`)
-    numeros = numeros.data
-    const dolar = numeros.dolar
-    e.reply('traerDolar',JSON.stringify(dolar))
-})
-
-//FIN NUMEROS
 
 //Abrir ventana para modificar un producto
 ipcMain.on('abrir-ventana-modificar-producto',  (e, args) => {
@@ -416,8 +298,7 @@ ipcMain.on('abrir-ventana-info-movimiento-producto',async (e,args)=>{
 
 //informacion de movimiento de producto
     nuevaVentana.on('ready-to-show',async()=>{
-        let producto = await axios.get(`${URL}movProductos/${args}`)
-        producto = producto.data
+        let producto = (await axios.get(`${URL}movProductos/${args}`)).data;
         nuevaVentana.webContents.send('datos-movimiento-producto',JSON.stringify(producto))
     })
 })

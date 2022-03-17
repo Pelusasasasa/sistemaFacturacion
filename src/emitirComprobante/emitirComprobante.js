@@ -774,10 +774,8 @@ async function generarQR(texto) {
 //funcion que busca en la afip a una persona
  const buscarAfip = document.querySelector('.buscarAfip')
  buscarAfip.addEventListener('click',  (e)=>{
-    ipcRenderer.send('buscar-cliente',dnicuit.value)
-    ipcRenderer.on('buscar-cliente',(e,args)=>{
-        cliente = JSON.parse(args)
-        if (args.length !== 2) {
+    let cliente = (await axios.get(`${URL}clientes/cuit/${args}`)).data
+        if (cliente === "") {
             ponerInputsClientes(cliente)
         }else{
                 if (dnicuit.value) {
@@ -794,7 +792,6 @@ async function generarQR(texto) {
                    }
                 }
             }
-    })
     observaciones.focus()
  })
 

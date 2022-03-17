@@ -40,11 +40,11 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
 //Traer el dolar
-ipcRenderer.send('traerDolar')
-ipcRenderer.on('traerDolar',(e,args)=>{
-    args = JSON.parse(args)
-    dolar = parseFloat(args)
-})
+const traerDolar = async()=>{
+    let numeros = (await axios.get(`${URL}tipoVenta`)).data;
+    dolar = numeros.dolar;
+}
+traerDolar();
 
 codigo.addEventListener('blur',async e=>{
     if(codigo.value !== ""){

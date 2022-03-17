@@ -1,4 +1,5 @@
 const { ipcRenderer } = require("electron")
+const remote = require('electron');
 const tipoConexion = require('./config.js')
 const axios = require("axios");
 require("dotenv").config;
@@ -127,5 +128,9 @@ ipcRenderer.on("validarUsuario",(e,args)=>{
 
 const salir = document.querySelector('.salir');
 salir.addEventListener('click',e=>{
-    ipcRenderer.send('cerrar-app');
+    // ipcRenderer.send('cerrar-app');
+    window.close();
+    // console.log(remote)
+    // let w = remote.getCurrentWindow()
+    // w.close()
 })

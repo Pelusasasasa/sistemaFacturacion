@@ -65,7 +65,9 @@ aceptar.addEventListener('click', async (e) => {
     movProducto.stock=nuevoStock.value;
       movProducto.vendedor = vendedor;
       await axios.post(`${URL}movProductos`,movProducto);
-      ipcRenderer.send('cambiarStock',[movProducto.codProd,movProducto.stock]);
+      let producto = (await axios.get(`${URL}productos/${movProducto.codProd}`)).data;
+      producto.stock = movProducto.stock;
+      await axios.put(`${URL}productos/${movProducto.codProd}`,producto)
       window.close()
 })
 

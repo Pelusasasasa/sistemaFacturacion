@@ -27,8 +27,7 @@ let acceso;
 
 //Traer el dolar
 const traerDolar = async()=>{
-    let numeros = await axios.get(`${URL}tipoVenta`)
-    numeros = numeros.data
+    let numeros = (await axios.get(`${URL}tipoVenta`)).data;
     dolar = numeros.dolar
 }
 traerDolar()
