@@ -1,6 +1,7 @@
 const { ipcRenderer } = require("electron/renderer");
 const axios = require("axios")
-const URL = "http://192.168.0.124:4000/api/";
+const URL = process.env.URL;
+const { DateTime } = require("luxon");
 
 
 const desde = document.querySelector('#desde');
@@ -14,15 +15,17 @@ dia = dia < 10 ? `0${dia}` : dia;
 mes = mes < 10 ? `0${mes}` : mes;
 desde.value = `${anio}-${mes}-${dia}`;
 hasta.value = `${anio}-${mes}-${dia}`
+let hastaFecha = DateTime.fromISO(hasta.value).endOf('day');
+const desdeFecha = new Date(desde.value)
 let tickets = [];
-ipcRenderer.send("traerVentasEntreFechas",[desde.value,hasta.value])
-ipcRenderer.on("traerVentasEntreFechas",(e,args)=>{
-
-    const ventas = JSON.parse(args)
+const traerVentasEntreFechas = async()=>{
+    let ventas = (await axios.get(`${URL}ventas/${desdeFecha}/${hastaFecha}`)).data;
+    let presupuesto = (await axios.get(`${URL}presupuesto/${desdeFecha}/${hastaFecha}`)).data
     tickets = ventas.filter(venta => ( venta.tipo_pago !== "CC"));
-    listarVentas(tickets);
-
-})
+    presupuestosTickets = presupuesto.filter(venta => ( venta.tipo_pago !== "CC"));
+    listarVentas([...tickets,...presupuestosTickets]);
+}
+traerVentasEntreFechas();
 
 const tbody = document.querySelector('.tbody');
 const listarVentas = (ventas)=>{

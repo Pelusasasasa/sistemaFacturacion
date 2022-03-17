@@ -112,7 +112,6 @@ seleccionarTBody.addEventListener('click',(e) =>{
 
 const imagen = document.querySelector('.imagen')
 function mostrarImagen(id) {
-    console.log("a")
     ipcRenderer.send('traerImagen',id)
     ipcRenderer.on('traerImagen',(e,args)=>{
         const path = JSON.parse(args)
@@ -163,10 +162,7 @@ const ingresarMov = document.querySelector('.ingresar')
 ingresarMov.addEventListener('click', e => {
    if (seleccionado) {
        dialogs.promptPassword("Contraseña",async valor=>{
-        let vendedor
-        await ipcRenderer.invoke('traerUsuario',valor).then((args)=>{
-            vendedor =  JSON.parse(args).nombre
-        })
+        let vendedor = (await axios.get(`${URL}usuarios/${valor}`)).data;
            vendedor ?  ipcRenderer.send('abrir-ventana-movimiento-producto',[seleccionado.id,vendedor]) : alert("Contraseña Incorrecta");
         })
    }else{

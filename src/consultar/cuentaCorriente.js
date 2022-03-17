@@ -271,11 +271,10 @@ const botonFacturar = document.querySelector('#botonFacturar')
 botonFacturar.addEventListener('click',() =>{
     if (seleccionado) {
         dialogs.promptPassword("Contraseña").then(value=>{
-        ipcRenderer.invoke('traerUsuario',value).then((args)=>{
-            if (JSON.parse(args) !== "") {
-                ipcRenderer.send('abrir-ventana-emitir-comprobante',[JSON.parse(args).nombre,seleccionado.id,JSON.parse(args).empresa])   
+            let vendedor = (await axios.get(`${URL}usuarios/${valor}`)).data;
+            if (vendedor !== "") {
+                ipcRenderer.send('abrir-ventana-emitir-comprobante',[vendedor.nombre,seleccionado.id,vendedor.empresa])   
             }
-        })
         })
 
     }else{

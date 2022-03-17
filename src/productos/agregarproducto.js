@@ -94,7 +94,7 @@ precioVenta.addEventListener('focus', (e) =>{
     precioVenta.value = parseFloat((precioV+parseFloat(costoTotal.value)).toFixed(2))
 })
 
-agregar.addEventListener('click' , (e) =>{
+agregar.addEventListener('click' ,async  (e) =>{
     e.preventDefault();
     const producto = {
         _id: codigo.value,
@@ -115,7 +115,7 @@ agregar.addEventListener('click' , (e) =>{
 
     //Enviamos el producto al servidor
     await axios.post(`${URL}productos`,producto)
-    formularioProducto.reset();
+    window.close();
 })
 
 
@@ -231,7 +231,7 @@ utilidad.addEventListener('keypress',e=>{
 
 precioVenta.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        modificar.focus()
+        agregar.focus()
     }
 }) 
 

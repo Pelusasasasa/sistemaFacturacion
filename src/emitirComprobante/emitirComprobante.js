@@ -490,11 +490,8 @@ async function sacarStock(cantidad,objeto) {
 //INICIO MOVPRODUCTOS
 
 const traerTamanioDeMovProducto = async()=>{
-    let retornar
-    await ipcRenderer.invoke('traerTamanioMovProductos').then((id)=>{
-        retornar = id
-    })
-    return retornar
+    const tamanio = await axios.get(`${URL}movProductos`);
+    return tamanio
 }
 
 //Registramos un movimiento de producto
@@ -856,7 +853,7 @@ cancelar.addEventListener('click',async e=>{
             ventaCancelada.productos = listaProductos
             ventaCancelada._id = await tamanioCancelados()
             ventaCancelada.vendedor = vendedor
-            ipcRenderer.send('ventaCancelada',ventaCancelada)
+            await axios.post(`${URL}cancelados`,ventaCancelada);
         }
             window.location = "../index.html"
     }
@@ -1213,7 +1210,7 @@ const verTipoComp = (codigoComprobante)=>{
     }
 }
 
-const [Venta,Cliente,,,,,valoresQR] = arreglo
+const [Venta,Cliente,valoresQR] = arreglo;
 ponerValores(Cliente,Venta,valoresQR)
 }
 

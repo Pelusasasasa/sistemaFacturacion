@@ -26,9 +26,11 @@ cantidad.addEventListener('keypress',e=>{
     }
 })
 
-ipcRenderer.invoke("traerTamanioMovProductos").then((tamanio)=>{
-    movProducto._id = (tamanio + 1).toFixed(0)
-})
+const tamanioMovimiento = async()=>{
+    const tamanio = await axios.get(`${URL}movProductos`);
+    return (tamanio+1)
+}
+
 
 let operacion = "Compra"
 function verTipoDeOperacion(tipo){
@@ -47,11 +49,11 @@ cantidad.addEventListener('blur',e=>{
    }    
 })
 
-aceptar.addEventListener('click', (e) => {
+aceptar.addEventListener('click', async (e) => {
 
     movProducto.codProd = codigo.value;
     movProducto.descripcion = descripcion.value;
-
+    movProducto._id = await tamanioMovimiento();
     if (operacion==="Compra") {
         (movProducto.tipo_comp="C") 
       }else if(operacion==="Suma"){
@@ -60,10 +62,9 @@ aceptar.addEventListener('click', (e) => {
        (movProducto.tipo_comp="-") 
       };
     ( operacion==="Resta") ? (movProducto.egreso=cantidad.value) : (movProducto.ingreso=cantidad.value);
-    movProducto.stock=nuevoStock.value
-      movProducto.vendedor = vendedor
-      console.log(movProducto);
-      ipcRenderer.send('movimiento-producto',movProducto);
+    movProducto.stock=nuevoStock.value;
+      movProducto.vendedor = vendedor;
+      await axios.post(`${URL}movProductos`,movProducto);
       ipcRenderer.send('cambiarStock',[movProducto.codProd,movProducto.stock]);
       window.close()
 })

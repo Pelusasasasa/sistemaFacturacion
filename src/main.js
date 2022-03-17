@@ -281,85 +281,6 @@ ipcMain.handle('traerVentas' ,async (e,args)=>{
     return (JSON.stringify(lista))
 })
 
-//traer una venta en especifico
-ipcMain.on('traerVenta',async (e,args)=>{
-    let venta = await axios.get(`${URL}ventas/${args}`)
-    venta = venta.data
-    if (venta.length === 0) {
-        venta = await axios.get(`${URL}presupuesto/${args}`);
-        venta = venta.data;
-    }
-    e.reply('traerVenta',JSON.stringify(venta))
-})
-
-//Modificamos las ventas
-ipcMain.on('modificamosLasVentas',async (e,arreglo)=>{
-    for (let Venta of arreglo){
-        const id = Venta._id
-        const nro_comp = Venta.nro_comp
-        const abonado = Venta.abonado
-        const pagado = Venta.pagado
-        let venta
-        Venta.tipo_comp === "Presupuesto" ? venta = await axios.get(`${URL}presupuesto/${nro_comp}`) : venta = await axios.get(`${URL}ventas/${nro_comp}`)
-        venta = venta.data[0];
-        venta.abonado = parseFloat(abonado).toFixed(2)
-        venta.pagado = pagado
-        venta.tipo_comp === "Presupuesto" ? await axios.put(`${URL}presupuesto/${id}`,venta)  : await axios.put(`${URL}ventas/${id}`,venta)
-    }
-})
-
-//traer ventas que tengan el mismo id y esten entre fechas
-ipcMain.on('traerVentasIdYFechas', async(e,args)=>{
-    const ventas = args[0]
-    const desde = args[1]
-    const hasta = DateTime.fromISO(args[2]).endOf('day')
-    console.log(hasta)
-    console.log(desde)
-    const lista = await probar(ventas,desde,hasta)
-    e.reply('traerVentasIdYFechas',JSON.stringify(lista))
-})
-
-const probar = async (listau,fecha1,fecha2)=>{
-    const retornar = []
-    for await (const Venta of listau){
-        let ventaARetornar = await axios.get(`${URL}ventas/${Venta}/${fecha1}/${fecha2}`)
-        ventaARetornar = ventaARetornar.data
-        if (ventaARetornar.length === 0) {
-            ventaARetornar = await axios.get(`${URL}presupuesto/${Venta}/${fecha1}/${fecha2}`);
-            ventaARetornar = ventaARetornar.data
-
-        }
-        if(ventaARetornar[0] !== undefined){
-            retornar.push(ventaARetornar[0])
-    }
-    }
-    return retornar
-}
-    
-//traerVentas entre las fechas
-ipcMain.on('traerVentasEntreFechas',async(e,args)=>{
-    const desde = new Date(args[0])
-    let hasta = DateTime.fromISO(args[1]).endOf('day')
-    let ventas = await axios.get(`${URL}ventas/${desde}/${hasta}`)
-    ventas = ventas.data
-    let presupuesto = await axios.get(`${URL}presupuesto/${desde}/${hasta}`)
-    presupuesto = presupuesto.data;
-    e.reply('traerVentasEntreFechas',JSON.stringify([...ventas,...presupuesto]))
-})
-
-//traerVentas entre fechas de un cliente
-ipcMain.handle('traerVentasClienteEntreFechas',async(e,args)=>{
-    let [cliente,desde,hasta] = args
-    desde = new Date(desde)
-    hasta = DateTime.fromISO(hasta).endOf('day')
-    let ventas = await axios.get(`${URL}ventas/cliente/${cliente}/${desde}/${hasta}`)
-    ventas = ventas.data;
-    let presupuestos = await axios.get(`${URL}presupuesto/cliente/${cliente}/${desde}/${hasta}`);
-    presupuestos = presupuestos.data
-    return JSON.stringify([...ventas,...presupuestos])
-})
-
-
 //Mandamos la modificacion de la venta
 ipcMain.on('ventaModificada',async (e,[args,id])=>{
      let venta = await axios.get(`${URL}ventas/${id}`)
@@ -396,18 +317,6 @@ ipcMain.on('ventaModificada',async (e,[args,id])=>{
     ipcMain.on('eliminar-venta',async(e,id)=>{
     })
 //FIN VENTAS
-
-//INICIO FISCAL E ITEM
-
-    ipcMain.on('fiscal', async(e,args)=>{
-        await axios.put(`${URL}fiscal`,args)
-    })
-
-    ipcMain.on('item',async(e,args)=>{
-        await axios.post(`${URL}item`,args)
-    })
-
-//FIN FISCAL  E ITEM
 
 //INICIO NUMEROS
 
@@ -463,48 +372,6 @@ ipcMain.on('traerDolar',async e=>{
 
 //FIN NUMEROS
 
-//INICIO USUARIOS
-//traer un usuario
-ipcMain.handle('traerUsuario',async(e,id)=>{
-    let usuario = await axios.get(`${URL}usuarios/${id}`)
-    usuario = usuario.data
-    return JSON.stringify(usuario)
-})
-
-//FIN USUARIOS
-
-//INICIO PEDIDOS
-
-//Pedido
-ipcMain.on('Pedido', async (e, args) => {
-    const pedido = await axios.post(`${URL}pedidos`,args)
-})
-
-//Traer los pedidos a VerPedidos
-ipcMain.on('traerpedidos', async (e, args) => {
-    let pedidos = await axios.get(`${URL}pedidos`)
-    pedidos = pedidos.data;
-    e.reply('traerPedidos', JSON.stringify(pedidos))
-})
-
-//modificar un pedido
-ipcMain.on('modificar-pedidos', async (e, args) => {
-    for (let pedido of args) {
-        await axios.put(`${URL}pedidos/${pedido._id}`,pedido)
-    }
-})
-
-//Eliminar un pedido
-ipcMain.on('eliminarPedido', async (e, id) => {
-    await axios.delete(`${URL}pedidos/${id}`)
-})
-
-//FIN DE PEDIDOS
-
-
-
-
-
 //Abrir ventana para modificar un producto
 ipcMain.on('abrir-ventana-modificar-producto',  (e, args) => {
     const [id,acceso,texto,seleccion] = args
@@ -543,18 +410,6 @@ ipcMain.on('abrir-ventana-movimiento-producto',async (e,arreglo)=>{
     })
 })
 
-//llevamos el tamanio de la bd de Mov Producto
-ipcMain.handle('traerTamanioMovProductos',async()=>{
-    const tamanio = await axios.get(`${URL}movProductos`)
-    return (tamanio.data)
-})
-
-//Cargar Movimiento producto
-ipcMain.on('movimiento-producto',async (e,args) => {
-    const movimiento = await axios.post(`${URL}movProductos`,args)
-})
-
-
 //Abrir ventana de Informacion de producto
 ipcMain.on('abrir-ventana-info-movimiento-producto',async (e,args)=>{
     abrirVentana('movProductos/infoMovProductos.html',1000,500)
@@ -568,30 +423,6 @@ ipcMain.on('abrir-ventana-info-movimiento-producto',async (e,args)=>{
 })
 
 //FIN MOVIMIENTO DE PRODUCTOS
-
-//INICIO CANCELADOS
-
-//retornamos el tamanio de la bd de Cancelados
-ipcMain.handle('tamanioCancelado',async(e,args)=>{
-    let tamanio = await axios.get(`${URL}cancelados/tamanio`)
-    tamanio = tamanio.data
-    return tamanio
-})
-
-//guardamos los cancelados en la base de datos
-ipcMain.on('ventaCancelada',async(e,args)=>{
-    const ventaCancelada = await axios.post(`${URL}cancelados`,args)
-})
-
-//traemos Ventas canceladas entre fechas
-ipcMain.on('traerVentasCanceladas',async(e,args)=>{
-    const desde = new Date(args[0])
-    let hasta = DateTime.fromISO(args[1]).endOf('day')
-    let ventasCanceladas = await axios.get(`${URL}cancelados/${desde}/${hasta}`)
-    ventasCanceladas = ventasCanceladas.data
-    e.reply('traerVentasCanceladas',JSON.stringify(ventasCanceladas))
-})
-//FIN CANCELADOS
 
 //menu
 const templateMenu = [
