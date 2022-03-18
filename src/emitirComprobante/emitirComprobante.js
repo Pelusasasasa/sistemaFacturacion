@@ -490,7 +490,7 @@ async function sacarStock(cantidad,objeto) {
 //INICIO MOVPRODUCTOS
 
 const traerTamanioDeMovProducto = async()=>{
-    const tamanio = await axios.get(`${URL}movProductos`);
+    const tamanio = (await axios.get(`${URL}movProductos`)).data;
     return tamanio
 }
 
@@ -498,7 +498,7 @@ const traerTamanioDeMovProducto = async()=>{
 async function movimientoProducto(cantidad,objeto){
     const id = await traerTamanioDeMovProducto()
     let movProducto = {}
-    movProducto._id = (id + 1).toFixed(0)
+    movProducto._id = (id + 1);
     movProducto.codProd = objeto._id
     movProducto.descripcion = objeto.descripcion
     movProducto.cliente = cliente.cliente
@@ -580,7 +580,6 @@ async function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
 //pasamos el saldo en negro
 async function sumarSaldoAlClienteEnNegro(precio,codigo,valorizado){
     !valorizado ? precio = "0.1" : precio;
-    console.log(valorizado);
     let cliente = await axios.get(`${URL}clientes/id/${codigo}`)
     cliente = cliente.data;
     let saldo_p = (parseFloat(precio) + parseFloat(cliente.saldo_p)).toFixed(2);
@@ -631,7 +630,7 @@ presupuesto.addEventListener('click',async (e)=>{
                 venta.empresa = inputEmpresa.value;
                 let valorizadoImpresion = "valorizado"
                 if (!valorizado.checked && venta.tipo_pago === "CC") {
-                valorizadoImpresion="no valorizado"
+                valorizadoImpresion="no valorizado";
                 }
                 sacarIdentificadorTabla(venta.productos);
                 //si la venta es CC Sumamos un saldo al cliente y ponemos en cuenta corriente compensada y historica
@@ -647,7 +646,7 @@ presupuesto.addEventListener('click',async (e)=>{
                                     producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
                                 }
                                 sacarStock(producto.cantidad,producto.objeto)
-                                await movimientoProducto(producto.cantidad,producto.objeto)
+                                await movimientoProducto(producto.cantidad,producto.objeto);
                             }
                     }
                  }
@@ -668,6 +667,7 @@ presupuesto.addEventListener('click',async (e)=>{
                          ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion])
                      }
                  }
+
                  window.location = "../index.html";
             }
         }
@@ -773,8 +773,8 @@ async function generarQR(texto) {
 
 //funcion que busca en la afip a una persona
  const buscarAfip = document.querySelector('.buscarAfip')
- buscarAfip.addEventListener('click',  (e)=>{
-    let cliente = (await axios.get(`${URL}clientes/cuit/${args}`)).data
+ buscarAfip.addEventListener('click',  async (e)=>{
+    let cliente = (await axios.get(`${URL}clientes/cuit/${dnicuit.value}`)).data
         if (cliente === "") {
             ponerInputsClientes(cliente)
         }else{
@@ -1157,10 +1157,29 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     conector.texto("CANTIDAD/PRECIO UNIT (%IVA)\n")
     conector.texto("DESCRIPCION           (%B.I)       IMPORTE\n")  
     conector.texto("------------------------------------------\n");
+    let total21 = 0;
+    let total105 = 0;
     Venta.productos && Venta.productos.forEach(({cantidad,objeto})=>{
-        conector.texto(`${cantidad}/${objeto.precio_venta}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
-        conector.texto(`${objeto.descripcion.slice(0,30)}    ${(parseFloat(cantidad)*parseFloat(objeto.precio_venta)).toFixed(2)}\n`)
+        if (conIva.value === "Inscripto") {
+            conector.texto(`${cantidad}/${objeto.iva === "N" ? parseFloat(objeto.precio_venta) - parseFloat(objeto.precio_venta)*21/100 : parseFloat(objeto.precio_venta) - parseFloat(objeto.precio_venta)*10.5/100 }              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
+
+            conector.texto(`${objeto.descripcion.slice(0,30)}    ${(parseFloat(cantidad)*parseFloat(objeto.iva === "N" ? parseFloat(objeto.precio_venta) - parseFloat(objeto.precio_venta)*21/100 : parseFloat(objeto.precio_venta) - parseFloat(objeto.precio_venta)*10.5/100)).toFixed(2)}\n`);
+        }else{
+            conector.texto(`${cantidad}/${objeto.precio_venta}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
+            conector.texto(`${objeto.descripcion.slice(0,30)}    ${(parseFloat(cantidad)*parseFloat(objeto.precio_venta)).toFixed(2)}\n`);
+        }
+
     })
+
+    if (conIva.value === "Inscripto") {
+        conector.texto("NETO SIN IVA          " + total21);
+        conector.texto("IVA 21.00/            " + Venta.gravado21);
+        conector.texto("NETO SIN IVA          0.00" );
+        conector.feed(2);
+        conector.texto("NETO SIN IVA          " + total105);
+        conector.texto("IVA 10.50/            " + Venta.gravado105);
+        conector.texto("NETO SIN IVA          0.00" );
+    }
     conector.feed(2);
     conector.establecerTamanioFuente(2,1);
     conector.texto("TOTAL        $" +  Venta.precioFinal + "\n");

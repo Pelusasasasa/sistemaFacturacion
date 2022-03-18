@@ -127,9 +127,10 @@ ipcRenderer.on("validarUsuario",(e,args)=>{
 })
 
 const salir = document.querySelector('.salir');
-salir.addEventListener('click',e=>{
+document.addEventListener('closeWindow',e=>{
+    confirm("Cerrar Ventana");
     // ipcRenderer.send('cerrar-app');
-    window.close();
+    // window.close();
     // console.log(remote)
     // let w = remote.getCurrentWindow()
     // w.close()

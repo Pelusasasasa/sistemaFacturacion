@@ -203,7 +203,6 @@ factura.addEventListener('click',async e=>{
     e.preventDefault();
     const venta = {};
     venta.tipo_pago = await verTipoPago();
-    console.log(venta.tipo_pago)
     if (facturaOriginal.value === "") {
         alert("No se escribio el numero de la factura Original")
     }else if(listaProductos.length === 0){
@@ -242,7 +241,18 @@ factura.addEventListener('click',async e=>{
              alert("Factura mayor a 10000, poner valores clientes")
          }else{
              //Actualizamos el numero de comprobante
-            await actualizarNroCom(venta.nro_comp,venta.cod_comp)
+            await actualizarNroCom(venta.nro_comp,venta.cod_comp);
+            
+            //Si la venta no es Presupuesto Presupuesto descontamos el stock y hacemos movimiento de producto
+            if (venta.tipo_pago !== "PP") {
+                //Si la venta es CC le sumamos el saldo
+                venta.tipo_pago === "CC" && sumarSaldo(venta.precioFinal,venta.cliente);
+                //movimiento de producto y stock
+                venta.productos.forEach(({objeto,cantidad}) =>{
+                    agregarStock(objeto._id,cantidad);
+                    movimientoProducto(objeto,cantidad,venta);
+                })
+            }
             
             //Traemos la venta relacionada con la nota de credito
             let ventaRelacionada = (await axios.get(`${URL}ventas/${venta.numeroAsociado}`)).data;
@@ -254,14 +264,56 @@ factura.addEventListener('click',async e=>{
             //Mandamos par que sea historica
             venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
             //mandamos la venta
-            ipcRenderer.send('nueva-venta',venta)
+            ipcRenderer.send('nueva-venta',venta);
             //subimos a la afip la factura electronica
             let afip = await subirAAfip(venta,ventaRelacionada[0]);
             //Imprimos el ticket
             imprimirVenta([venta,cliente,afip])
             await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
             location.href="../index.html";
-        }}})
+        }}});
+
+
+//Agregamos el stock nuevo
+const agregarStock = async (codigo,cantidad)=>{
+    let producto = (await axios.get(`${URL}productos/${codigo}`)).data;
+    const descontar = parseFloat(producto.stock) + parseFloat(cantidad);
+    console.log(producto.stock)
+    producto.stock = descontar.toFixed(2);
+    console.log(producto.stock)
+    await axios.post(`${URL}productos/${codigo}`,producto);
+}
+
+const traerTamanioDeMovProducto = async()=>{
+    const tamanio = (await axios.get(`${URL}movProductos`)).data;
+    return tamanio
+}
+
+const movimientoProducto = async(objeto,cantidad,venta)=>{
+    const id = await traerTamanioDeMovProducto()
+    let movProducto = {}
+    movProducto._id = (id + 1);
+    movProducto.codProd = objeto._id;
+    movProducto.descripcion = objeto.descripcion;
+    movProducto.cliente = venta.nombrecliente;
+    movProducto.comprobante = "Nota de Credito";
+    movProducto.tipo_comp = venta.tipo_comp;
+    movProducto.nro_comp=venta.nro_comp;
+    movProducto.ingreso = cantidad;
+    movProducto.stock = objeto.stock;
+    movProducto.precio_unitario=objeto.precio_venta;
+    movProducto.total=(parseFloat(movProducto.ingreso)*parseFloat(movProducto.precio_unitario)).toFixed(2)
+    movProducto.vendedor = venta.vendedor;
+    await axios.post(`${URL}movProductos`,movProducto);
+}
+
+//Sumamos el saldo al cluente si la venta  es Cuenta Corriente
+const sumarSaldo = async(precio,id) =>{
+    const cliente = (await axios.get(`${URL}clientes/id/${id}`)).data;
+    saldoNuevo = parseFloat(cliente.saldo) - parseFloat(precio);
+    cliente.saldo = saldoNuevo.toFixed(2);
+    await axios.put(`${URL}clientes/${id}`,cliente)
+}
 
 
 //Trae el numero de comrpobante dependiendo de si es nota de credito A o B

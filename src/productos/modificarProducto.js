@@ -39,7 +39,6 @@ traerDolar()
     })
 ipcRenderer.on('acceso',(e,args)=>{
     acceso = JSON.parse(args)
-    console.log(acceso)
     if (acceso === "2") {
         document.querySelector('.costos').classList.add('none')
     }
@@ -82,7 +81,7 @@ if (costoPesos.focus) {
     }
 
 costoTotal.addEventListener('focus',()=>{
-    (parseFloat(costoPesos.value) === 0) ? (ivaImp.value = parseFloat((costoDolares.value * valorTasaIva / 100).toFixed(3))) : ivaImp.value = parseFloat(costo.toFixed(2))
+    (parseFloat(costoPesos.value) === 0) ? (ivaImp.value = parseFloat((costoDolares.value * valorTasaIva / 100).toFixed(2))) : ivaImp.value = costo.toFixed(2)
     selecciona_value(costoTotal.id);
     costoT = parseFloat(ivaImp.value)
     let costoP = 0
@@ -202,6 +201,13 @@ function selecciona_value(idInput) {
             unidad.focus()
         }
     })
+
+    unidad.addEventListener('keypress',e=>{
+        e.preventDefault();
+        if (e.key === "Enter") {
+            provedor.focus()
+        }
+    })
     
     stock.addEventListener('keypress',e=>{
         if (e.key === "Enter") {
@@ -220,6 +226,13 @@ function selecciona_value(idInput) {
             tasaIva.focus()
         }
     })
+
+    tasaIva.addEventListener('keypress',e=>{
+        e.preventDefault();
+        if (e.key === "Enter") {
+            costoPesos.focus()
+        }
+    })
     
     costoPesos.addEventListener('keypress',e=>{
         if (e.key === "Enter") {
@@ -229,7 +242,7 @@ function selecciona_value(idInput) {
     
     costoDolares.addEventListener('keypress',e=>{
         if (e.key === "Enter") {
-            ivaImp.focus()
+            costoTotal.focus()
         }
     })
     

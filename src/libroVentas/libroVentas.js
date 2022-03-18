@@ -42,19 +42,16 @@ buscar.addEventListener('click',async e=>{
 
     const desdeFecha = new Date(desde.value)
     let hastaFecha = DateTime.fromISO(hasta.value).endOf('day')
-    let ventas = await axios.get(`${URL}ventas/${desdeFecha}/${hastaFecha}`)
-    ventas = ventas.data
-    let presupuesto = await axios.get(`${URL}presupuesto/${desdeFecha}/${hastaFecha}`)
-    presupuesto = presupuesto.data;
-    ventasTraidas([...ventas,...presupuesto]);
+    let ventas = (await axios.get(`${URL}ventas/${desdeFecha}/${hastaFecha}`)).data;
+    ventasTraidas(ventas);
 })
 
 const ventasTraidas = (ventas)=>{
-    ventas = ventas.filter(venta => venta.tipo_comp !== "Presupuesto" || venta.tipo_comp !== "Recibos" || venta.tipo_comp !== "Recibos_P");
+    ventas = ventas.filter(venta => venta.tipo_comp !== "Recibos_P");
     listaTicketFactura = ventas.filter(venta=>venta.tipo_comp === "Ticket Factura");
     listaNotaCredito = ventas.filter(venta=>venta.tipo_comp !== "Ticket Factura");
     (listaNotaCredito.length > 0) && listar(listaNotaCredito);
-    listar(listaTicketFactura);
+    (listaTicketFactura.length > 0) && listar(listaTicketFactura);
 }
 
 const listar = (ventas)=>{
@@ -80,7 +77,7 @@ const listar = (ventas)=>{
     ventas.forEach(async venta => {
         let fecha = new Date(venta.fecha)
         let day = fecha.getDate();
-        let month = fecha.getMonth();
+        let month = fecha.getMonth() + 1;
         month = (month===0) ? month + 1 : month;
         day = (day < 10) ? `0${day}` : day;
         month = (month < 10) ? `0${month}` : month;
@@ -89,19 +86,11 @@ const listar = (ventas)=>{
         let cliente = await axios.get(`${URL}clientes/id/${venta.cliente}`)
         cliente = cliente.data
         cond_iva = (cliente.cond_iva) ? (cliente.cond_iva) : "Consumidor Final";
+        gravado105 = venta.gravado105;
+        gravado21 = venta.gravado21;
+        iva105 = venta.iva105;
+        iva21 = venta.iva21;
 
-
-        if (venta.tipo_comp !== "Ticket Factura") {
-            gravado105 = 0;
-            gravado21 = 0;
-            iva105 = 0;
-            iva21 = 0;
-        }else{
-            gravado105 = venta.gravado105;
-            gravado21 = venta.gravado21;
-            iva105 = venta.iva105;
-            iva21 = venta.iva21;
-        }
         tbody.innerHTML += await `
             <tr>
                 <td>${day}/${month}/${year}</td>
@@ -124,12 +113,12 @@ const listar = (ventas)=>{
             totaliva105 +=  venta.iva105
             total +=  venta.precioFinal
         }else{
-
-            if ((ventas.indexOf(venta) === tamanioVentas) && ventas.tipo_comp === "Ticket Factura") {
+            if ((ventas.indexOf(venta) === tamanioVentas)) {
                 totalgravado105 += venta.gravado105;
                 totalgravado21 += venta.gravado21;
-                totaliva105 += venta.ivatotaliva105;
+                totaliva105 += venta.iva105;
                 totaliva21 += venta.iva21;
+                total += venta.precioFinal;
             }
             tbody.innerHTML += await `
                 <tr>
@@ -139,11 +128,11 @@ const listar = (ventas)=>{
                     <td></td>
                     <td>Totales Diarios</td>
                     <td>${venta.tipo_comp}</td>
-                    <td>${totalgravado21}</td>
-                    <td>${totaliva21}</td>
-                    <td>${totalgravado105}</td>
-                    <td>${totaliva105}</td>
-                    <td>${total}</td>
+                    <td>${totalgravado21.toFixed(2)}</td>
+                    <td>${totaliva21.toFixed(2)}</td>
+                    <td>${totalgravado105.toFixed(2)}</td>
+                    <td>${totaliva105.toFixed(2)}</td>
+                    <td>${total.toFixed(2)}</td>
                     
                 </tr>
             `

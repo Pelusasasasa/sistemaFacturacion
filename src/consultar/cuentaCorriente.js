@@ -270,8 +270,8 @@ function sacarTotal(arreglo){
 const botonFacturar = document.querySelector('#botonFacturar')
 botonFacturar.addEventListener('click',() =>{
     if (seleccionado) {
-        dialogs.promptPassword("Contraseña").then(value=>{
-            let vendedor = (await axios.get(`${URL}usuarios/${valor}`)).data;
+        dialogs.promptPassword("Contraseña").then(async value=>{
+            let vendedor = (await axios.get(`${URL}usuarios/${value}`)).data;
             if (vendedor !== "") {
                 ipcRenderer.send('abrir-ventana-emitir-comprobante',[vendedor.nombre,seleccionado.id,vendedor.empresa])   
             }
