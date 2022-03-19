@@ -56,8 +56,9 @@ async function guardarDatos() {
         "Ultimo Remito Cta Cte": remitoCorriente.value,
         "dolar":dolar.value
     };
-    (parseFloat(dolarAux) !== parseFloat(dolar.value)) && cambiarPrecios(parseFloat(dolar.value))
-    await axios.put(`${URL}tipoVenta`,numeros)
+    (parseFloat(dolarAux) !== parseFloat(dolar.value)) && cambiarPrecios(parseFloat(dolar.value));
+    await axios.put(`${URL}tipoVenta`,numeros);
+    //location.reload();
 }
 
 const recibirNumeros = async()=>{
@@ -89,17 +90,22 @@ cancelar.addEventListener('click', ()=>{
 })
 
 
-async function cambiarPrecios() {
-
+async function cambiarPrecios(dolar) {
+    dolarAux = dolar;
     //cambiamos el precio de los productos con dolares
-    let productos = await axios.get(`${URL}productos/buscarProducto/textoVacio/dolar`)
-    let dolar = await axios.get(`${URL}tipoVenta`);
-    dolar = dolar.data.dolar
-    productos = productos.data;
+    let productos = (await axios.get(`${URL}productos/buscarProducto/textoVacio/dolar`)).data;
+    productos.sort((a,b)=>{
+        if (a.descripcion>b.descripcion) {
+            return 1
+        }else if(a.descripcion<b.descripcion){
+            return -1
+        }
+
+        return 0
+    })
     productos.forEach(async producto => {
-        const costoTotal = (parseFloat(producto.impuestos)+parseFloat(producto.costodolar)*parseFloat(dolar));
-        producto.precio_venta = (costoTotal+(parseFloat(producto.utilidad)*costoTotal/100)).toFixed(2);
+        const costoTotal = ((parseFloat(producto.impuestos)+parseFloat(producto.costodolar))*parseFloat(dolar));
+        producto.precio_venta = (costoTotal+((parseFloat(producto.utilidad)*costoTotal/100))).toFixed(2);
         await axios.put(`${URL}productos/${producto._id}`,producto)
     });
-    // ipcRenderer.send('CambiarPrecios',numero)
 }

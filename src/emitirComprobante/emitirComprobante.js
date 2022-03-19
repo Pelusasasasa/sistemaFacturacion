@@ -557,7 +557,6 @@ async function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
     n2 = parseFloat(n2)+1;
     n2 = n2.toString().padStart(8,0);
     numero = n1+'-'+n2;
-    console.log(comprobante.split('-')[0] !== "0005")
     if (comprobante.split('-')[0] !== "0005") {
 
 
@@ -930,7 +929,6 @@ const borrarCuentaCorriente = async (numero)=>{
 
 
 const subirAAfip = async(venta)=>{
-    console.log(venta)
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
     (ultimoElectronica === 0) && (ultimoElectronica=1); 
@@ -1151,7 +1149,6 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     conector.texto(`${dnicuit.value}\n`);
     conector.texto(`${conIva.value}\n`);
     conector.texto(`${direccion.value}   ${localidad.value}\n`);
-    venta.numeroAsociado && console.log("Numero Asociado")
     venta.numeroAsociado && conector.texto(`${venta.numeroAsociado}\n`);
     conector.texto("------------------------------------------\n");
     conector.texto("CANTIDAD/PRECIO UNIT (%IVA)\n")
@@ -1161,7 +1158,7 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     let total105 = 0;
     Venta.productos && Venta.productos.forEach(({cantidad,objeto})=>{
         if (conIva.value === "Inscripto") {
-            conector.texto(`${cantidad}/${objeto.iva === "N" ? parseFloat(objeto.precio_venta) - parseFloat(objeto.precio_venta)*21/100 : parseFloat(objeto.precio_venta) - parseFloat(objeto.precio_venta)*10.5/100 }              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
+            conector.texto(`${cantidad}/${objeto.iva === "N" ? parseFloat(objeto.precio_venta) - parseFloat(objeto.precio_venta)/1.21 : parseFloat(objeto.precio_venta) - parseFloat(objeto.precio_venta)/1.105}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
 
             conector.texto(`${objeto.descripcion.slice(0,30)}    ${(parseFloat(cantidad)*parseFloat(objeto.iva === "N" ? parseFloat(objeto.precio_venta) - parseFloat(objeto.precio_venta)*21/100 : parseFloat(objeto.precio_venta) - parseFloat(objeto.precio_venta)*10.5/100)).toFixed(2)}\n`);
         }else{
@@ -1172,13 +1169,13 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     })
 
     if (conIva.value === "Inscripto") {
-        conector.texto("NETO SIN IVA          " + total21);
-        conector.texto("IVA 21.00/            " + Venta.gravado21);
-        conector.texto("NETO SIN IVA          0.00" );
+        conector.texto("NETO SIN IVA          " + Venta.gravado21 + "\n" );
+        conector.texto("IVA 21.00/            " +  Venta.iva21 + "\n" );
+        conector.texto("NETO SIN IVA          0.00" + "\n" );
         conector.feed(2);
-        conector.texto("NETO SIN IVA          " + total105);
-        conector.texto("IVA 10.50/            " + Venta.gravado105);
-        conector.texto("NETO SIN IVA          0.00" );
+        conector.texto("NETO SIN IVA          " + Venta.gravado105 + "\n");
+        conector.texto("IVA 10.50/            " + Venta.iva105 + "\n");
+        conector.texto("NETO SIN IVA          0.00"  + "\n");
     }
     conector.feed(2);
     conector.establecerTamanioFuente(2,1);
@@ -1257,6 +1254,5 @@ const ponerEnCuentaCorrienteHistorica = async(venta,valorizado,saldo)=>{
     cuenta.nro_comp = venta.nro_comp;
     cuenta.debe = valorizado ? parseFloat(venta.precioFinal) : 0.1;
     cuenta.saldo = parseFloat(saldo) + cuenta.debe;
-    console.log(cuenta)
     await axios.post(`${URL}cuentaHisto`,cuenta);
 }

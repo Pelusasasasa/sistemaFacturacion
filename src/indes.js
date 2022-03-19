@@ -1,11 +1,10 @@
 const { ipcRenderer } = require("electron")
-const remote = require('electron');
-const tipoConexion = require('./config.js')
+const tipoConexion = require('./config.js');
+
 const axios = require("axios");
 require("dotenv").config;
 const URL = process.env.URL;
 const Dialogs = require("dialogs");
-const Driver = require("driver.js");
 const dialogs = Dialogs()
 let vendedores = []
 const traerVendedores = async()=>{
