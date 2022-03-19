@@ -1154,13 +1154,11 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     conector.texto("CANTIDAD/PRECIO UNIT (%IVA)\n")
     conector.texto("DESCRIPCION           (%B.I)       IMPORTE\n")  
     conector.texto("------------------------------------------\n");
-    let total21 = 0;
-    let total105 = 0;
     Venta.productos && Venta.productos.forEach(({cantidad,objeto})=>{
         if (conIva.value === "Inscripto") {
-            conector.texto(`${cantidad}/${objeto.iva === "N" ? parseFloat(objeto.precio_venta) - parseFloat(objeto.precio_venta)/1.21 : parseFloat(objeto.precio_venta) - parseFloat(objeto.precio_venta)/1.105}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
+            conector.texto(`${cantidad}/${objeto.iva === "N" ? (parseFloat(objeto.precio_venta)/1.21).toFixed(2) : (parseFloat(objeto.precio_venta)/1.105.toFixed(2))}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
 
-            conector.texto(`${objeto.descripcion.slice(0,30)}    ${(parseFloat(cantidad)*parseFloat(objeto.iva === "N" ? parseFloat(objeto.precio_venta) - parseFloat(objeto.precio_venta)*21/100 : parseFloat(objeto.precio_venta) - parseFloat(objeto.precio_venta)*10.5/100)).toFixed(2)}\n`);
+            conector.texto(`${objeto.descripcion.slice(0,30)}    ${(parseFloat(cantidad)*parseFloat(objeto.iva === "N" ? parseFloat(objeto.precio_venta)/1.21 : parseFloat(objeto.precio_venta)/1.105)).toFixed(2)}\n`);
         }else{
             conector.texto(`${cantidad}/${objeto.precio_venta}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
             conector.texto(`${objeto.descripcion.slice(0,30)}    ${(parseFloat(cantidad)*parseFloat(objeto.precio_venta)).toFixed(2)}\n`);
@@ -1169,20 +1167,25 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     })
 
     if (conIva.value === "Inscripto") {
-        conector.texto("NETO SIN IVA          " + Venta.gravado21 + "\n" );
-        conector.texto("IVA 21.00/            " +  Venta.iva21 + "\n" );
-        conector.texto("NETO SIN IVA          0.00" + "\n" );
-        conector.feed(2);
-        conector.texto("NETO SIN IVA          " + Venta.gravado105 + "\n");
-        conector.texto("IVA 10.50/            " + Venta.iva105 + "\n");
-        conector.texto("NETO SIN IVA          0.00"  + "\n");
+        if (venta.gravado21 !== 0) {
+            conector.feed(2);
+            conector.texto("NETO SIN IVA              " + Venta.gravado21.toFixed(2) + "\n" );
+            conector.texto("IVA 21.00/              " +  Venta.iva21.toFixed(2) + "\n" );
+            conector.texto("NETO SIN IVA              0.00" + "\n" );
+        }
+        if (venta.gravado105 !== 0) {
+            conector.feed(2);
+            conector.texto("NETO SIN IVA              " + Venta.gravado105.toFixed(2) + "\n");
+            conector.texto("IVA 10.50/              " + Venta.iva105.toFixed(2) + "\n");
+            conector.texto("NETO SIN IVA              0.00"  + "\n");
+        }
     }
     conector.feed(2);
     conector.establecerTamanioFuente(2,1);
     conector.texto("TOTAL        $" +  Venta.precioFinal + "\n");
     conector.establecerTamanioFuente(1,1);
     conector.texto("Recibimos(mos)\n");
-    conector.texto(`${venta.tipo_pago === "CD" ? `Contado          ${Venta.precioFinal}`  : "Cuenta Corriente"}` + "\n");
+    conector.texto(`${venta.tipo_pago === "CD" ? `Contado             ${Venta.precioFinal}`  : "Cuenta Corriente"}` + "\n");
     conector.establecerTamanioFuente(2,1);
     conector.texto("CAMBIO         $0.00\n");
     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
