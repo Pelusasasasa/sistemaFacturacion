@@ -146,7 +146,27 @@
 
           <fieldset>
             <legend>Producto</legend>
-            <input type="text" placeholder="codigo" id="codigo" name="codigo" />
+            <div class="productos-inputs">
+              <input type="text" placeholder="codigo" id="codigo" name="codigo" />
+
+              <div class="nuevaCantidad none">
+                <label for="nuevaCantidad">Nueva Cantidad</label>
+                <input type="text" placeholder="nuevaCantidad" id="nuevaCantidad" name="nuevaCantidad" />
+              </div>
+
+              <div class="nuevoPrecio none">
+                <label for="nuevoPrecio">Nuevo Precio</label>
+                <input type="text" placeholder="nuevoPrecio" id="nuevoPrecio" name="nuevoPrecio" />
+              </div>
+
+              <div>
+                <label for="">Empresa</label>
+                <select name="empresa" id="empresa">
+                  <option value="Electro Avenida">Electro Avenida</option>
+                  <option value="Seguridad">Seguridad</option>
+                </select>
+              </div>
+            </div>
           </fieldset>
         </form>
       </div> <!--Formualrio Verde-->

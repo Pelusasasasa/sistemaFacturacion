@@ -312,14 +312,15 @@ cambioPrecio.children[1].addEventListener('keypress',(e)=>{
     if (e.key === "Enter") {
         const  producto = listaProductos.find(({objeto,cantidad})=> objeto.identificadorTabla === yaSeleccionado.id);
         borrarUnProductoDeLaLista(yaSeleccionado)
-        if (producto) {
-            const index = listaProductos.indexOf(producto)
-            listaProductos.splice(index,1)
-        }
-        producto.objeto.precio_venta = parseFloat(cambioPrecio.children[1].value)
-        mostrarVentas(producto.objeto,producto.cantidad)
+        console.log(listaProductos);
+        producto.objeto.precio_venta = cambioPrecio.children[1].value !== "" ? parseFloat(cambioPrecio.children[1].value) : producto.objeto.precio_venta;
+        producto.cantidad = nuevaCantidad.value !== "" ? nuevaCantidad.value : producto.cantidad;
+        mostrarVentas(producto.objeto,producto.cantidad);
+        console.log(listaProductos);
         cambioPrecio.children[1].value = "";
         cambioPrecio.classList.add('none');
+        nuevaCantidad.value = "";
+        nuevaCantidadDiv.classList.add('none');
         codigo.focus()
         
     }
@@ -329,17 +330,18 @@ cambioPrecio.children[1].addEventListener('keypress',(e)=>{
 const nuevaCantidad = document.querySelector('#nuevaCantidad');
 nuevaCantidad.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        const producto = listaProductos.find(({objeto,cantidad}) => objeto.identificadorTabla === yaSeleccionado.id);
-        borrarUnProductoDeLaLista(yaSeleccionado)
-        if (producto) {
-            const index = listaProductos.indexOf(producto)
-            listaProductos.splice(index,1)
-        }
-        producto.cantidad = parseFloat(nuevaCantidad.value);
-        mostrarVentas(producto.objeto,producto.cantidad);
-        nuevaCantidad.value = "";
-        nuevaCantidadDiv.classList.add('none')
-        codigo.focus()
+        cambioPrecio.children[1].focus();
+        // const producto = listaProductos.find(({objeto,cantidad}) => objeto.identificadorTabla === yaSeleccionado.id);
+        // console.log(producto);
+        // borrarUnProductoDeLaLista(yaSeleccionado)
+        // if (producto) {
+        //     const index = listaProductos.indexOf(producto);
+        //     listaProductos.splice(index,1);
+        // }
+        // producto.cantidad = parseFloat(nuevaCantidad.value);
+        // mostrarVentas(producto.objeto,producto.cantidad);
+
+        // codigo.focus()
     }
 })
 
@@ -658,7 +660,8 @@ presupuesto.addEventListener('click',async (e)=>{
                          cliente: buscarCliente.value,
                          cuit: dnicuit.value,
                          direccion: direccion.value,
-                         localidad: localidad.value
+                         localidad: localidad.value,
+                         cond_iva: conIva.value
                      }
                      if (venta.tipo_pago === "CC") {
                          ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion])

@@ -48,7 +48,7 @@ const fecha = document.querySelector('.fecha')
                 descuento.innerHTML= ""
             }
     
-    
+                console.log(cliente);
             if (cliente.cond_iva) {
                 cond_iva.innerHTML = cliente.cond_iva
             }else{
@@ -87,6 +87,5 @@ const fecha = document.querySelector('.fecha')
 
     ipcRenderer.on('imprimir',(e,args)=>{
         [venta,cliente,,,,valorizado] = JSON.parse(args)
-        console.log(JSON.parse(args))
         listar(venta,cliente,valorizado)
     })

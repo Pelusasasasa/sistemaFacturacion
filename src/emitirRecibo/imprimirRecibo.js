@@ -7,8 +7,6 @@ ipcRenderer.on('imprimir',(e,args)=>{
 })
 
 const listar = (venta,Cliente,lista,precio)=>{
-console.log(lista)
-console.log(precio)
 const numero = document.querySelector('.numero')
 const fecha = document.querySelector('.fecha');
 const cliente = document.querySelector('.cliente')

@@ -1,6 +1,6 @@
 const { ipcRenderer } = require("electron")
 const tipoConexion = require('./config.js');
-
+ipcRenderer.send('abrir-menu');
 const axios = require("axios");
 require("dotenv").config;
 const URL = process.env.URL;
@@ -33,7 +33,7 @@ listaPedidos.addEventListener('click', (e) =>{
 
 
 productos.addEventListener('click',e=>{
-    validacionUsuario("productos/productos.html")
+    validacionUsuario("productos/productos.html");
 })
 
 clientes.addEventListener('click',e=>{
@@ -53,7 +53,8 @@ emitirRecibo.addEventListener('click',e=>{
 })
 
 resumenCuenta.addEventListener('click',e=>{
-    window.location = 'resumenCuenta/resumenCuenta.html'
+    window.location = 'resumenCuenta/resumenCuenta.html';
+    ipcRenderer.send('cerrar-menu');
 })
 
 notaCredito.addEventListener('click',e=>{
@@ -87,7 +88,8 @@ function validacionUsuario(texto) {
                 value === e._id && (empresa = e.empresa)
             })
             if(vendedor !== undefined){ 
-                window.location = `${texto}?vendedor=${vendedor}&acceso=${acceso}&empresa=${empresa}`
+                window.location = `${texto}?vendedor=${vendedor}&acceso=${acceso}&empresa=${empresa}`;
+                ipcRenderer.send('cerrar-menu');
             }else{
                 alert("Contraseña incorrecta")
                 validacionUsuario(texto)
@@ -126,9 +128,8 @@ ipcRenderer.on("validarUsuario",(e,args)=>{
 })
 
 const salir = document.querySelector('.salir');
-document.addEventListener('closeWindow',e=>{
-    confirm("Cerrar Ventana");
-    // ipcRenderer.send('cerrar-app');
+salir.addEventListener('click',e=>{
+    ipcRenderer.send('cerrar-menu');
     // window.close();
     // console.log(remote)
     // let w = remote.getCurrentWindow()

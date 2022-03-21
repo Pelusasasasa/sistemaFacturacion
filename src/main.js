@@ -66,11 +66,15 @@ ipcMain.on('abrir-ventana-agregar-cliente',e=>{
 ipcMain.on('recargar-Ventana',(e,args)=>{
     app.relaunch();
     app.exit();
-})
+});
 
+ipcMain.on('abrir-menu',()=>{
+ventanaPrincipal.setMenuBarVisibility(true)
+});
 
-ipcMain.on('cerrar-app',()=>{
-    app.quit();
+ipcMain.on('cerrar-menu',()=>{
+    ventanaPrincipal.setMenuBarVisibility(false)
+    ventanaPrincipal.webPreferences.closable = true;
 })
 
 //INICIO PRODUCTOS
@@ -210,8 +214,8 @@ const imprimir = (opciones,args)=>{
         nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
             nuevaVentana.webContents.print(opciones,(success, errorType) => {
                     if (success) {
-                        ventanaPrincipal.focus()
-                        nuevaVentana.close();
+                         ventanaPrincipal.focus()
+                         nuevaVentana.close();
                     }
         })
     });

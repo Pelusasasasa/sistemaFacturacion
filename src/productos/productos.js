@@ -97,6 +97,12 @@ const ponerProductos = productos =>{
     }
 }
 
+buscarProducto.addEventListener('keydown',e=>{
+    if (e.key === "ArrowLeft") {
+        select.focus();
+    }
+})
+
 //Hacemos que se seleccione un producto
 let seleccionarTBody = document.querySelector('tbody')
 seleccionarTBody.addEventListener('click',(e) =>{

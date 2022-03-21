@@ -226,7 +226,7 @@ let saldoABorrar = 0
                 let producto = (await axios.get(`${URL}productos/${objeto._id}`)).data
                 objeto.precio_venta = producto.precio_venta;
                 total += parseFloat(cantidad)*parseFloat(objeto.precio_venta);
-                venta.precioFinal = total;
+                venta.precioFinal = total.toFixed(2);
 
                 //actualizamos el importe de la cuentaCompensada
                 cuentaCompensada.importe = parseFloat(parseFloat(total).toFixed(2));
@@ -250,7 +250,8 @@ let saldoABorrar = 0
             cliente.saldo_p = saldo.toFixed(2);
             await axios.put(`${URL}cuentaHisto/id/${cuentaHistorica.nro_comp}`,cuentaHistorica);
             await axios.put(`${URL}cuentaComp/id/${cuentaCompensada.nro_comp}`,cuentaCompensada);  
-            await axios.put(`${URL}clientes/${cliente._id}`,cliente)
+            await axios.put(`${URL}clientes/${cliente._id}`,cliente);
+            ipcRenderer.send('imprimir-venta',[venta,cliente,false,2,"imprimir-comprobante","valorizado"]);
             location.reload();
         }else{
             alert("Venta no seleccionada")

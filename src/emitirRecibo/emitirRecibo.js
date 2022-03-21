@@ -99,7 +99,6 @@ total.value = 0.00
 let cliente = {}
 let listaVentas = []
 let nuevaLista=[]
-let arregloParaImprimir = [];
 vendedor.innerHTML = `<h3>${Vendedor}</h3>`
 
 
@@ -134,7 +133,7 @@ const listarLista = (lista,situacion)=>{
             let saldo = parseFloat(venta.importe) - parseFloat(venta.pagado)
             let fecha = new Date(venta.fecha) 
             let dia = fecha.getDate()
-            let mes = fecha.getMonth();
+            let mes = fecha.getMonth() + 1;
             let anio = fecha.getFullYear();
             
             mes = (mes === 0 ) ? (mes + 1) : mes;
@@ -171,53 +170,27 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
         if (inputSeleccionado.value !== "") {
             trSeleccionado.children[6].innerHTML = (parseFloat(trSeleccionado.children[3].innerHTML)-parseFloat(trSeleccionado.children[4].innerHTML) - parseFloat(inputSeleccionado.value)).toFixed(2)
         }
-            let venta
-            let abonadoAnterior
-            nuevaLista.forEach(e =>{
-                if(e.nro_comp === trSeleccionado.id){    
-                    venta = e
-                    abonadoAnterior=e.abonado;
-                }
-            });
-
+            console.log(trSeleccionado.children[6].innerHTML)
             if ((trSeleccionado.children[6].innerHTML < 0)) {
                 alert("El monto abonado es mayor al de la venta")
                 trSeleccionado.children[6].innerHTML = aux;
                 trSeleccionado.children[5].children[0].value = "";
                 trSeleccionado.children[5].children[0].focus();
              }else{
-                 //Si una venta y ase encuentra en el arreglo de imprimir no entramo al if sino agregamos la venta al arreglo
-                if (!arregloParaImprimir.some(objeto => objeto.numero === trSeleccionado.id)) {
-                    const renglon = trSeleccionado.children
-                    let objeto = {
-                        fecha: renglon[0].innerHTML.trim(),
-                        comprobante: renglon[1].innerHTML.trim(),
-                        numero: renglon[2].innerHTML.trim(),
-                        pagado: renglon[5].children[0].value.trim(),
-                        saldo: renglon[6].innerHTML.trim()
-
-                    };
-                    (inputSeleccionado.value !== "")  && arregloParaImprimir.push(objeto);
-                }else{
-                    const modificarSaldo = arregloParaImprimir.find(objeto => objeto.numero === trSeleccionado.id)
-                    modificarSaldo.precioFinal = parseFloat(inputSeleccionado.value)
-                    modificarSaldo.pagado = parseFloat(inputSeleccionado.value)
-                }
-                if(a === inputSeleccionado.id){
-                    total.value = (parseFloat(inputSeleccionado.value) + parseFloat(total.value) - parseFloat(aDescontar)).toFixed(2)
-                }else{
-                    if (inputSeleccionado.value !== "") {
-                        total.value = ((parseFloat(inputSeleccionado.value) + parseFloat(total.value)) - parseFloat(aDescontar)).toFixed(2)
-                    }
-                }
-                a=trSeleccionado.id
-                if(trSeleccionado.nextElementSibling){
-                    trSeleccionado = trSeleccionado.nextElementSibling
-                    inputSeleccionado = trSeleccionado.children[5].children[0] 
-                    trSeleccionado.children[5].children[0].focus()
-                }else{
-                    saldoAfavor.focus()
-                }
+                 //tomamos todos los inputs y ponemos el total.value
+                const inputs = document.querySelectorAll('tr input');
+                let totalInputs = 0;
+                inputs.forEach(input=> {
+                    totalInputs += input.value !== "" ? parseFloat(input.value) : 0
+                })
+                total.value = totalInputs.toFixed(2);
+               const tr = trSeleccionado.children;
+               trSeleccionado.children[6].innerHTML = (parseFloat(tr[3].innerHTML) - parseFloat(tr[4].innerHTML) - parseFloat(tr[5].children[0].value)).toFixed(2);
+               if(trSeleccionado.nextElementSibling){
+                    trSeleccionado.nextElementSibling.children[5].children[0].focus();
+                    trSeleccionado = trSeleccionado.nextElementSibling;
+                    inputSeleccionado = trSeleccionado.children[5].children[0];
+               }
         }
         if ((parseFloat(total.value) === parseFloat(cliente.saldo) && situacion === "blanco") || (parseFloat(total.value) === parseFloat(cliente.saldo_p) && situacion === "negro")) {
             const saldoAFavor = document.querySelector('#saldoAFavor');
@@ -252,43 +225,60 @@ imprimir.addEventListener('keydown',e=>{
 
 
 const hacerRecibo = async()=>{
-    modificarVentas(nuevaLista)
-    const nrmComp = await traerUltimoNroRecibo()
-    modifcarNroRecibo(nrmComp)
-    const recibo = {}
-    recibo.nro_comp = nrmComp
-    recibo.cod_comp = verCodComp(cond_iva.value)
-    recibo.dnicuit = cuit.value
-    recibo._id = await tamanioVentas()
-    recibo.pagado = true
-    recibo.cliente = cliente._id
-    recibo.vendedor = Vendedor
-    recibo.precioFinal = parseFloat(total.value).toFixed(2);
-    recibo.tipo_comp = (situacion === "blanco" ? "Recibos" : "Recibos_P" );
-    const aux = (situacion === "negro") ? "saldo_p" : "saldo"
-    let saldoFavor = 0;
-    saldoFavor = (saldoAfavor.value !== "") && parseFloat(saldoAFavor.value);
-    recibo.abonado = saldoAfavor.value;
-    const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2));
-    //Tomamos el cliente y agregamos a su lista Ventas la venta y tambien modificamos su saldo
-    const _id = recibo.cliente;
-    let clienteTraido = await axios.get(`${URL}clientes/id/${_id}`);
-    clienteTraido = clienteTraido.data;
-    //saldo
-    clienteTraido[aux] = saldoNuevo.toFixed(2);
-    //listaVentas
-    let listaVentas = clienteTraido.listaVentas;
-    listaVentas[0] === "" ? (listaVentas[0] = recibo.nro_comp) : (listaVentas.push(recibo.nro_comp));
-    clienteTraido.listaVentas = listaVentas;
-    await axios.put(`${URL}clientes/${_id}`,clienteTraido);
-    await axios.post(`${URL}ventas`,recibo);
-    saldoAfavor.value !== "" && ponerEnCuentaCorrienteCompensada(recibo);
-    ponerEnCuentaCorrienteHistorica(recibo);
-    const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
-    const impresora = recibo.tipo_comp === "Recibos" ? "SAM4S GIANT-100" : undefined;
-    // arregloParaImprimir contiene todos las ventas que tiene pagadas y total contiene el total del recibo
-    ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,arregloParaImprimir,total.value]);
-    location.href = "../index.html"
+
+    //Pnemos en un arreglo las ventas que se modificaron, asi despues imprimimos el recibo
+    let arregloParaImprimir = [];
+    const trs = document.querySelectorAll('tbody tr');
+    trs.forEach(tr=>{
+        if (tr.children[5].children[0].value !== "" && parseFloat(tr.children[5].children[0].value) !== 0) {
+            arregloParaImprimir.push({
+                fecha: tr.children[0].innerHTML,
+                comprobante: tr.children[1].innerHTML,
+                numero: tr.children[2].innerHTML,
+                pagado:tr.children[5].children[0].value,
+                saldo:tr.children[6].innerHTML
+            })
+        }
+    })
+    console.log(arregloParaImprimir);
+     modificarVentas(nuevaLista);
+     const nrmComp = await traerUltimoNroRecibo();
+     modifcarNroRecibo(nrmComp)
+     const recibo = {}
+     recibo.nro_comp = nrmComp
+     recibo.cod_comp = verCodComp(cond_iva.value)
+     recibo.dnicuit = cuit.value
+     recibo._id = await tamanioVentas()
+     recibo.pagado = true
+     recibo.cliente = cliente._id
+     recibo.vendedor = Vendedor
+     recibo.precioFinal = parseFloat(total.value).toFixed(2);
+     recibo.tipo_comp = (situacion === "blanco" ? "Recibos" : "Recibos_P" );
+     const aux = (situacion === "negro") ? "saldo_p" : "saldo"
+     let saldoFavor = 0;
+     saldoFavor = (saldoAfavor.value !== "") && parseFloat(saldoAFavor.value);
+     recibo.abonado = saldoAfavor.value;
+     const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2));
+     //Tomamos el cliente y agregamos a su lista Ventas la venta y tambien modificamos su saldo
+     const _id = recibo.cliente;
+     let clienteTraido = await axios.get(`${URL}clientes/id/${_id}`);
+     clienteTraido = clienteTraido.data;
+     saldo
+     clienteTraido[aux] = saldoNuevo.toFixed(2);
+    //  listaVentas
+     let listaVentas = clienteTraido.listaVentas;
+     listaVentas[0] === "" ? (listaVentas[0] = recibo.nro_comp) : (listaVentas.push(recibo.nro_comp));
+     clienteTraido.listaVentas = listaVentas;
+     await axios.put(`${URL}clientes/${_id}`,clienteTraido);
+     await axios.post(`${URL}ventas`,recibo);
+     saldoAfavor.value !== "" && ponerEnCuentaCorrienteCompensada(recibo);
+     ponerEnCuentaCorrienteHistorica(recibo);
+     const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
+     const impresora = recibo.tipo_comp === "Recibos" ? "SAM4S GIANT-100" : undefined;
+     console.log(recibo)
+     // arregloParaImprimir contiene todos las ventas que tiene pagadas y total contiene el total del recibo
+     ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,arregloParaImprimir,total.value]);
+     location.href = "../index.html"
 }
 
 const traerUltimoNroRecibo = async ()=>{

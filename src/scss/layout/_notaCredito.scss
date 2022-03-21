@@ -41,6 +41,15 @@
             grid-template-columns: repeat(3,1fr);
         }
 
+        .productos-inputs{
+            display: flex;
+            justify-content: space-between;
+            div{    
+                display: flex;
+                flex-direction: column;
+            }
+        }
+
         .listaProductos{
             overflow: scroll;
             height: 25rem;

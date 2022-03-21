@@ -38,12 +38,13 @@ const cancelar = document.querySelector('.cancelar');
 const borrarProducto = document.querySelector('.borrarProducto')
 const facturaOriginal = document.querySelector('#original');
 const radios = document.querySelectorAll('input[name=tipo]');
+const divNuevaCantidad = document.querySelector('.nuevaCantidad');
+const divNuevoPrecio = document.querySelector('.nuevoPrecio');
 
 let cliente = {};
 let venta = {};
 let listaProductos = [];
 let yaSeleccionado;
-precioFinal = 0;
 
 codigoC.addEventListener('keypress',async e=>{
     if ((e.key === "Enter")) {
@@ -170,8 +171,9 @@ ipcRenderer.on('mando-el-producto',async(e,args)=>{
 
 let id = 1
 const mostrarVentas = (objeto,cantidad)=>{
-    precioFinal += (parseFloat(objeto.precio_venta)*cantidad);
-    total.value = (parseFloat(precioFinal)).toFixed(2)
+    let precioFinal = (parseFloat(objeto.precio_venta)*parseFloat(cantidad));
+    console.log(precioFinal)
+    total.value = total.value !== "" ? (parseFloat(total.value) + (precioFinal)).toFixed(2) : precioFinal.toFixed(2);
     resultado.innerHTML += `
         <tr id=${id}>
         <td class="tdEnd">${(parseFloat(cantidad)).toFixed(2)}</td>
@@ -185,7 +187,7 @@ const mostrarVentas = (objeto,cantidad)=>{
     objeto.identificadorTabla = `${id}`
     id++
     listaProductos.push({objeto,cantidad});
-    venta.productos = listaProductos
+    console.log(listaProductos);
 }
 
 descuento.addEventListener('keypress',e=>{
@@ -210,7 +212,7 @@ factura.addEventListener('click',async e=>{
     }else if(venta.tipo_pago === "NINGUNO"){
         alert("Elegir tipo de pago");
     }else{
-
+        venta.productos = listaProductos
         venta.fecha = new Date()
         venta.cliente = codigoC.value;
         //Traemos el tamanio de ventas de la BD para el _id
@@ -237,7 +239,7 @@ factura.addEventListener('click',async e=>{
         venta.precioFinal = parseFloat(total.value);
         venta.vendedor = vendedor;
 
-         if (parseFloat(precioFinal)>10000 && buscarCliente.value === "A CONSUMIDOR FINAL" && dnicuit.value === "00000000"  && direccion.value === "CHAJARI") {
+         if (venta.precioFinal>10000 && buscarCliente.value === "A CONSUMIDOR FINAL" && dnicuit.value === "00000000"  && direccion.value === "CHAJARI") {
              alert("Factura mayor a 10000, poner valores clientes")
          }else{
              //Actualizamos el numero de comprobante
@@ -364,7 +366,36 @@ cancelar.addEventListener('click',e=>{
 resultado.addEventListener('click',e=>{
     inputseleccionado(e.path[1])
     if (yaSeleccionado) {
-        borrarProducto.classList.remove('none')
+        divNuevaCantidad.classList.remove('none');
+        divNuevoPrecio.classList.remove('none');
+        borrarProducto.classList.remove('none');
+    }
+})
+
+//modificamos la cantidad
+divNuevaCantidad.children[1].addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        divNuevoPrecio.children[1].focus();
+    }
+});
+
+divNuevoPrecio.children[1].addEventListener('keypress',e=>{
+    if(e.key === "Enter"){
+        let nuevoTotal = parseFloat(total.value);
+        const producto = listaProductos.find(({objeto,cantidad})=>objeto.identificadorTabla === yaSeleccionado.id);
+        nuevoTotal -= parseFloat(producto.cantidad) * parseFloat(producto.objeto.precio_venta);
+        producto.cantidad = divNuevaCantidad.children[1].value !== "" ? divNuevaCantidad.children[1].value : producto.cantidad;
+        producto.objeto.precio_venta = divNuevoPrecio.children[1].value !== "" ? divNuevoPrecio.children[1].value : producto.objeto.precio_venta;
+        const tr = document.getElementById(`${yaSeleccionado.id}`);
+        tr.children[0].innerHTML = parseFloat(producto.cantidad).toFixed(2);
+        tr.children[4].innerHTML = parseFloat(producto.objeto.precio_venta).toFixed(2);
+        tr.children[5].innerHTML = (parseFloat(producto.cantidad) * parseFloat(producto.objeto.precio_venta)).toFixed(2);
+        nuevoTotal += parseFloat(producto.cantidad) * parseFloat(producto.objeto.precio_venta);
+        total.value = nuevoTotal.toFixed(2)
+        divNuevoPrecio.children[1].value = "";
+        divNuevaCantidad.children[1].value = "";
+        codigo.focus();
+
     }
 })
 
@@ -379,7 +410,6 @@ const inputseleccionado = (e) =>{
     if (yaSeleccionado) {
         producto = listaProductos.find(e=>e.objeto.identificadorTabla === yaSeleccionado.id);
         total.value = (parseFloat(total.value)-(parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta))).toFixed(2)
-        precioFinal = (precioFinal - (parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)).toFixed(2)) 
         listaProductos.forEach(e=>{
             if (yaSeleccionado.id === e.objeto.identificadorTabla) {
                     listaProductos = listaProductos.filter(e=>e.objeto.identificadorTabla !== yaSeleccionado.id)
