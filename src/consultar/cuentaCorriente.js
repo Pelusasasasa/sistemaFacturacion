@@ -179,8 +179,8 @@ const listarLista = (lista,situacion,tipo)=>{
 const detalle = document.querySelector('.detalle')
 async function mostrarDetalles(id,tipo) {
     detalle.innerHTML = ''
-    let venta = tipo === "Presupuesto" ? await axios.get(`${URL}presupuesto/${id}`) : await axios.get(`${URL}ventas/${id}`);
-    venta = venta.data[0];
+    let venta = tipo === "Presupuesto" ? (await axios.get(`${URL}presupuesto/${id}`)).data : (await axios.get(`${URL}ventas/${id}`)).data;
+    venta = venta.find(e=>e.condIva === clienteTraido.cond_iva);
     if ((venta.tipo_comp === "Recibos" || venta.tipo_comp === "Recibos_P")) {
         detalle.innerHTML = `<h3>Vendedor del recibo: ${vendedor}</h3>`
     }else{
@@ -213,8 +213,7 @@ let saldoABorrar = 0
                 return (e.tipo_comp === "Presupuesto" || e.tipo_comp === "Recibos_P");
             })
 
-            let venta = await axios.get(`${URL}ventas/${seleccionado.id}`);
-            venta = venta.data;
+            let venta = (await axios.get(`${URL}ventas/${seleccionado.id}`)).data;
             venta = venta.length === 0 ? (await axios.get(`${URL}presupuesto/${seleccionado.id}`)).data[0] : venta;
             let cuentaCompensada = (await axios.get(`${URL}cuentaComp/id/${seleccionado.id}`)).data[0];
             let cuentaHistorica = (await axios.get(`${URL}cuentaHisto/id/${seleccionado.id}`)).data[0];
@@ -237,7 +236,7 @@ let saldoABorrar = 0
             cuentaHistorica.saldo -= cuentaHistorica.debe;
             cuentaHistorica.debe = cuentaCompensada.importe;
             //Guardamos la venta con el nuevo precioFinal
-             venta.tipo_comp === "Presupuesto" ? await axios.put(`${URL}presupuesto/${venta.nro_comp}`,venta) : await axios.put(`${URL}ventas/${venta.nro_comp}`,venta);
+            await axios.put(`${URL}presupuesto/${venta.nro_comp}`,venta);
             saldo += parseFloat(cuentaCompensada.importe);
             cuentaHistorica.saldo = parseFloat((parseFloat(cuentaHistorica.saldo) + parseFloat(cuentaHistorica.debe)).toFixed(2))
                let ultimoSaldo = cuentaHistorica.saldo;

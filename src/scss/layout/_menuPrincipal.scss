@@ -1,3 +1,7 @@
+.botones-arriba{
+  display: flex;
+  justify-content: flex-end;
+}
 .menuPrincipal {
   background-color: lightgray;
   margin: 5rem auto;
@@ -5,7 +9,6 @@
   grid-template-columns: repeat(4, 1fr);
   gap: 2rem;
   padding: 1rem;
-
   .menu {
     display: flex;
     flex-direction: column;

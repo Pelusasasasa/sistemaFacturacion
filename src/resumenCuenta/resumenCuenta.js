@@ -30,6 +30,8 @@ let situacion = "blanco";
 let listaVentas = [];
 let saldo = "saldo";
 let cliente = {};
+saldoAnterior_P = 0;
+saldoAnterior = 0;
 
 
 buscador.addEventListener('keypress',e=>{
@@ -45,7 +47,7 @@ document.addEventListener('keydown',(event) =>{
                mostrarNegro();
                situacion = 'negro'
                saldo = "saldo_p"
-               listarVentas(listaVentas,situacion)
+               listarVentas(listaVentas,situacion,saldoAnterior,saldoAnterior_P)
            }
        })
    }
@@ -58,7 +60,7 @@ document.addEventListener('keydown',(event) =>{
               ocultarNegro();
               situacion = 'blanco'
               saldo = "saldo"
-              listarVentas(listaVentas,situacion)
+              listarVentas(listaVentas,situacion,saldoAnterior,saldoAnterior_P)
           }
         })
   }
@@ -88,21 +90,28 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
     telefono.innerHTML = cliente.telefono;
     let cuentas = (await axios.get(`${URL}cuentaHisto/cliente/${cliente._id}`)).data;
     let ventasAnteriores = cuentas.filter(e=>e.fecha < desde.value);
-    let saldoAnterior = 0;
      await ventasAnteriores.forEach(e=>{
-        saldoAnterior = ((e.tipo_comp === "Presupuesto" || e.tipo_comp === "Ticket Factura") ? (saldoAnterior + e.debe ): (saldoAnterior - e.haber));
+        if (e.tipo_comp !== "Recibos_P" && e.tipo_comp !== "Presupuesto") {
+            saldoAnterior = (e.tipo_comp === "Ticket Factura" ? (saldoAnterior + e.debe ):  (saldoAnterior - e.haber));
+        }
+        if (e.tipo_comp !== "Ticket Factura" && e.tipo_comp !== "Recibos") {
+            console.log(e.debe);
+            console.log(e.haber);
+            saldoAnterior_P = e.tipo_comp === "Presupuesto" ? (saldoAnterior_P + e.debe ) : (saldoAnterior_P - e.haber);
+        }
     })
-    console.log(saldoAnterior)
     cuentas = cuentas.filter(e=> {
         return (e.fecha >= desde.value)
     });
     nuevaLista = [];
     listaVentas = cuentas;
-    listarVentas(listaVentas,situacion,saldoAnterior)
+    console.log(saldoAnterior_P)
+    listarVentas(listaVentas,situacion,saldoAnterior,saldoAnterior_P)
 })
 
-function listarVentas(ventas,situacion,saldoAnterior) {
-    tbody.innerHTML = ""
+function listarVentas(ventas,situacion,saldoAnterior,saldoAnterior_P) {
+    console.log(saldoAnterior_P)
+    tbody.innerHTML = "";
     const aux = (situacion === "blanco") ? "Ticket Factura" : "Presupuesto";
     let listaAux = ventas;
     if (aux === "Presupuesto") {
@@ -114,7 +123,8 @@ function listarVentas(ventas,situacion,saldoAnterior) {
             return (e.tipo_comp === aux || e.tipo_comp === "Recibos")
         })
     }
-        tbody.innerHTML += `<tr><td></td><td></td><td></td><td></td><td>Saldo Anterior</td><td>${saldoAnterior}</td></tr>`
+    let saldoAnteriorFinal = situacion === "blanco" ? saldoAnterior : saldoAnterior_P;
+        tbody.innerHTML += `<tr><td></td><td></td><td></td><td></td><td>Saldo Anterior</td><td>${saldoAnteriorFinal}</td></tr>`
         listaAux.forEach(venta => {
             const fecha = new Date(venta.fecha);
             const dia = fecha.getDate();

@@ -62,6 +62,10 @@ ipcMain.on('abrir-ventana-agregar-cliente',e=>{
     abrirVentana('clientes/agregarCliente.html',1100,500)
 })
 
+ipcMain.on('minimizar',e=>{
+    ventanaPrincipal.minimize();
+})
+
 
 ipcMain.on('recargar-Ventana',(e,args)=>{
     app.relaunch();
@@ -73,8 +77,7 @@ ventanaPrincipal.setMenuBarVisibility(true)
 });
 
 ipcMain.on('cerrar-menu',()=>{
-    ventanaPrincipal.setMenuBarVisibility(false)
-    ventanaPrincipal.webPreferences.closable = true;
+    ventanaPrincipal.setMenuBarVisibility(false);
 })
 
 //INICIO PRODUCTOS

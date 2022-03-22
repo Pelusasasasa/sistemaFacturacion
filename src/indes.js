@@ -23,6 +23,11 @@ const notaCredito = document.querySelector('.notaCredito');
 const productos = document.querySelector('.productos');
 const clientes = document.querySelector('.clientes');
 
+const min = document.querySelector('#min');
+min.addEventListener('click',e=>{
+    ipcRenderer.send('minimizar');
+})
+
 const flecha = document.querySelector('.flecha')
 listaPedidos.addEventListener('click', (e) =>{
     const handlePedidos = document.querySelector('.handlePedidos')
