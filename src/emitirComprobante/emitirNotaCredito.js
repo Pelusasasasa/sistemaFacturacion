@@ -685,7 +685,7 @@ const imprimirVenta = (arreglo)=>{
         conector.texto("GIANOVI MARINA ISABEL\n");
         conector.texto("INGRESO BRUTOS: 27165767433\n")
         conector.texto("C.U.I.T Nro: 27165767433\n");
-        conector.texto("AV.9 DE JULION-3380 (3228);CHAJARI E.R.\n");
+        conector.texto("AV.9 DE JULIO-3380 (3228);CHAJARI E.R.\n");
         conector.texto("INICIO DE ACTIVIDADES: 02-03-07\n");
         conector.texto("IVA RESPONSABLE INSCRIPTO\n");
         conector.texto("------------------------------------------\n");
@@ -693,8 +693,8 @@ const imprimirVenta = (arreglo)=>{
         conector.texto(`FECHA: ${dia}-${mes}-${anio}    Hora:${horas}:${minutos}:${segundos}\n`);
         conector.texto("------------------------------------------\n");
         conector.texto(`${buscarCliente.value}\n`);
-        conector.texto(`${dnicuit.value}\n`);
-        conector.texto(`${conIva.value}\n`);
+        conector.texto(`Dni O Cuit: ${dnicuit.value}\n`);
+        conector.texto(`${Venta.condIva}\n`);
         conector.texto(`${direccion.value}   ${localidad.value}\n`);
         Venta.numeroAsociado && conector.texto(`Comp Original Nº: ${venta.numeroAsociado}\n`);
         conector.texto("------------------------------------------\n");
@@ -732,7 +732,7 @@ const imprimirVenta = (arreglo)=>{
         conector.texto("TOTAL       $" +  Venta.precioFinal + "\n");
         conector.establecerTamanioFuente(1,1);
         conector.texto("Recibimos(mos)\n");
-        conector.texto(`${venta.tipo_pago === "CD" ? `Contado          ${Venta.precioFinal}`  : "Cuenta Corriente"}` + "\n");
+        conector.texto(`${venta.tipo_pago === "CD" ? `Efectivo                  ${Venta.precioFinal}`  : "Cuenta Corriente"}` + "\n");
         conector.establecerTamanioFuente(2,1);
         conector.texto("CAMBIO        $0.00\n");
         conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);

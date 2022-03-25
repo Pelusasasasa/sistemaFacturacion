@@ -1,4 +1,8 @@
 const { ipcRenderer } = require("electron")
+
+const Afip = require('@afipsdk/afip.js');
+const afip = new Afip({ CUIT: 27165767433 });
+
 const tipoConexion = require('./config.js');
 ipcRenderer.send('abrir-menu');
 const axios = require("axios");
@@ -133,10 +137,18 @@ ipcRenderer.on("validarUsuario",(e,args)=>{
 })
 
 const salir = document.querySelector('.salir');
-salir.addEventListener('click',e=>{
-    ipcRenderer.send('cerrar-menu');
+salir.addEventListener('click',async e=>{
+    const lastVoucher = await afip.ElectronicBilling.getLastVoucher(5,1); //Devuelve el número del último comprobante creado para el punto de venta 1 y el tipo de comprobante 6 (Factura B)
+    console.log(lastVoucher);
+
+    const voucherInfo = await afip.ElectronicBilling.getVoucherInfo(16,5,1); //Devuelve la información del comprobante 1 para el punto de venta 1 y el tipo de comprobante 6 (Factura B)
+
+        if(voucherInfo === null){
+            console.log('El comprobante no existe');
+        }
+        else{
+            console.log('Esta es la información del comprobante:');
+            console.log(voucherInfo);
+        }
     // window.close();
-    // console.log(remote)
-    // let w = remote.getCurrentWindow()
-    // w.close()
 })

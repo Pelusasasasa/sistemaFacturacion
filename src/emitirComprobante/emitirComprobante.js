@@ -240,8 +240,7 @@ codigo.addEventListener('keypress',async (e) => {
                     }
                 })
             }else{
-            let producto = await axios.get(`${URL}productos/${e.target.value}`);
-            producto = producto.data;
+            let producto = (await axios.get(`${URL}productos/${e.target.value}`)).data;
                 if (producto.length === 0) {
                         alert("No existe ese Producto");
                         codigo.value = "";
@@ -252,7 +251,7 @@ codigo.addEventListener('keypress',async (e) => {
                             e.target.value = await "";
                             codigo.focus()
                         }else{
-                            if (!Number.isInteger(parseFloat(valor)) && JSON.parse(args).unidad === "U") {
+                            if (!Number.isInteger(parseFloat(valor)) && producto.unidad === "U") {
                                 await alert("La cantidad de este producto no puede ser en decimal")
                                 codigo.focus()
                             }else{
@@ -932,6 +931,8 @@ const borrarCuentaCorriente = async (numero)=>{
 
 
 const subirAAfip = async(venta)=>{
+    const salesPoints = await afip.ElectronicBilling.getVoucherTypes();
+    console.log(salesPoints)
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
     (ultimoElectronica === 0) && (ultimoElectronica=1); 
@@ -1141,7 +1142,7 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     conector.texto("GIANOVI MARINA ISABEL\n");
     conector.texto("INGRESO BRUTOS: 27165767433\n")
     conector.texto("C.U.I.T Nro: 27165767433\n");
-    conector.texto("AV.9 DE JULION-3380 (3228);CHAJARI E.R.\n");
+    conector.texto("AV.9 DE JULIO-3380 (3228);CHAJARI E.R.\n");
     conector.texto("INICIO DE ACTIVIDADES: 02-03-07\n");
     conector.texto("IVA RESPONSABLE INSCRIPTO\n");
     conector.texto("------------------------------------------\n");
@@ -1149,8 +1150,8 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     conector.texto(`FECHA: ${dia}-${mes}-${anio}    Hora:${horas}:${minutos}:${segundos}\n`);
     conector.texto("------------------------------------------\n");
     conector.texto(`${buscarCliente.value}\n`);
-    conector.texto(`${dnicuit.value}\n`);
-    conector.texto(`${conIva.value}\n`);
+    conector.texto(`Dni O Cuit: ${dnicuit.value}\n`);
+    conector.texto(`${Venta.condIva}\n`);
     conector.texto(`${direccion.value}   ${localidad.value}\n`);
     venta.numeroAsociado && conector.texto(`${venta.numeroAsociado}\n`);
     conector.texto("------------------------------------------\n");
@@ -1188,7 +1189,7 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     conector.texto("TOTAL        $" +  Venta.precioFinal + "\n");
     conector.establecerTamanioFuente(1,1);
     conector.texto("Recibimos(mos)\n");
-    conector.texto(`${venta.tipo_pago === "CD" ? `Contado             ${Venta.precioFinal}`  : "Cuenta Corriente"}` + "\n");
+    conector.texto(`${venta.tipo_pago === "CD" ? `Efectivo                  ${Venta.precioFinal}`  : "Cuenta Corriente"}` + "\n");0
     conector.establecerTamanioFuente(2,1);
     conector.texto("CAMBIO         $0.00\n");
     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);

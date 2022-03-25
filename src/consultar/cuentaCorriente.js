@@ -123,8 +123,8 @@ listar.addEventListener('click',e=>{
     sacarSeleccion && sacarSeleccion.classList.remove('seleccionado')
     seleccionado.classList.toggle('seleccionado')
     if (seleccionado) {
-        listaCompensada.forEach(listar=>{
-            listar.nro_comp === seleccionado.id && mostrarDetalles(listar.nro_comp,listar.tipo_comp);
+        listaHistorica.forEach(listar=>{
+            listar.nro_comp === seleccionado.id && mostrarDetalles(listar.nro_comp,listar.tipo_comp,listar.vendedor);
         })
     }
 })
@@ -177,23 +177,26 @@ const listarLista = (lista,situacion,tipo)=>{
 }
 
 const detalle = document.querySelector('.detalle')
-async function mostrarDetalles(id,tipo) {
-    detalle.innerHTML = ''
-    let venta = tipo === "Presupuesto" ? (await axios.get(`${URL}presupuesto/${id}`)).data : (await axios.get(`${URL}ventas/${id}`)).data;
-    venta = venta.find(e=>e.condIva === clienteTraido.cond_iva);
-    if ((venta.tipo_comp === "Recibos" || venta.tipo_comp === "Recibos_P")) {
-        detalle.innerHTML = `<h3>Vendedor del recibo: ${vendedor}</h3>`
+async function mostrarDetalles(id,tipo,vendedor) {
+    detalle.innerHTML = '';
+    if (tipo === "Recibos_P" || tipo === "Recibos") {
+        const vendedor = (await axios.get(`${URL}ventas/venta/ventaUnica/${seleccionado.id}/${tipo}`)).data.vendedor;
+        detalle.innerHTML += `
+            <tr><h1>El recibo fue emitido por: ${vendedor}</h1></tr>
+        `
     }else{
-    venta.productos.forEach((producto) =>{
-        let {objeto,cantidad} = producto 
+    let productos = (await axios.get(`${URL}movProductos/${id}/${tipo}`)).data;
+        // detalle.innerHTML = `<h3>Vendedor del recibo: ${vendedor}</h3>`
+    productos.forEach((producto) =>{
+        let {codProd,descripcion,vendedor,egreso,precio_unitario} = producto;
         detalle.innerHTML += `
         <tr>
-            <td>${objeto._id}</td>
-            <td>${objeto.descripcion}</td>
-            <td>${parseFloat(cantidad).toFixed(2)}</td>
-            <td>${(parseFloat(objeto.precio_venta)).toFixed(2)}</td>
-            <td>${(objeto.precio_venta*cantidad).toFixed(2)}</td>
-            <td>${venta.vendedor}</td>
+            <td>${codProd}</td>
+            <td>${descripcion}</td>
+            <td>${egreso}</td>
+            <td>${precio_unitario}</td>
+            <td>${(egreso*precio_unitario).toFixed(2)}</td>
+            <td>${vendedor}</td>
         </tr>
         `
         })
@@ -207,65 +210,64 @@ let saldoABorrar = 0
 
     actualizar.addEventListener('click',async e=>{
         if (seleccionado) {
-            const index = listaHistorica.map(e=>e.nro_comp).indexOf(seleccionado.id);
-            let arregloRestante = listaHistorica.slice(index+1);
-            arregloRestante = arregloRestante.filter(e=>{
-                return (e.tipo_comp === "Presupuesto" || e.tipo_comp === "Recibos_P");
-            })
+            if (confirm("Grabar Importe")) {
+                const index = listaHistorica.map(e=>e.nro_comp).indexOf(seleccionado.id);
+                let arregloRestante = listaHistorica.slice(index+1);
+                arregloRestante = arregloRestante.filter(e=>{
+                    return (e.tipo_comp === "Presupuesto" || e.tipo_comp === "Recibos_P");
+                })
 
-            let venta = (await axios.get(`${URL}ventas/${seleccionado.id}`)).data;
-            venta = venta.length === 0 ? (await axios.get(`${URL}presupuesto/${seleccionado.id}`)).data[0] : venta;
-            let cuentaCompensada = (await axios.get(`${URL}cuentaComp/id/${seleccionado.id}`)).data[0];
-            let cuentaHistorica = (await axios.get(`${URL}cuentaHisto/id/${seleccionado.id}`)).data[0];
-            let cliente = (await axios.get(`${URL}clientes/id/${venta.cliente}`)).data
-            let saldo = parseFloat(cliente.saldo_p) - parseFloat(cuentaCompensada.importe);
-            let total = 0;
-            //traemos los productos para ver su precio y actualizarlos
-             for await(let {objeto,cantidad} of venta.productos){
-                let producto = (await axios.get(`${URL}productos/${objeto._id}`)).data
-                objeto.precio_venta = producto.precio_venta;
-                total += parseFloat(cantidad)*parseFloat(objeto.precio_venta);
-                venta.precioFinal = total.toFixed(2);
+                venta = (await axios.get(`${URL}presupuesto/${seleccionado.id}`)).data[0]
+                let cuentaCompensada = (await axios.get(`${URL}cuentaComp/id/${seleccionado.id}`)).data[0];
+                let cuentaHistorica = (await axios.get(`${URL}cuentaHisto/id/${seleccionado.id}`)).data[0];
+                let cliente = (await axios.get(`${URL}clientes/id/${venta.cliente}`)).data
+                let saldo = parseFloat(cliente.saldo_p) - parseFloat(cuentaCompensada.importe);
+                let total = 0;
+                //traemos los productos para ver su precio y actualizarlos
+                for await(let {objeto,cantidad} of venta.productos){
+                    let producto = (await axios.get(`${URL}productos/${objeto._id}`)).data
+                    objeto.precio_venta = producto.precio_venta;
+                    total += parseFloat(cantidad)*parseFloat(objeto.precio_venta);
+                    venta.precioFinal = total.toFixed(2);
 
-                //actualizamos el importe de la cuentaCompensada
-                cuentaCompensada.importe = parseFloat(parseFloat(total).toFixed(2));
+                    //actualizamos el importe de la cuentaCompensada
+                    cuentaCompensada.importe = parseFloat(parseFloat(total).toFixed(2));
 
-                //actualizamos el saldo de la cuentaCompensada
-                cuentaCompensada.saldo = parseFloat((parseFloat(total) - cuentaCompensada.pagado).toFixed(2));
-            }
-            cuentaHistorica.saldo -= cuentaHistorica.debe;
-            cuentaHistorica.debe = cuentaCompensada.importe;
-            //Guardamos la venta con el nuevo precioFinal
-            await axios.put(`${URL}presupuesto/${venta.nro_comp}`,venta);
-            saldo += parseFloat(cuentaCompensada.importe);
-            cuentaHistorica.saldo = parseFloat((parseFloat(cuentaHistorica.saldo) + parseFloat(cuentaHistorica.debe)).toFixed(2))
-               let ultimoSaldo = cuentaHistorica.saldo;
-               arregloRestante.forEach(async e=>{
-                e.saldo= (e.tipo_comp === "Recibos_P") ?  parseFloat((ultimoSaldo - e.haber).toFixed(2)) : parseFloat((e.debe + ultimoSaldo).toFixed(2));
-                ultimoSaldo = e.saldo;
-                console.log(ultimoSaldo)
-               await axios.put(`${URL}cuentaHisto/id/${e.nro_comp}`,e)
-            })
-            cliente.saldo_p = saldo.toFixed(2);
-            await axios.put(`${URL}cuentaHisto/id/${cuentaHistorica.nro_comp}`,cuentaHistorica);
-            await axios.put(`${URL}cuentaComp/id/${cuentaCompensada.nro_comp}`,cuentaCompensada);  
-            await axios.put(`${URL}clientes/${cliente._id}`,cliente);
-            ipcRenderer.send('imprimir-venta',[venta,cliente,false,2,"imprimir-comprobante","valorizado"]);
-            location.reload();
+                    //actualizamos el saldo de la cuentaCompensada
+                    cuentaCompensada.saldo = parseFloat((parseFloat(total) - cuentaCompensada.pagado).toFixed(2));
+                }
+
+                const movProductos = (await axios.get(`${URL}movProductos/${seleccionado.id}/${venta.tipo_comp}`)).data;
+                movProductos.forEach(async movProducto =>{
+                    let producto = (await axios.get(`${URL}productos/${movProducto.codProd}`)).data;
+                    movProducto.precio_unitario = parseFloat(producto.precio_venta);
+                    movProducto.total = parseFloat(movProducto.egreso*movProducto.precio_unitario);
+                    await axios.put(`${URL}movProductos/${movProducto._id}`,movProducto);
+                })
+                cuentaHistorica.saldo -= cuentaHistorica.debe;
+                cuentaHistorica.debe = cuentaCompensada.importe;
+                //Guardamos la venta con el nuevo precioFinal
+                // await axios.put(`${URL}presupuesto/${venta.nro_comp}`,venta);
+                saldo += parseFloat(cuentaCompensada.importe);
+                cuentaHistorica.saldo = parseFloat((parseFloat(cuentaHistorica.saldo) + parseFloat(cuentaHistorica.debe)).toFixed(2))
+                let ultimoSaldo = cuentaHistorica.saldo;
+                arregloRestante.forEach(async e=>{
+                    e.saldo= (e.tipo_comp === "Recibos_P") ?  parseFloat((ultimoSaldo - e.haber).toFixed(2)) : parseFloat((e.debe + ultimoSaldo).toFixed(2));
+                    ultimoSaldo = e.saldo;
+                // await axios.put(`${URL}cuentaHisto/id/${e.nro_comp}`,e)
+                })
+                cliente.saldo_p = saldo.toFixed(2);
+                // await axios.put(`${URL}cuentaHisto/id/${cuentaHistorica.nro_comp}`,cuentaHistorica);
+                // await axios.put(`${URL}cuentaComp/id/${cuentaCompensada.nro_comp}`,cuentaCompensada);  
+                // await axios.put(`${URL}clientes/${cliente._id}`,cliente);
+                // ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante","valorizado"]);
+                // location.reload();
+                }
         }else{
             alert("Venta no seleccionada")
         }
     })
 
-function sacarTotal(arreglo){
-    total = 0   
-    arreglo.forEach((producto)=>{
-        let cantidad = producto.cantidad
-        let objeto = producto.objeto
-        total += cantidad*(objeto.precio_venta)
-    })
-    return total
-}
 
 const botonFacturar = document.querySelector('#botonFacturar')
 botonFacturar.addEventListener('click',() =>{

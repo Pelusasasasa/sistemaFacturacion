@@ -26,6 +26,7 @@ const fecha = document.querySelector('.fecha')
         const segundo = tomarFecha.getSeconds()
 
         const listar = (venta,cliente,valorizado)=>{
+            console.log(venta)
             const lista = venta.productos
             numero.innerHTML=venta.nro_comp
             clientes.innerHTML = cliente.cliente
@@ -37,7 +38,7 @@ const fecha = document.querySelector('.fecha')
             fecha.innerHTML = `${dia}/${mes}/${anio} ${hora}:${minuto}:${segundo}`
             numeroComp.innerHTML = venta.nro_comp
             subtotal.innerHTML=parseFloat(venta.precioFinal)+parseFloat(venta.descuento)
-            precioFinal.innerHTML=venta.precioFinal
+            precioFinal.innerHTML=(parseFloat(venta.precioFinal)).toFixed(2);
             tipoPago.innerHTML= venta.tipo_pago
             tipoFactura.innerHTML = "R"
             descuento.innerHTML = venta.descuento
@@ -48,7 +49,6 @@ const fecha = document.querySelector('.fecha')
                 descuento.innerHTML= ""
             }
     
-                console.log(cliente);
             if (cliente.cond_iva) {
                 cond_iva.innerHTML = cliente.cond_iva
             }else{
