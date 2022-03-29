@@ -26,13 +26,8 @@ const resumenCuenta = document.querySelector('.resumenCuenta');
 const notaCredito = document.querySelector('.notaCredito');
 const productos = document.querySelector('.productos');
 const clientes = document.querySelector('.clientes');
-
-const min = document.querySelector('#min');
-min.addEventListener('click',e=>{
-    ipcRenderer.send('minimizar');
-})
-
 const flecha = document.querySelector('.flecha')
+
 listaPedidos.addEventListener('click', (e) =>{
     const handlePedidos = document.querySelector('.handlePedidos')
     handlePedidos.classList.toggle('disable')
@@ -138,17 +133,8 @@ ipcRenderer.on("validarUsuario",(e,args)=>{
 
 const salir = document.querySelector('.salir');
 salir.addEventListener('click',async e=>{
-    const lastVoucher = await afip.ElectronicBilling.getLastVoucher(5,1); //Devuelve el número del último comprobante creado para el punto de venta 1 y el tipo de comprobante 6 (Factura B)
-    console.log(lastVoucher);
-
-    const voucherInfo = await afip.ElectronicBilling.getVoucherInfo(16,5,1); //Devuelve la información del comprobante 1 para el punto de venta 1 y el tipo de comprobante 6 (Factura B)
-
-        if(voucherInfo === null){
-            console.log('El comprobante no existe');
-        }
-        else{
-            console.log('Esta es la información del comprobante:');
-            console.log(voucherInfo);
-        }
-    // window.close();
+    if (confirm("Desea Salir?")) {
+        window.close();
+        
+    }
 })

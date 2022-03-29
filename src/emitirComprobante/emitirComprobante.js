@@ -212,7 +212,6 @@ codigo.addEventListener('keypress',async (e) => {
                     }
 
                 })
-
             }else if(codigo.value === "888-888"){
                 const precio = document.querySelector('.parte-producto_precio')
                 let descripcion = document.querySelector('.parte-producto_descripcion')
@@ -502,7 +501,8 @@ async function movimientoProducto(cantidad,objeto){
     movProducto._id = (id + 1);
     movProducto.codProd = objeto._id
     movProducto.descripcion = objeto.descripcion
-    movProducto.cliente = cliente.cliente
+    movProducto.codCliente = cliente.cliente;
+    movProducto.cliente = cliente.nombreCliente;
     movProducto.comprobante = tipoVenta
     movProducto.tipo_comp = venta.tipo_comp
     movProducto.nro_comp=venta.nro_comp
@@ -692,7 +692,7 @@ ticketFactura.addEventListener('click',async (e) =>{
      venta.tipo_pago = await verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
      if (venta.tipo_pago === "Ninguno") {
         alert("Seleccionar un modo de venta")
-        }else{
+    }else{
         venta.nombreCliente = buscarCliente.value;
         venta._id = await tamanioVentas("ticket factura");
         venta.observaciones = observaciones.value
@@ -726,17 +726,20 @@ ticketFactura.addEventListener('click',async (e) =>{
             await movimientoProducto(producto.cantidad,producto.objeto)
         };
         actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp);
-        const afip = await subirAAfip(venta)
+        //const afip = await subirAAfip(venta)
         await ipcRenderer.send('nueva-venta',venta);
         const cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
-        await imprimirVenta([venta,cliente,afip]);
-        await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
-
+        //await imprimirVenta([venta,cliente,afip]);
+        //await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
         if (borraNegro) {
-            ipcRenderer.on('clienteModificado',async(e,args)=>{
-                await borrarCuentaCorriente(ventaDeCtaCte)
-            })};
-        !borraNegro && (window.location = '../index.html');
+            //borramos la cuenta compensada
+            await borrrarCuentaCompensada(ventaDeCtaCte);
+            //descontamos el saldo del cliente y le borramos la venta de la lista
+            await descontarSaldo(ventaAnterior.cliente,ventaAnterior.precioFinal,ventaAnterior.nro_comp);
+            borrarCuentaHistorica(ventaAnterior.nro_comp)
+            await borrarVenta(ventaAnterior.nro_comp)
+        };
+        //!borraNegro ? (window.location = '../index.html') : window.close();
         }
     }
     }
@@ -905,29 +908,41 @@ function ponerInputsClientes(cliente) {
 }
 
 let ventaAnterior;
-ipcRenderer.once('venta',(e,args)=>{
+ipcRenderer.once('venta',async (e,args)=>{
     borraNegro = true;
     const [usuario,numero,empresaS] = JSON.parse(args);
     inputEmpresa.value = empresaS;
     ventaDeCtaCte = numero;
     textoUsuario.innerHTML = usuario;
-    venta.vendedor = usuario;
-    ipcRenderer.send('traerVenta',numero);
-    ipcRenderer.on('traerVenta',async (e,args)=>{
-        const venta = JSON.parse(args)[0]
-        ventaAnterior = venta
-        let cliente = (await axios.get(`${URL}clientes/id/${venta.cliente}`)).data;
-        ponerInputsClientes(cliente)
-        venta.productos.forEach(producto =>{
-            const {objeto,cantidad} = producto;
-            mostrarVentas(objeto,cantidad)
-        })
+    ventaAnterior = (await axios.get(`${URL}presupuesto/${numero}`)).data[0];
+    let cliente = (await axios.get(`${URL}clientes/id/${ventaAnterior.cliente}`)).data;
+    ponerInputsClientes(cliente)
+    ventaAnterior.productos.forEach(producto =>{
+        const {objeto,cantidad} = producto;
+        mostrarVentas(objeto,cantidad)
     })
 })
 
-const borrarCuentaCorriente = async (numero)=>{
-    ventaAnterior.tipo_pago === "CC" && await ipcRenderer.send('borrarVentaACliente',[venta.cliente,numero]);
-}   
+const borrrarCuentaCompensada = async(numero)=>{
+    await axios.delete(`${URL}cuentaComp/id/${numero}`);
+}
+
+const descontarSaldo = async(codigo,precio,numero)=>{
+    const cliente = (await axios.get(`${URL}clientes/id/${codigo}`)).data;
+    const index = cliente.listaVentas.indexOf(numero);
+    cliente.listaVentas.splice(index);
+    cliente.saldo_p = parseFloat(cliente.saldo_p) - precio;
+    await axios.put(`${URL}clientes/${codigo}`,cliente);
+}
+
+const borrarCuentaHistorica = async(numero)=>{
+    await axios.delete(`${URL}cuentaHisto/id/${numero}`);
+}
+
+const borrarVenta = async(numero)=>{
+    await axios.delete(`${URL}presupuesto/${numero}`);
+}
+
 
 
 const subirAAfip = async(venta)=>{

@@ -42,11 +42,6 @@ app.on('window-all-closed',()=>{
 
 function crearVentanaPrincipal() {
     ventanaPrincipal = new BrowserWindow({  
-        //width: 7000,
-        //height: 7000,
-        icon: path.join(__dirname,'./imagenes/electro.ico'),
-        fullscreen: false,
-        closable: false,
         webPreferences: {
             contextIsolation: false,
             nodeIntegration: true,
@@ -55,6 +50,12 @@ function crearVentanaPrincipal() {
     });
     ventanaPrincipal.loadFile('src/index.html')
     ventanaPrincipal.maximize()
+    ventanaPrincipal.setThumbarButtons([
+        {
+          tooltip: 'button1',
+          icon: path.join(__dirname, 'imagenes/consulta.png'),
+          click () { console.log('button1 clicked') }
+        }])
 }
 
 //abrir ventana agregar cliente
@@ -73,10 +74,13 @@ ipcMain.on('recargar-Ventana',(e,args)=>{
 });
 
 ipcMain.on('abrir-menu',()=>{
+    ventanaPrincipal.setClosable(true);
 ventanaPrincipal.setMenuBarVisibility(true)
 });
 
 ipcMain.on('cerrar-menu',()=>{
+    ventanaPrincipal.setClosable(false);
+    console.log(ventanaPrincipal.isClosable());
     ventanaPrincipal.setMenuBarVisibility(false);
 })
 

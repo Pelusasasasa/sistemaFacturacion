@@ -170,7 +170,7 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
         if (inputSeleccionado.value !== "") {
             trSeleccionado.children[6].innerHTML = (parseFloat(trSeleccionado.children[3].innerHTML)-parseFloat(trSeleccionado.children[4].innerHTML) - parseFloat(inputSeleccionado.value)).toFixed(2)
         }
-            console.log(trSeleccionado.children[6].innerHTML)
+    
             if ((trSeleccionado.children[6].innerHTML < 0)) {
                 alert("El monto abonado es mayor al de la venta")
                 trSeleccionado.children[6].innerHTML = aux;
@@ -240,7 +240,6 @@ const hacerRecibo = async()=>{
             })
         }
     })
-    console.log(arregloParaImprimir);
      modificarVentas(nuevaLista);
      const nrmComp = await traerUltimoNroRecibo();
      modifcarNroRecibo(nrmComp)
@@ -275,7 +274,7 @@ const hacerRecibo = async()=>{
      ponerEnCuentaCorrienteHistorica(recibo);
      const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
      const impresora = recibo.tipo_comp === "Recibos" ? "SAM4S GIANT-100" : undefined;
-     console.log(recibo)
+
      // arregloParaImprimir contiene todos las ventas que tiene pagadas y total contiene el total del recibo
      ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,arregloParaImprimir,total.value]);
      location.href = "../index.html"
@@ -374,7 +373,6 @@ cancelar.addEventListener('click',e=>{
 });
 
 const subirAAfip = async(venta)=>{
-    console.log(await afip.ElectronicBilling.getAliquotTypes())
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
     (ultimoElectronica === 0) && (ultimoElectronica=1); 
@@ -443,7 +441,6 @@ async function generarQR(texto) {
 }
 
 const verCodComp = (condicionIva) =>{
-    console.log(condicionIva)
     if(condicionIva === "Inscripto"){
         return  4
     }else{

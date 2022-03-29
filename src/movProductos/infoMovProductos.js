@@ -13,6 +13,7 @@ ipcRenderer.on('datos-movimiento-producto', (e,args)=>{
         tbody.innerHTML += `
             <tr>
                 <td>${fecha.getUTCDate()}/${fecha.getUTCMonth()+1}/${fecha.getUTCFullYear()}</td>
+                <td>${movProducto.codCliente}</td>
                 <td>${movProducto.cliente}</td>
                 <td>${movProducto.tipo_comp}</td>
                 <td>${movProducto.nro_comp}</td>

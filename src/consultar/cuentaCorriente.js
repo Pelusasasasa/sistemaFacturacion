@@ -247,21 +247,21 @@ let saldoABorrar = 0
                 cuentaHistorica.saldo -= cuentaHistorica.debe;
                 cuentaHistorica.debe = cuentaCompensada.importe;
                 //Guardamos la venta con el nuevo precioFinal
-                // await axios.put(`${URL}presupuesto/${venta.nro_comp}`,venta);
+                await axios.put(`${URL}presupuesto/${venta.nro_comp}`,venta);
                 saldo += parseFloat(cuentaCompensada.importe);
                 cuentaHistorica.saldo = parseFloat((parseFloat(cuentaHistorica.saldo) + parseFloat(cuentaHistorica.debe)).toFixed(2))
                 let ultimoSaldo = cuentaHistorica.saldo;
                 arregloRestante.forEach(async e=>{
                     e.saldo= (e.tipo_comp === "Recibos_P") ?  parseFloat((ultimoSaldo - e.haber).toFixed(2)) : parseFloat((e.debe + ultimoSaldo).toFixed(2));
                     ultimoSaldo = e.saldo;
-                // await axios.put(`${URL}cuentaHisto/id/${e.nro_comp}`,e)
+                await axios.put(`${URL}cuentaHisto/id/${e.nro_comp}`,e)
                 })
                 cliente.saldo_p = saldo.toFixed(2);
-                // await axios.put(`${URL}cuentaHisto/id/${cuentaHistorica.nro_comp}`,cuentaHistorica);
-                // await axios.put(`${URL}cuentaComp/id/${cuentaCompensada.nro_comp}`,cuentaCompensada);  
-                // await axios.put(`${URL}clientes/${cliente._id}`,cliente);
-                // ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante","valorizado"]);
-                // location.reload();
+                await axios.put(`${URL}cuentaHisto/id/${cuentaHistorica.nro_comp}`,cuentaHistorica);
+                await axios.put(`${URL}cuentaComp/id/${cuentaCompensada.nro_comp}`,cuentaCompensada);  
+                await axios.put(`${URL}clientes/${cliente._id}`,cliente);
+                ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante","valorizado"]);
+                location.reload();
                 }
         }else{
             alert("Venta no seleccionada")
@@ -278,7 +278,6 @@ botonFacturar.addEventListener('click',() =>{
                 ipcRenderer.send('abrir-ventana-emitir-comprobante',[vendedor.nombre,seleccionado.id,vendedor.empresa])   
             }
         })
-
     }else{
         alert('Venta no seleccionada')
     }

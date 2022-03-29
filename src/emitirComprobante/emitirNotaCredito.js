@@ -298,6 +298,7 @@ const movimientoProducto = async(objeto,cantidad,venta)=>{
     movProducto.codProd = objeto._id;
     movProducto.descripcion = objeto.descripcion;
     movProducto.cliente = venta.nombrecliente;
+    movProducto.codCliente = venta.cliente;
     movProducto.comprobante = "Nota de Credito";
     movProducto.tipo_comp = venta.tipo_comp;
     movProducto.nro_comp=venta.nro_comp;
