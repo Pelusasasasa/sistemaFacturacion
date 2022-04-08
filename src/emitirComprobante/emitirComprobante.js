@@ -726,17 +726,18 @@ ticketFactura.addEventListener('click',async (e) =>{
             await movimientoProducto(producto.cantidad,producto.objeto)
         };
         actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp);
-        //const afip = await subirAAfip(venta)
+        const afip = await subirAAfip(venta)
         await ipcRenderer.send('nueva-venta',venta);
         const cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
         //await imprimirVenta([venta,cliente,afip]);
+        await axios.post(`${URL}imprimir`,[venta,cliente,afip]);
         //await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
         if (borraNegro) {
             //borramos la cuenta compensada
             await borrrarCuentaCompensada(ventaDeCtaCte);
             //descontamos el saldo del cliente y le borramos la venta de la lista
             await descontarSaldo(ventaAnterior.cliente,ventaAnterior.precioFinal,ventaAnterior.nro_comp);
-            borrarCuentaHistorica(ventaAnterior.nro_comp)
+            await borrarCuentaHistorica(ventaAnterior.nro_comp,ventaAnterior.cliente,ventaAnterior.tipo_comp);
             await borrarVenta(ventaAnterior.nro_comp)
         };
         //!borraNegro ? (window.location = '../index.html') : window.close();
@@ -935,8 +936,16 @@ const descontarSaldo = async(codigo,precio,numero)=>{
     await axios.put(`${URL}clientes/${codigo}`,cliente);
 }
 
-const borrarCuentaHistorica = async(numero)=>{
-    await axios.delete(`${URL}cuentaHisto/id/${numero}`);
+const borrarCuentaHistorica = async(numero,cliente,tipoComp)=>{
+    const eliminada = (await axios.delete(`${URL}cuentaHisto/id/${numero}`)).data;
+    const importeEliminado = eliminada.debe;
+    const historicas = (await axios.get(`${URL}cuentaHisto/cliente/${cliente}`)).data;
+    let cuentaHistoricas = historicas.filter(historica => historica.tipo_comp === tipoComp);
+    cuentaHistoricas = cuentaHistoricas.filter(historica => historica.fecha > eliminada.fecha);
+    cuentaHistoricas.forEach(async cuenta=>{
+        cuenta.saldo = cuenta.saldo - importeEliminado;
+        await axios.put(`${URL}cuentaHisto/id/${cuenta.nro_comp}`,cuenta);
+    })
 }
 
 const borrarVenta = async(numero)=>{
@@ -957,7 +966,7 @@ const subirAAfip = async(venta)=>{
         'Concepto': 1,
         'DocTipo': venta.cod_doc,
         'DocNro': venta.dnicuit,
-        'CbteDesde': 1,
+        'CbteDesde': ultimoElectronica + 1,
         'CbteHasta': ultimoElectronica+1,
         'CbteFch': parseInt(fecha.replace(/-/g, '')),
         'ImpTotal': venta.precioFinal,
@@ -986,7 +995,7 @@ const subirAAfip = async(venta)=>{
                     'Importe' 	: venta.iva21 // Importe 
             })
         }
-        const res = await afip.ElectronicBilling.createNextVoucher(data); //creamos la factura electronica
+        const res = await afip.ElectronicBilling.createVoucher(data); //creamos la factura electronica
 
         const qr = {
             ver: 1,

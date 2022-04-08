@@ -144,9 +144,9 @@ function listarVentas(ventas,situacion,saldoAnterior,saldoAnterior_P) {
 
         });
         if (cliente[saldo] === undefined) {
-            saldoActual.value === "0";
+            saldoActual.value = "0";
         }else{
-            saldoActual.value = cliente[saldo];
+            saldoActual.value = (parseFloat(cliente[saldo])).toFixed(2);
         }
 }
 

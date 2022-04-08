@@ -50,12 +50,6 @@ function crearVentanaPrincipal() {
     });
     ventanaPrincipal.loadFile('src/index.html')
     ventanaPrincipal.maximize()
-    ventanaPrincipal.setThumbarButtons([
-        {
-          tooltip: 'button1',
-          icon: path.join(__dirname, 'imagenes/consulta.png'),
-          click () { console.log('button1 clicked') }
-        }])
 }
 
 //abrir ventana agregar cliente
@@ -80,7 +74,6 @@ ventanaPrincipal.setMenuBarVisibility(true)
 
 ipcMain.on('cerrar-menu',()=>{
     ventanaPrincipal.setClosable(false);
-    console.log(ventanaPrincipal.isClosable());
     ventanaPrincipal.setMenuBarVisibility(false);
 })
 

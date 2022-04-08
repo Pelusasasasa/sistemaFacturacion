@@ -1,8 +1,12 @@
 .vendedores{
   display: flex;
   justify-content: space-around;
+  .none{
+    display: none;
+  }
 }
 .main{
+
   .agregarUsuario {
     display: flex;
     justify-content: center;

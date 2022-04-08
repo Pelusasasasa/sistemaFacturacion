@@ -1,5 +1,6 @@
 const { ipcRenderer } = require("electron/renderer")
 let permiso;
+let idSeleccionado;
 ipcRenderer.on('acceso',(e,args)=>{
     permiso = JSON.parse(args)
 })
@@ -8,6 +9,7 @@ const nombre = document.querySelector('#nombre');
 const codigo = document.querySelector('#codigo');
 const acceso = document.querySelector('#acceso');
 const empresa = document.querySelector('#empresa');
+const eliminar = document.querySelector('.eliminar');
 const enviar = document.querySelector('#enviar');
 const axios = require("axios");
 require("dotenv").config;
@@ -43,8 +45,13 @@ traerUsuarios()
 
 const lista = document.querySelector('.listarUsuarios')
 lista.addEventListener('click',e=>{
+    idSeleccionado = e.path[1].id
     const click = e.path[1].id;
     (permiso === "0") ? ponerValoresInputs(click) : alert("No tiene permisos para interactuar");
+    (permiso === "0") && guardar.classList.remove('none');
+    (permiso === "0") && eliminar.classList.remove('none');
+    (permiso === "0") && enviar.classList.add('none');
+    codigo.setAttribute('disabled','');
 })
 
 const ponerValoresInputs = (id)=>{
@@ -68,6 +75,11 @@ guardar.addEventListener('click',async e=>{
     };
     await axios.put(`${URL}usuarios/${nuevoUsuario._id}`,nuevoUsuario);
     location.reload();
+})
+
+eliminar.addEventListener('click',async e=>{
+    await axios.delete(`${URL}usuarios/${idSeleccionado}`);
+    window.close();
 })
 
 

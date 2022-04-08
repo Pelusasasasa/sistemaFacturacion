@@ -548,7 +548,7 @@ const subirAAfip = async(venta,ventaAsociada)=>{
         'Concepto': 1,
         'DocTipo': venta.cod_doc,
         'DocNro': venta.dnicuit,
-        'CbteDesde': 1,
+        'CbteDesde': ultimoElectronica + 1,
         'CbteHasta': ultimoElectronica+1,
         'CbteFch': parseInt(fecha.replace(/-/g, '')),
         'ImpTotal': venta.precioFinal,
@@ -577,7 +577,7 @@ const subirAAfip = async(venta,ventaAsociada)=>{
                     'Importe' 	: totalIva21.toFixed(2) // Importe 
             })
         }
-        const res = await afip.ElectronicBilling.createNextVoucher(data); //creamos la factura electronica
+        const res = await afip.ElectronicBilling.createVoucher(data); //creamos la factura electronica
 
         const qr = {
             ver: 1,
