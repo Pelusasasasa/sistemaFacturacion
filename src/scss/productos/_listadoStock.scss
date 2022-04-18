@@ -46,6 +46,10 @@
         tr {
           border-bottom: 0.1rem solid black;
         }
+
+        tr:hover{
+          background-color: gray;
+        }
       }
     }
   }

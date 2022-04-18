@@ -33,6 +33,11 @@ let cliente = {};
 saldoAnterior_P = 0;
 saldoAnterior = 0;
 
+desde.addEventListener('keypress',e=>{
+    if ((e.key === "Enter")) {
+        buscador.focus();
+    }
+})
 
 buscador.addEventListener('keypress',e=>{
     if (buscador.value === "" && e.key === "Enter") {

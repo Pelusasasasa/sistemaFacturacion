@@ -54,19 +54,19 @@
   .tablaPedidos {
     margin: 0;
     overflow: scroll;
-    @include Chico(){
-      height: 50rem;
-    }
-    @include Comun(){
-      height: 52rem;
-    }
-    @include P900(){
-      height: 62rem;
-    }
-    @include P950(){
-      height: 65rem;
-    }
-    height: 60rem;
+    // @include Chico(){
+    //   height: 50rem;
+    // }
+    // @include Comun(){
+    //   height: 52rem;
+    // }
+    // @include P900(){
+    //   height: 62rem;
+    // }
+    // @include P950(){
+    //   height: 65rem;
+    // }
+    height: 60vh;
     border: 0.1rem solid black;
     background: white;
     .table {

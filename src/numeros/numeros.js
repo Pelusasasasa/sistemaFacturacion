@@ -108,4 +108,11 @@ async function cambiarPrecios(dolar) {
         producto.precio_venta = (costoTotal+((parseFloat(producto.utilidad)*costoTotal/100))).toFixed(2);
         await axios.put(`${URL}productos/${producto._id}`,producto)
     });
-}
+};
+
+
+document.addEventListener('keydown',e=>{
+    if (e.key === "Escape") {
+        window.close();
+    }
+})

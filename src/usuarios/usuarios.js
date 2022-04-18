@@ -40,18 +40,38 @@ const traerUsuarios = async()=>{
             </li>
         `
     }
+    listarUsuarios.innerHTML += `
+        <li class="agregar">
+            <div class="vendedor ">
+                <h3 class="nombreUsuario">+Agregar</h3>
+            </div>
+        </li>
+    `
 }
+
 traerUsuarios()
 
 const lista = document.querySelector('.listarUsuarios')
 lista.addEventListener('click',e=>{
-    idSeleccionado = e.path[1].id
-    const click = e.path[1].id;
-    (permiso === "0") ? ponerValoresInputs(click) : alert("No tiene permisos para interactuar");
-    (permiso === "0") && guardar.classList.remove('none');
-    (permiso === "0") && eliminar.classList.remove('none');
-    (permiso === "0") && enviar.classList.add('none');
-    codigo.setAttribute('disabled','');
+    if (e.target.nodeName === "H3" && e.target.parentNode.parentNode.className === "agregar") {
+        enviar.classList.remove('none');
+        guardar.classList.add('none');
+        eliminar.classList.add('none');
+        nombre.value = "";
+        codigo.value = "";
+        acceso.value = "";
+        empresa.value = "";
+        codigo.removeAttribute("disabled");
+        nombre.focus();
+    }else{
+        idSeleccionado = e.path[1].id
+        const click = e.path[1].id;
+        (permiso === "0") ? ponerValoresInputs(click) : alert("No tiene permisos para interactuar");
+        (permiso === "0") && guardar.classList.remove('none');
+        (permiso === "0") && eliminar.classList.remove('none');
+        (permiso === "0") && enviar.classList.add('none');
+        codigo.setAttribute('disabled','');
+    }
 })
 
 const ponerValoresInputs = (id)=>{

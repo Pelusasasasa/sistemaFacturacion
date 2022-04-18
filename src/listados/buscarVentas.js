@@ -75,11 +75,11 @@ buscar.addEventListener('click',async e=>{
 let cliente
 const traerVenta = async(venta)=>{
     if (venta.length !== 0) {
-        cliente = await buscarCliente(venta.cliente)
-        tbody.innerHTML = ``
-        listarVentas(venta[0]) 
+        cliente = await buscarCliente(venta.cliente);
+        tbody.innerHTML = ``;
+        listarVentas(venta[0]) ;
     }else{
-        alert("No se encontro ninguna Venta")
+        alert("No se encontro ninguna Venta");
     }
 }
 

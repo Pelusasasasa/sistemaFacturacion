@@ -527,7 +527,7 @@ function verNumero(condicion) {
 const numeroDeFactura = document.querySelector('.numeroDeFactura')
 numeroDeFactura.addEventListener('click', async () =>{
     const mostrar = document.querySelector('#numeroFactura')
-    texto = verNumero(cliente.cond_iva)
+    texto = verNumero(conIva.value)
     mostrar.value = ((await axios.get(`${URL}tipoVenta`)).data)[texto];
 })
 
@@ -537,13 +537,6 @@ function redondear(numero) {
     return (parseFloat((Math.round(numero + "e+2") +  "e-2")));
 
 }
- async function traerNumeroDeFactura(texto,mostrar) {
-    let retornar;
-    let numeros = (await axios.get(`${URL}tipoVenta`)).data;
-    mostrar && (mostrar.value = numeros[texto])
-    return numeros[texto]
-}
-
 
 const tamanioVentas = async(tipoVenta)=>{//tipoVenta = Presupuesto o Ticket Factura
     tipoVenta === "presupuesto" ? tamanio = await axios.get(`${URL}presupuesto`)  : tamanio = await axios.get(`${URL}ventas`)
@@ -678,9 +671,11 @@ presupuesto.addEventListener('click',async (e)=>{
 //Aca mandamos la venta con tikect Factura
 const ticketFactura = document.querySelector('.ticketFactura')
 ticketFactura.addEventListener('click',async (e) =>{
-    e.preventDefault()
+    e.preventDefault();
    if (confirm("Ticket Factura?")) {
-    const stockNegativo = listaProductos.find(producto=>producto.cantidad < 0)
+    //Vemos si algun producto tiene lista negativa
+    const stockNegativo = listaProductos.find(producto=>producto.cantidad < 0);
+    //mostramos alertas
     if(stockNegativo){
         alert("Ticket Factura no puede ser productos en negativo");
     }else if(listaProductos.length===0){
@@ -691,27 +686,27 @@ ticketFactura.addEventListener('click',async (e) =>{
      tipoVenta = "Ticket Factura";
      venta.tipo_pago = await verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
      if (venta.tipo_pago === "Ninguno") {
-        alert("Seleccionar un modo de venta")
+        alert("Seleccionar un modo de venta");
     }else{
         venta.nombreCliente = buscarCliente.value;
         venta._id = await tamanioVentas("ticket factura");
-        venta.observaciones = observaciones.value
-        venta.fecha = new Date()
+        venta.observaciones = observaciones.value;
+        venta.fecha = new Date();
         venta.descuento = (descuentoN.value);
         venta.precioFinal = redondear(total.value);
         venta.tipo_comp = tipoVenta;
         numeroComprobante(tipoVenta);
-        venta.cod_comp = verCodComprobante(tipoVenta)
-        venta.nro_comp = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp)
-        venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false)
+        venta.cod_comp = verCodComprobante(tipoVenta);
+        venta.nro_comp = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp);
+        venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false);
         venta.comprob = venta.nro_comp;
         venta.gravado21 = gravado21;
         venta.gravado105 = gravado105;
         venta.iva21 = iva21;
-        venta.iva105 = iva105
+        venta.iva105 = iva105;
         venta.cant_iva = cant_iva;
         if (venta.precioFinal >=10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" && dnicuit.value === "00000000" && direccion.value === "CHAJARI")) {
-            alert("Factura mayor a 10000, poner datos cliente")
+            alert("Factura mayor a 10000, poner datos cliente");
         }else{
         venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente);
         venta.tipo_pago === "CC" && ponerEnCuentaCorrienteCompensada(venta,true);
@@ -729,9 +724,9 @@ ticketFactura.addEventListener('click',async (e) =>{
         const afip = await subirAAfip(venta)
         await ipcRenderer.send('nueva-venta',venta);
         const cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
-        //await imprimirVenta([venta,cliente,afip]);
+        await imprimirVenta([venta,cliente,afip]);
         await axios.post(`${URL}imprimir`,[venta,cliente,afip]);
-        //await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
+        await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
         if (borraNegro) {
             //borramos la cuenta compensada
             await borrrarCuentaCompensada(ventaDeCtaCte);
@@ -740,7 +735,7 @@ ticketFactura.addEventListener('click',async (e) =>{
             await borrarCuentaHistorica(ventaAnterior.nro_comp,ventaAnterior.cliente,ventaAnterior.tipo_comp);
             await borrarVenta(ventaAnterior.nro_comp)
         };
-        //!borraNegro ? (window.location = '../index.html') : window.close();
+        !borraNegro ? (window.location = '../index.html') : window.close();
         }
     }
     }
@@ -779,8 +774,9 @@ async function generarQR(texto) {
 //funcion que busca en la afip a una persona
  const buscarAfip = document.querySelector('.buscarAfip')
  buscarAfip.addEventListener('click',  async (e)=>{
-    let cliente = (await axios.get(`${URL}clientes/cuit/${dnicuit.value}`)).data
-        if (cliente === "") {
+    let cliente = (await axios.get(`${URL}clientes/cuit/${dnicuit.value}`)).data;
+    console.log(cliente);
+        if (cliente !== "") {
             ponerInputsClientes(cliente)
         }else{
                 if (dnicuit.value) {
@@ -802,44 +798,45 @@ async function generarQR(texto) {
 
  //Funcion para buscar una persona directamente por el cuit
  function buscarPersonaPorCuit(cuit) {
-    const Https = new XMLHttpRequest();
-    const url=`https://afip.tangofactura.com/REST/GetContribuyente?cuit=${cuit}`;
-    Https.open("GET", url);
-    Https.send()
-    Https.onreadystatechange = (e) => {
-        if (Https.responseText !== "") {
-            const persona = JSON.parse(Https.responseText)
-            const {nombre,domicilioFiscal,EsRI,EsMonotributo,EsExento,EsConsumidorFinal}= persona.Contribuyente;
-            const cliente = {};
-            cliente.cliente=nombre;
-            cliente.localidad = domicilioFiscal.localidad;
-            cliente.direccion = domicilioFiscal.direccion;
-            cliente.provincia = domicilioFiscal.nombreProvincia;
-            buscarCliente.value = nombre;
-            localidad.value=domicilioFiscal.localidad;
-            direccion.value = domicilioFiscal.direccion;
-            provincia.value = domicilioFiscal.nombreProvincia;
-            if (EsRI) {
-                cliente.cond_iva="Inscripto"
-            }else if (EsExento) {
-                cliente.cond_iva="Exento"
-            } else if (EsMonotributo) {
-                cliente.cond_iva="Monotributista"
-            } else if(EsConsumidorFinal) {
-                cliente.cond_iva="Consumidor Final"
+        const Https = new XMLHttpRequest();
+        const url=`https://afip.tangofactura.com/REST/GetContribuyente?cuit=${cuit}`;
+        Https.open("GET", url);
+        Https.send()
+        Https.onreadystatechange = (e) => {
+            if (Https.responseText !== "") {
+                const persona = JSON.parse(Https.responseText)
+                if (persona!=="") {
+                    const {nombre,domicilioFiscal,EsRI,EsMonotributo,EsExento,EsConsumidorFinal} = persona.Contribuyente;
+                    const cliente = {};
+                    cliente.cliente=nombre;
+                    cliente.localidad = domicilioFiscal.localidad;
+                    cliente.direccion = domicilioFiscal.direccion;
+                    cliente.provincia = domicilioFiscal.nombreProvincia;
+                    buscarCliente.value = nombre;
+                    localidad.value=domicilioFiscal.localidad;
+                    direccion.value = domicilioFiscal.direccion;
+                    provincia.value = domicilioFiscal.nombreProvincia;
+                    if (EsRI) {
+                        cliente.cond_iva="Inscripto";
+                    }else if (EsExento) {
+                        cliente.cond_iva="Exento";
+                    } else if (EsMonotributo) {
+                        cliente.cond_iva="Monotributista";
+                    } else if(EsConsumidorFinal) {
+                        cliente.cond_iva="Consumidor Final";
+                    }
+                    cliente.cuit = dnicuit.value;
+                    console.log(persona);
+                    ponerInputsClientes(cliente);
+                }
             }
-            cliente.cuit = dnicuit.value;
-            ponerInputsClientes(cliente) ;
-        
         }
-
-    }
-
+         alert("Persona no encontrada");
  }
 
  //lo usamos para borrar un producto de la tabla
 borrarProducto.addEventListener('click',e=>{
-    borrarUnProductoDeLaLista(yaSeleccionado)
+    borrarUnProductoDeLaLista(yaSeleccionado);
 })
 
 const cancelar = document.querySelector('.cancelar')
@@ -847,17 +844,17 @@ cancelar.addEventListener('click',async e=>{
     e.preventDefault()
     if (confirm("Desea cancelar el Presupuesto")) {
         if (listaProductos.length !== 0) {
-            const ventaCancelada = {}
+            const ventaCancelada = {};
             
             if (cliente._id) {
-                ventaCancelada.cliente = cliente._id
+                ventaCancelada.cliente = cliente._id;
             }
-            ventaCancelada.productos = listaProductos
-            ventaCancelada._id = await tamanioCancelados()
-            ventaCancelada.vendedor = vendedor
+            ventaCancelada.productos = listaProductos;
+            ventaCancelada._id = await tamanioCancelados();
+            ventaCancelada.vendedor = vendedor;
             await axios.post(`${URL}cancelados`,ventaCancelada);
         }
-            window.location = "../index.html"
+            window.location = "../index.html";
     }
 })
 
@@ -871,15 +868,15 @@ const fs = require('fs');
 
  //Ponemos valores a los inputs
 function ponerInputsClientes(cliente) {
-    codigoC.value = cliente._id
+    cliente._id && (codigoC.value = cliente._id);
     buscarCliente.value = cliente.cliente;
-    saldo.value = cliente.saldo;
-    saldo_p.value = cliente.saldo_p;
+    cliente.saldo && (saldo.value = cliente.saldo);
+    cliente.saldo_p && (saldo_p.value = cliente.saldo_p);
     localidad.value = cliente.localidad;
     direccion.value = cliente.direccion;
     provincia.value = cliente.provincia;
     dnicuit.value = cliente.cuit;
-    telefono.value = cliente.telefono;
+    cliente.telefono && (telefono.value = cliente.telefono);
     conIva.value = cliente.cond_iva;
     venta.cliente = cliente._id;
     if (cliente.condicion==="M") {
@@ -887,7 +884,7 @@ function ponerInputsClientes(cliente) {
     }
     const cuentaC = document.querySelector('.cuentaC');
     (cliente.cond_fact === "4") ? cuentaC.classList.add('none') : cuentaC.classList.remove('none');
-    if (codigoC.value === "9999") {
+    if (codigoC.value === "9999"){
         buscarCliente.removeAttribute('disabled');
         telefono.removeAttribute('disabled');
         localidad.removeAttribute('disabled');

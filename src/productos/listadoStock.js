@@ -43,7 +43,7 @@ buscar.addEventListener('click',async e=>{
                 <td>${_id}</td>
                 <td>${descripcion}</td>
                 <td>${cod_fabrica}</td>
-                <td>${stock}</td>
+                <td>${parseFloat(stock).toFixed(2)}</td>
                 </tr>
             `
         });

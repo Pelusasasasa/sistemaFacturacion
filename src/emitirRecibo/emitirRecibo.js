@@ -12,12 +12,11 @@ require("dotenv").config;
 const URL = process.env.URL;
 
 const Dialogs = require("dialogs");
-const dialogs = Dialogs()
 const Vendedor = getParameterByName('vendedor')
 
 const hoy = new Date();
 let diaDeHoy =  hoy.getDate();
-let mesDeHoy = hoy.getMonth();
+let mesDeHoy = hoy.getMonth() + 1;
 let anioDeHoy = hoy.getFullYear();
 
 mesDeHoy = (mesDeHoy === 0) ? 1 : mesDeHoy;
