@@ -1,35 +1,35 @@
 const { ipcRenderer } = require("electron");
 
-const fecha = document.querySelector('.fecha')
-        const numero = document.querySelector('.numero')
-        const vendedor = document.querySelector('.vendedor')
-        const clientes = document.querySelector('.cliente')
-        const idCliente = document.querySelector('.idCliente')
-        const cuit = document.querySelector('.cuit')
-        const direccion = document.querySelector('.direccion')
-        const localidad = document.querySelector('.localidad')
-        const numeroComp = document.querySelector('.numero')
-        const cond_iva = document.querySelector('.cond_iva')
-        const subtotal = document.querySelector('.subtotal')
-        const precioFinal = document.querySelector('.precioFinal')
-        const tipoPago = document.querySelector('.tipoPago')
-        const tbody = document.querySelector('.tbody')
-        const seccionQR = document.querySelector('.seccionQR')
-        const tipoFactura = document.querySelector('.tipoFactura')
-        const descuento = document.querySelector('.descuento')
-        const tomarFecha = new Date()
-        const dia = tomarFecha.getDate() 
+const fecha = document.querySelector('.fecha');
+        const numero = document.querySelector('.numero');
+        const vendedor = document.querySelector('.vendedor');
+        const clientes = document.querySelector('.cliente');
+        const idCliente = document.querySelector('.idCliente');
+        const cuit = document.querySelector('.cuit');
+        const direccion = document.querySelector('.direccion');
+        const localidad = document.querySelector('.localidad');
+        const numeroComp = document.querySelector('.numero');
+        const cond_iva = document.querySelector('.cond_iva');
+        const subtotal = document.querySelector('.subtotal');
+        const precioFinal = document.querySelector('.precioFinal');
+        const tipoPago = document.querySelector('.tipoPago');
+        const tbody = document.querySelector('.tbody');
+        const seccionQR = document.querySelector('.seccionQR');
+        const tipoFactura = document.querySelector('.tipoFactura');
+        const descuento = document.querySelector('.descuento');
+        const tomarFecha = new Date();
+        const dia = tomarFecha.getDate(); 
         const mes = tomarFecha.getMonth() + 1
-        const anio = tomarFecha.getFullYear()
-        const hora = tomarFecha.getHours()
-        const minuto = tomarFecha.getMinutes()
-        const segundo = tomarFecha.getSeconds()
+        const anio = tomarFecha.getFullYear();
+        const hora = tomarFecha.getHours();
+        const minuto = tomarFecha.getMinutes();
+        const segundo = tomarFecha.getSeconds();
 
         const listar = (venta,cliente,valorizado)=>{
-            console.log(venta)
             const lista = venta.productos
             numero.innerHTML=venta.nro_comp
-            clientes.innerHTML = cliente.cliente
+            clientes.innerHTML = cliente.cliente;
+            venta.observaciones !== "" ? clientes.innerHTML += ` (${venta.observaciones})` : "";
             idCliente.innerHTML = cliente._id
             vendedor.innerHTML = venta.vendedor
             cuit.innerHTML = cliente.cuit

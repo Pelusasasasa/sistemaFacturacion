@@ -617,7 +617,7 @@ presupuesto.addEventListener('click',async (e)=>{
                 venta.descuento = (descuentoN.value);
                 venta.precioFinal = redondear(total.value);
                 venta.tipo_comp = tipoVenta;
-                
+                venta.observaciones = observaciones.value;
                 //Le pasamos que es un presupuesto contado CD
                 venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.cod_comp,venta.tipo_pago);
                 venta.empresa = inputEmpresa.value;
@@ -1282,5 +1282,6 @@ const ponerEnCuentaCorrienteHistorica = async(venta,valorizado,saldo)=>{
     cuenta.nro_comp = venta.nro_comp;
     cuenta.debe = valorizado ? parseFloat(venta.precioFinal) : 0.1;
     cuenta.saldo = parseFloat(saldo) + cuenta.debe;
+    cuenta.observaciones = venta.observaciones;
     await axios.post(`${URL}cuentaHisto`,cuenta);
 }
