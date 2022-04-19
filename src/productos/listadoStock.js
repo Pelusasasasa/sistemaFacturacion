@@ -2,7 +2,7 @@ const axios  = require("axios");
 require("dotenv").config;
 const URL = process.env.URL;
 
-const { ipcRenderer } = require("electron")
+
 const XLSX = require('xlsx');
 
 const buscar = document.querySelector('.buscar')

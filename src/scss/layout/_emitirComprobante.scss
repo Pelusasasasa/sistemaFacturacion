@@ -186,13 +186,16 @@
     display: flex;
     justify-content: center;
 
+    
+
     .form-check {
       margin-right: 2rem;
     }
   }
 
   label {
-    font-size: 1.5rem;
+    font-size: 2rem;
+    font-weight: 900;
   }
 
   .listaProductos {

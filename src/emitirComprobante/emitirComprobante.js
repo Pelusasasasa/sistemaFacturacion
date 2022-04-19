@@ -725,7 +725,6 @@ ticketFactura.addEventListener('click',async (e) =>{
         await ipcRenderer.send('nueva-venta',venta);
         const cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
         await imprimirVenta([venta,cliente,afip]);
-        await axios.post(`${URL}imprimir`,[venta,cliente,afip]);
         await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
         if (borraNegro) {
             //borramos la cuenta compensada
@@ -803,6 +802,7 @@ async function generarQR(texto) {
         Https.open("GET", url);
         Https.send()
         Https.onreadystatechange = (e) => {
+            console.log(Https.responseText)
             if (Https.responseText !== "") {
                 const persona = JSON.parse(Https.responseText)
                 if (persona!=="") {
@@ -826,7 +826,6 @@ async function generarQR(texto) {
                         cliente.cond_iva="Consumidor Final";
                     }
                     cliente.cuit = dnicuit.value;
-                    console.log(persona);
                     ponerInputsClientes(cliente);
                 }
             }

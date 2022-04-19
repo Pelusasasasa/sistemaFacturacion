@@ -69,10 +69,23 @@ cambiar.addEventListener('click',e=>{
         let producto = await axios.get(`${URL}productos/${seleccionado.id}`)
         producto = producto.data;
         producto.stock = valor;
-        await axios.put(`${URL}productos/${seleccionado.id}`,producto)
+        crearMovimiento(producto,producto.stock);
+        await axios.put(`${URL}productos/${seleccionado.id}`,producto);
         location.reload()
     })
-})
+});
+
+//creamos el movimiento de producto
+const crearMovimiento = async(producto,stock)=>{
+    const movimiento = {};
+    movimiento._id = (await axios.get(`${URL}movProductos`)).data + 1;
+    movimiento.codProd = producto._id;
+    movimiento.descripcion = producto.descripcion;
+    movimiento.ingreso = stock;
+    movimiento.stock = stock;
+    movimiento.precio_unitario = producto.precio_venta;
+    await axios.post(`${URL}movProductos`,movimiento);
+}
 
 
 impirmir.addEventListener('click',e=>{

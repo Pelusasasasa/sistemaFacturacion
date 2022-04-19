@@ -16,7 +16,7 @@ XLSX.writeFile(wb,"Pedidos.xlsx")
 }
 
 const ventas = (Ventas)=>{
-    console.log(Ventas)
+
     let wb = XLSX.utils.book_new();
 
     wb.props = {
@@ -27,7 +27,7 @@ const ventas = (Ventas)=>{
 
     //borraos las propiedades que no son necesarias
     Ventas.forEach(venta => {
-        delete venta.pagado
+        delete venta._id
         delete venta.tipo_pago
         delete venta.productos
         delete venta.comprob
@@ -35,7 +35,6 @@ const ventas = (Ventas)=>{
         delete venta.cod_doc
         delete venta.dnicuit
         delete venta.observaciones
-        delete venta.empresa
         delete venta.__v
         delete venta.abonado
         delete venta.cliente
@@ -52,6 +51,19 @@ const ventas = (Ventas)=>{
 
         return 0
     })
+    Ventas.forEach(venta=>{
+        const fecha = new Date(venta.fecha);
+        let dia = fecha.getDate();
+        let mes = fecha.getMonth()+1;
+        let anio = fecha.getFullYear();
+        dia = dia < 10 ? `0${dia}` : dia;
+        mes = mes < 10 ? `0${mes}` : mes;
+        mes = mes === 13 ? 1 : mes;
+
+        venta.fecha = `${dia}/${mes}/${anio}`;
+        console.log(venta)
+    })
+    console.log(Ventas)
     let newWs = XLSX.utils.json_to_sheet(Ventas)
     XLSX.utils.book_append_sheet(wb,newWs,'Ventas')
     XLSX.writeFile(wb,"Ventas.xlsx")
