@@ -39,8 +39,10 @@ traerDolar()
     })
 ipcRenderer.on('acceso',(e,args)=>{
     acceso = JSON.parse(args)
+    console.log(acceso)
     if (acceso === "2") {
-        document.querySelector('.costos').classList.add('none')
+        document.querySelector('.costos').classList.add('none');
+        document.querySelector('.utilidad').classList.add('none')
     }
 })
 
@@ -56,8 +58,6 @@ function asignarCampos(producto) {
     (parseFloat(producto.costodolar) !== 0) ? (costoDolares.value = parseFloat(producto.costodolar).toFixed(3)) : (costoDolares.value = "0.00");
 
     if (parseFloat(costoPesos.value) === 0) {
-        console.log(dolar);
-        console.log(parseFloat(producto.impuestos) + parseFloat(producto.costodolar))
         ivaImp.value = parseFloat(producto.impuestos);
         costo = parseFloat(costoDolares.value);
         costoTotal.value = ((costo+parseFloat(producto.impuestos))*dolar).toFixed(3);
@@ -143,7 +143,6 @@ guardar.addEventListener('click',async e=>{
     producto.impuestos = ivaImp.value
     console.log(producto)
     await axios.put(`${URL}productos/${producto._id}`,producto)
-    // ipcRenderer.send('modificarProducto',producto)
     window.close()
 })
 

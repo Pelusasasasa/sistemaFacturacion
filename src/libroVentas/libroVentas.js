@@ -48,13 +48,40 @@ buscar.addEventListener('click',async e=>{
 
 const ventasTraidas = (ventas)=>{
     ventas = ventas.filter(venta => venta.tipo_comp !== "Recibos_P");
-    listaTicketFactura = ventas.filter(venta=>venta.tipo_comp === "Ticket Factura");
-    listaNotaCredito = ventas.filter(venta=>venta.tipo_comp !== "Ticket Factura");
-    (listaNotaCredito.length > 0) && listar(listaNotaCredito);
-    (listaTicketFactura.length > 0) && listar(listaTicketFactura);
+
+    //Ordenamos la ventas por fecha
+    ventas.sort((a,b)=>{
+        if (a.fecha > b.fecha) {
+            return 1
+        }
+        if (a.fecha < b.fecha) {
+            return -1
+        }
+        return 0
+    });
+    let diaVentaAnterior = new Date((ventas[0].fecha)).getDate();
+    diaVentaAnterior = diaVentaAnterior < 10 ? `0${diaVentaAnterior}` : diaVentaAnterior;
+    let ventasHoy = [];
+    ventas.forEach(venta=>{
+        if (new Date(venta.fecha).getDate() === diaVentaAnterior + 1) {
+            listar(ventasHoy,diaVentaAnterior)
+            ventasHoy = [];
+            diaVentaAnterior = new Date(venta.fecha).getDate();
+            ventasHoy.push(venta);
+        }else{
+            ventasHoy.push(venta);
+        }
+    });
+
+
+
+    // listaTicketFactura = ventas.filter(venta=>venta.tipo_comp === "Ticket Factura");
+    // listaNotaCredito = ventas.filter(venta=>venta.tipo_comp !== "Ticket Factura");
+    // (listaNotaCredito.length > 0) && listar(ventas);
+    //(listaTicketFactura.length > 0) && listar(listaTicketFactura);
 }
 
-const listar = (ventas)=>{
+const listar = (ventas,diaVentaAnterior)=>{
     let cliente;
     let cond_iva;
     let totalgravado21 = 0;
@@ -62,8 +89,6 @@ const listar = (ventas)=>{
     let totaliva21 = 0;
     let totaliva105 = 0;
     let total = 0
-    let diaVentaAnterior = new Date((ventas[0].fecha)).getDate();
-    diaVentaAnterior = diaVentaAnterior < 10 ? `0${diaVentaAnterior}` : diaVentaAnterior;
     let tamanioVentas = ventas.length - 1;
     ventas.sort((a,b)=>{
         if (a.tipo_comp > b.tipo_comp) {
@@ -74,22 +99,25 @@ const listar = (ventas)=>{
         }
         return 0
     })
+    let tipo_comp = ventas[0].tipo_comp;
     ventas.forEach(async venta => {
         let fecha = new Date(venta.fecha)
         let day = fecha.getDate();
         let month = fecha.getMonth() + 1;
-        month = (month===0) ? month + 1 : month;
+        month = (month===13) ? month + 1 : month;
         day = (day < 10) ? `0${day}` : day;
         month = (month < 10) ? `0${month}` : month;
         let year = fecha.getFullYear();
         
-        let cliente = await axios.get(`${URL}clientes/id/${venta.cliente}`)
-        cliente = cliente.data
+        let cliente = (await axios.get(`${URL}clientes/id/${venta.cliente}`)).data
         cond_iva = (cliente.cond_iva) ? (cliente.cond_iva) : "Consumidor Final";
         gravado105 = venta.gravado105;
         gravado21 = venta.gravado21;
         iva105 = venta.iva105;
         iva21 = venta.iva21;
+
+        console.log(tipo_comp)
+
 
         tbody.innerHTML += await `
             <tr>
@@ -106,22 +134,20 @@ const listar = (ventas)=>{
                 <td>${venta.precioFinal}<td>
             </tr>
         `
-        if (diaVentaAnterior === day && (ventas.indexOf(venta) !== tamanioVentas)) {
+        const indexSiguiente = ventas.indexOf(venta) + 1;
+        let ventaSiguiente = ventas.find(venta=>ventas.indexOf(venta) === indexSiguiente);
+
+        if (venta.tipo_comp === tipo_comp) {
             totalgravado21 +=  venta.gravado21
             totaliva21 +=  venta.iva21
             totalgravado105 +=  venta.gravado105
             totaliva105 +=  venta.iva105
             total +=  venta.precioFinal
-        }else{
-            if ((ventas.indexOf(venta) === tamanioVentas)) {
-                totalgravado105 += venta.gravado105;
-                totalgravado21 += venta.gravado21;
-                totaliva105 += venta.iva105;
-                totaliva21 += venta.iva21;
-                total += venta.precioFinal;
-            }
-            tbody.innerHTML += await `
-                <tr>
+        }
+        ventaSiguiente = ventaSiguiente ? ventaSiguiente : {};
+            if (ventaSiguiente.tipo_comp !== tipo_comp) {
+                tbody.innerHTML += await `
+                <tr class="oscuro">
                     <td></td>
                     <td></td>
                     <td></td>
@@ -133,15 +159,14 @@ const listar = (ventas)=>{
                     <td>${totalgravado105.toFixed(2)}</td>
                     <td>${totaliva105.toFixed(2)}</td>
                     <td>${total.toFixed(2)}</td>
-                    
-                </tr>
-            `
-            diaVentaAnterior = day
-            totalgravado21 = 0
-            totaliva21 = 0
-            totalgravado105 = 0
-            totaliva105 = 0
+                    </tr>
+                `
+                tipo_comp = ventaSiguiente.tipo_comp;
+                total = 0
+                totalgravado21 = 0
+                totaliva21 = 0
+                totalgravado105 = 0
+                totaliva105 = 0
         }
-       
     });
 }

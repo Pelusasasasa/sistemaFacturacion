@@ -172,7 +172,6 @@ ipcRenderer.on('mando-el-producto',async(e,args)=>{
 let id = 1
 const mostrarVentas = (objeto,cantidad)=>{
     let precioFinal = (parseFloat(objeto.precio_venta)*parseFloat(cantidad));
-    console.log(precioFinal)
     total.value = total.value !== "" ? (parseFloat(total.value) + (precioFinal)).toFixed(2) : precioFinal.toFixed(2);
     resultado.innerHTML += `
         <tr id=${id}>
@@ -187,7 +186,6 @@ const mostrarVentas = (objeto,cantidad)=>{
     objeto.identificadorTabla = `${id}`
     id++
     listaProductos.push({objeto,cantidad});
-    console.log(listaProductos);
 }
 
 descuento.addEventListener('keypress',e=>{
@@ -217,7 +215,7 @@ factura.addEventListener('click',async e=>{
         venta.cliente = codigoC.value;
         //Traemos el tamanio de ventas de la BD para el _id
         venta._id = await tamanioVentas() + 1 ;
-        venta.nombrecliente = buscarCliente.value;
+        venta.nombreCliente = buscarCliente.value;
         venta.tipo_comp = "Nota Credito";
         venta.observaciones = observaciones.value;
         venta.descuento = descuentoN.value;
@@ -266,7 +264,7 @@ factura.addEventListener('click',async e=>{
             //Mandamos par que sea historica
             venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
             //mandamos la venta
-            ipcRenderer.send('nueva-venta',venta);
+            ipcRenderer.send('nueva-venta',venta)
             //subimos a la afip la factura electronica
             let afip = await subirAAfip(venta,ventaRelacionada[0]);
             //Imprimos el ticket
@@ -280,10 +278,8 @@ factura.addEventListener('click',async e=>{
 const agregarStock = async (codigo,cantidad)=>{
     let producto = (await axios.get(`${URL}productos/${codigo}`)).data;
     const descontar = parseFloat(producto.stock) + parseFloat(cantidad);
-    console.log(producto.stock)
     producto.stock = descontar.toFixed(2);
-    console.log(producto.stock)
-    await axios.post(`${URL}productos/${codigo}`,producto);
+    await axios.put(`${URL}productos/${codigo}`,producto);
 }
 
 const traerTamanioDeMovProducto = async()=>{
@@ -516,7 +512,6 @@ dnicuit.addEventListener('focus',e=>{
  }
 
 const subirAAfip = async(venta,ventaAsociada)=>{
-    console.log(ventaAsociada)
     const ventaAnterior = await afip.ElectronicBilling.getVoucherInfo(parseFloat(ventaAsociada.nro_comp),5,parseFloat(ventaAsociada.cod_comp)); 
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
@@ -656,7 +651,6 @@ const ponerEnCuentaCorrienteHistorica = async(venta,valorizado,saldo)=>{
     cuenta.nro_comp = venta.nro_comp;
     cuenta.debe = valorizado ? parseFloat(venta.precioFinal) : 0.1;
     cuenta.saldo = parseFloat(saldo) + cuenta.debe;
-    console.log(cuenta)
     await axios.post(`${URL}cuentaHisto`,cuenta);
 }
 
@@ -664,7 +658,6 @@ const imprimirVenta = (arreglo)=>{
 
     const conector = new ConectorPlugin();
     const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
-        console.log(Venta)
         const fechaVenta = new Date(Venta.fecha)
         let dia = fechaVenta.getDate()
         let mes = fechaVenta.getMonth()+1;

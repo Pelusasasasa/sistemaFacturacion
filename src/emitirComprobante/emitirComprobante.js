@@ -682,7 +682,7 @@ ticketFactura.addEventListener('click',async (e) =>{
         alert("Ningun producto cargado")
     }else{
       venta.productos = listaProductos;
-      const [iva21,iva105,gravado21,gravado105,cant_iva] = gravadoMasIva(venta.productos);
+
      tipoVenta = "Ticket Factura";
      venta.tipo_pago = await verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
      if (venta.tipo_pago === "Ninguno") {
@@ -698,13 +698,6 @@ ticketFactura.addEventListener('click',async (e) =>{
         numeroComprobante(tipoVenta);
         venta.cod_comp = verCodComprobante(tipoVenta);
         venta.nro_comp = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp);
-        venta.tipo_pago === "CD" ? (venta.pagado = true) : (venta.pagado = false);
-        venta.comprob = venta.nro_comp;
-        venta.gravado21 = gravado21;
-        venta.gravado105 = gravado105;
-        venta.iva21 = iva21;
-        venta.iva105 = iva105;
-        venta.cant_iva = cant_iva;
         if (venta.precioFinal >=10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" && dnicuit.value === "00000000" && direccion.value === "CHAJARI")) {
             alert("Factura mayor a 10000, poner datos cliente");
         }else{
@@ -720,6 +713,13 @@ ticketFactura.addEventListener('click',async (e) =>{
             sacarStock(producto.cantidad,producto.objeto)
             await movimientoProducto(producto.cantidad,producto.objeto)
         };
+        const [iva21,iva105,gravado21,gravado105,cant_iva] = gravadoMasIva(venta.productos);
+        venta.comprob = venta.nro_comp;
+        venta.gravado21 = gravado21;
+        venta.gravado105 = gravado105;
+        venta.iva21 = iva21;
+        venta.iva105 = iva105;
+        venta.cant_iva = cant_iva;
         actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp);
         const afip = await subirAAfip(venta)
         await ipcRenderer.send('nueva-venta',venta);
@@ -924,6 +924,7 @@ const borrrarCuentaCompensada = async(numero)=>{
     await axios.delete(`${URL}cuentaComp/id/${numero}`);
 }
 
+//descontamos el saldo del cliente
 const descontarSaldo = async(codigo,precio,numero)=>{
     const cliente = (await axios.get(`${URL}clientes/id/${codigo}`)).data;
     const index = cliente.listaVentas.indexOf(numero);
@@ -951,8 +952,6 @@ const borrarVenta = async(numero)=>{
 
 
 const subirAAfip = async(venta)=>{
-    const salesPoints = await afip.ElectronicBilling.getVoucherTypes();
-    console.log(salesPoints)
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
     (ultimoElectronica === 0) && (ultimoElectronica=1); 
@@ -991,6 +990,7 @@ const subirAAfip = async(venta)=>{
                     'Importe' 	: venta.iva21 // Importe 
             })
         }
+        console.log(data)
         const res = await afip.ElectronicBilling.createVoucher(data); //creamos la factura electronica
 
         const qr = {
@@ -1156,7 +1156,8 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     conector.establecerTamanioFuente(2,2);
     conector.establecerFuente(ConectorPlugin.Constantes.FuenteC)
     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-    conector.texto("*ELECTRO AVENIDA*\n")
+    const ruta = "..//imagenes//Logo.jpeg";
+    conector.imagenLocal(ruta)
     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
     conector.establecerTamanioFuente(1,1);
     conector.texto("GIANOVI MARINA ISABEL\n");

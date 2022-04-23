@@ -30,7 +30,7 @@ const tbody =  document.querySelector('.tbody')
 let ventas = []
 buscar.addEventListener('click',async e=>{
     const desdefecha = new Date(desde.value)
-    let hastafecha = DateTime.fromISO(hasta.value).endOf('day')
+    let hastafecha = DateTime.fromISO(hasta.value).endOf('day');
     let tickets = await axios.get(`${URL}ventas/${desdefecha}/${hastafecha}`)
     tickets = tickets.data;
     console.log(tickets)

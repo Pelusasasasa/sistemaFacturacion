@@ -1,8 +1,9 @@
 const { ipcRenderer } = require("electron");
 
 const inputs = document.querySelectorAll('input');
-const modificar = document.querySelector('#modificar')
-const cancelar = document.querySelector('#cancelar')
+const modificar = document.querySelector('#modificar');
+const grabar = document.querySelector('#grabar');
+const cancelar = document.querySelector('#cancelar');
 const axios = require("axios");
 require("dotenv").config;
 const URL = process.env.URL;
@@ -11,21 +12,21 @@ let dolarAux;
 
 modificar.addEventListener('click' , (e) => {
     e.preventDefault();
-    if (modificar.classList.contains("desabilitado")) {
-        modificar.classList.add("habilitado")
-        modificar.classList.remove("desabilitado")
-        inputs.forEach(input => {
-            input.removeAttribute("disabled")
-        })
-    }else{
-        modificar.classList.remove("habilitado")
-        modificar.classList.add("desabilitado")
-        inputs.forEach(input => {
-            input.setAttribute("disabled","")
-        })
-        guardarDatos();
-    }
+    modificar.classList.add('none');
+    grabar.classList.remove('none');
+    inputs.forEach(input => {
+        input.removeAttribute("disabled")
+    })
+})
 
+grabar.addEventListener('click',e=>{
+    guardarDatos();
+    modificar.classList.remove("none");
+    grabar.classList.add('none');
+    inputs.forEach(input => {
+        input.setAttribute("disabled","")
+    })
+    
 })
 const facturaA = document.querySelector('#facturaA')
 const facturaB = document.querySelector('#facturaB')
@@ -102,12 +103,15 @@ async function cambiarPrecios(dolar) {
         }
 
         return 0
-    })
-    productos.forEach(async producto => {
+    });
+    const esperar = document.querySelector('.esperar');
+    for await(let producto of productos) {
+        esperar.classList.remove('none');
         const costoTotal = ((parseFloat(producto.impuestos)+parseFloat(producto.costodolar))*parseFloat(dolar));
         producto.precio_venta = (costoTotal+((parseFloat(producto.utilidad)*costoTotal/100))).toFixed(2);
-        await axios.put(`${URL}productos/${producto._id}`,producto)
-    });
+        await axios.put(`${URL}productos/${producto._id}`,producto);
+    };
+        esperar.classList.add('none');
 };
 
 

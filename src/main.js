@@ -309,6 +309,11 @@ ipcMain.on('abrir-ventana-info-movimiento-producto',async (e,args)=>{
 
 //FIN MOVIMIENTO DE PRODUCTOS
 
+
+ipcMain.on('enviar-arreglo-descarga',(e,args)=>{
+    descargas('Ventas',args);
+})
+
 //menu
 const templateMenu = [
     {
@@ -322,7 +327,8 @@ const templateMenu = [
         {
             label: 'Ventas',
             click() {
-                descargas("Ventas")
+                abrirVentana('fechas/fechas.html',400,200);
+                // descargas("Ventas")
             }
         }]
     },
@@ -582,35 +588,11 @@ function abrirVentana(texto,width,height,reinicio){
 
 //Aca hacemos que se descargue un excel Ya sea con los pedidos o con las ventas
 
-async function descargas(nombreFuncion) {
+async function descargas(nombreFuncion,ventasTraidas) {
     if(nombreFuncion === "Pedidos"){
         pedidos((await axios.get(`${URL}pedidos`)).data)
     }else if(nombreFuncion === "Ventas"){
-        let desde = new Date();
-        let dia = desde.getDate();
-        let mes = desde.getMonth() + 1;
-        let anio = desde.getFullYear();
-        dia = dia < 10 ? `0${dia}` : dia ;
-        mes = mes===13 ? mes=1 : mes;
-        mes = mes < 10 ? `0${mes}` : mes;
-        let hasta = `${anio}-${mes}-${dia}`;
-        desde = new Date(`${anio}-${mes}-${dia}`)
-        hasta = DateTime.fromISO(hasta).endOf('day');
-        const tickets = (await axios.get(`${URL}ventas/${desde}/${hasta}`)).data;
-        const presupuesto = (await axios.get(`${URL}presupuesto/${desde}/${hasta}`)).data
-        let ticketsDelDia = tickets.filter(ticket =>{
-            if (ticket.tipo_comp === "Ticket Factura" && ticket.tipo_pago==="CD") {
-                return ticket;
-            }else if(ticket.tipo_comp === "Recibos" || ticket.tipo_comp === "Recibos_P"){
-                return ticket
-            }
-        })
-        let presupuestosDelDia = presupuesto.filter(presu =>{
-            if(presu.tipo_pago === "CD"){
-                return presu
-            }
-        })
-        ventas([...ticketsDelDia,...presupuestosDelDia])
+        ventas(ventasTraidas);
     }
 }
 
