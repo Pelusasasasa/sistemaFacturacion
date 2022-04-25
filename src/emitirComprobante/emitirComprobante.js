@@ -765,7 +765,6 @@ ticketFactura.addEventListener('click',async (e) =>{
 
 //Generamos el qr
 async function generarQR(texto) {
-    const fs = require('fs')
     const url = `https://www.afip.gob.ar/fe/qr/?p=${texto}`;
     return url
 }
@@ -990,7 +989,6 @@ const subirAAfip = async(venta)=>{
                     'Importe' 	: venta.iva21 // Importe 
             })
         }
-        console.log(data)
         const res = await afip.ElectronicBilling.createVoucher(data); //creamos la factura electronica
 
         const qr = {
@@ -1009,11 +1007,12 @@ const subirAAfip = async(venta)=>{
             codAut: parseFloat(res.CAE)
         }
         const textoQR = btoa(unescape(encodeURIComponent(qr)));//codificamos lo que va en el QR
-        const QR = await generarQR(textoQR,res.CAE,res.CAEFchVto)
+        const QR = await generarQR(textoQR)
         return {
             QR,
             cae:res.CAE,
-            vencimientoCae:res.CAEFchVto
+            vencimientoCae:res.CAEFchVto,
+            texto:textoQR
         }
 }
 
@@ -1156,7 +1155,7 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     conector.establecerTamanioFuente(2,2);
     conector.establecerFuente(ConectorPlugin.Constantes.FuenteC)
     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-    const ruta = "..//imagenes//Logo.jpeg";
+    const ruta = __dirname + "\\..\\imagenes\\Logo.jpeg";
     conector.imagenLocal(ruta)
     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
     conector.establecerTamanioFuente(1,1);
