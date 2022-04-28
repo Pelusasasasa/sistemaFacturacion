@@ -248,8 +248,9 @@ const hacerRecibo = async()=>{
      recibo.dnicuit = cuit.value
      recibo._id = await tamanioVentas()
      recibo.pagado = true
-     recibo.cliente = cliente._id
-     recibo.vendedor = Vendedor
+     recibo.cliente = cliente._id;
+     recibo.nombreCliente = cliente.cliente;
+     recibo.vendedor = Vendedor;
      recibo.precioFinal = parseFloat(total.value).toFixed(2);
      recibo.tipo_comp = (situacion === "blanco" ? "Recibos" : "Recibos_P" );
      const aux = (situacion === "negro") ? "saldo_p" : "saldo"
@@ -270,13 +271,13 @@ const hacerRecibo = async()=>{
      await axios.put(`${URL}clientes/${_id}`,clienteTraido);
      await axios.post(`${URL}ventas`,recibo);
      saldoAfavor.value !== "" && ponerEnCuentaCorrienteCompensada(recibo);
-     ponerEnCuentaCorrienteHistorica(recibo);
-     const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
-     const impresora = recibo.tipo_comp === "Recibos" ? "SAM4S GIANT-100" : undefined;
+     await ponerEnCuentaCorrienteHistorica(recibo);
+     //const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
+     //const impresora = recibo.tipo_comp === "Recibos" ? "SAM4S GIANT-100" : undefined;
 
      // arregloParaImprimir contiene todos las ventas que tiene pagadas y total contiene el total del recibo
-     ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,arregloParaImprimir,total.value]);
-     location.href = "../index.html"
+    ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,arregloParaImprimir,total.value]);
+    location.href = "../index.html"
 }
 
 const traerUltimoNroRecibo = async ()=>{

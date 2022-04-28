@@ -40,11 +40,14 @@ const facturaOriginal = document.querySelector('#original');
 const radios = document.querySelectorAll('input[name=tipo]');
 const divNuevaCantidad = document.querySelector('.nuevaCantidad');
 const divNuevoPrecio = document.querySelector('.nuevoPrecio');
+const cobrado = document.querySelector('#cobrado');
 
 let cliente = {};
 let venta = {};
 let listaProductos = [];
 let yaSeleccionado;
+let totalPrecioProductos = 0;
+let precioFinal = 0
 
 codigoC.addEventListener('keypress',async e=>{
     if ((e.key === "Enter")) {
@@ -171,20 +174,21 @@ ipcRenderer.on('mando-el-producto',async(e,args)=>{
 
 let id = 1
 const mostrarVentas = (objeto,cantidad)=>{
-    let precioFinal = (parseFloat(objeto.precio_venta)*parseFloat(cantidad));
-    total.value = total.value !== "" ? (parseFloat(total.value) + (precioFinal)).toFixed(2) : precioFinal.toFixed(2);
+    precioFinal += (parseFloat(objeto.precio_venta)*parseFloat(cantidad));
+    total.value = parseFloat(precioFinal.toFixed(2));
     resultado.innerHTML += `
         <tr id=${id}>
         <td class="tdEnd">${(parseFloat(cantidad)).toFixed(2)}</td>
         <td>${objeto._id}</td>
         <td>${objeto.descripcion}</td>
-        <td class="tdEnd" >${(objeto.tasaIva !== "N" ? 10.50 : 21).toFixed(2)}</td>
+        <td class="tdEnd" >${(objeto.iva !== "N" ? 10.50 : 21).toFixed(2)}</td>
         <td class="tdEnd">${parseFloat(objeto.precio_venta).toFixed(2)}</td>
         <td class="tdEnd">${(parseFloat(objeto.precio_venta)*(cantidad)).toFixed(2)}</td>
         </tr>
     `
     objeto.identificadorTabla = `${id}`
-    id++
+    id++;
+    totalPrecioProductos += parseFloat((parseFloat(objeto.precio_venta) * cantidad).toFixed(2));
     listaProductos.push({objeto,cantidad});
 }
 
@@ -194,10 +198,38 @@ descuento.addEventListener('keypress',e=>{
     }
 })
 descuento.addEventListener('blur',e=>{
-    descuentoN.value =( parseFloat(total.value) - parseFloat((parseFloat(total.value) - parseFloat(total.value) * parseFloat(descuento.value) / 100).toFixed(2))).toFixed(2)
-    total.value = (parseFloat(total.value) - parseFloat(total.value) * parseFloat(descuento.value) / 100).toFixed(2)
-
+    verDescuento()
 })
+const contado = document.querySelector('#CD');
+
+cobrado.addEventListener('blur',e=>{
+    if (cobrado.value !== "") {
+        inputCobrado(cobrado.value)
+    }
+})
+
+//cuando apretramos enter en el cobrado o le sacamos focos
+cobrado.addEventListener('keypress',e=>{
+    if(e.key === "Enter"){
+        contado.focus()
+    }
+});
+
+//ver si hay un descuento 
+let Total = 0
+function verDescuento() {
+    Total = totalPrecioProductos
+    descuentoN.value = (parseFloat(descuento.value)*Total/100).toFixed(2);
+    total.value=(Total - parseFloat(descuentoN.value)).toFixed(2)
+};
+
+//si se sobra menos que se muestre cuanto es la diferencia
+function inputCobrado(numero) {
+    Total=totalPrecioProductos
+    descuentoN.value =  (Total-parseFloat(numero)).toFixed(2);
+    descuento.value = (parseFloat(descuentoN.value)*100/Total).toFixed(2);
+    total.value = parseFloat(numero).toFixed(2);
+}
 
 factura.addEventListener('click',async e=>{
     e.preventDefault();
@@ -223,23 +255,31 @@ factura.addEventListener('click',async e=>{
         venta.nro_comp = await traerNumeroComprobante(venta.cod_comp)
         venta.comprob = venta.nro_comp;
         venta.productos = listaProductos;
-        const [iva21,iva105,gravado21,gravado105,cant_iva] = gravadoMasIva(venta.productos);
-        venta.iva21 = iva21;
-        venta.iva105 = iva105;
-        venta.gravado21 = gravado21;
-        venta.gravado105 = gravado105;
-        venta.cant_iva = cant_iva;
         venta.numeroAsociado = facturaOriginal.value;
         venta.dnicuit = dnicuit.value;
         venta.cod_doc = (venta.dnicuit.length > 8) ? 80 : 96;
-        venta.conIva = conIva.value;
+        venta.cod_doc = venta.dnicuit === "00000000" ? 99 : venta.cod_doc
+        venta.condIva = conIva.value;
         venta.descuento = parseFloat(descuentoN.value);
         venta.precioFinal = parseFloat(total.value);
         venta.vendedor = vendedor;
-
-         if (venta.precioFinal>10000 && buscarCliente.value === "A CONSUMIDOR FINAL" && dnicuit.value === "00000000"  && direccion.value === "CHAJARI") {
+        venta.direccion = direccion.value;
+         if (venta.precioFinal>10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" || dnicuit.value === "00000000")) {
              alert("Factura mayor a 10000, poner valores clientes")
          }else{
+            //modifcamos el precio del producto correspondiente con el descuenta
+            for (let producto of venta.productos){
+                if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
+                    producto.objeto.precio_venta =  (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
+                    producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
+                }
+            }
+            const [iva21,iva105,gravado21,gravado105,cant_iva] = gravadoMasIva(venta.productos);
+            venta.iva21 = iva21;
+            venta.iva105 = iva105;
+            venta.gravado21 = gravado21;
+            venta.gravado105 = gravado105;
+            venta.cant_iva = cant_iva;  
              //Actualizamos el numero de comprobante
             await actualizarNroCom(venta.nro_comp,venta.cod_comp);
             
@@ -253,20 +293,21 @@ factura.addEventListener('click',async e=>{
                     movimientoProducto(objeto,cantidad,venta);
                 })
             }
-            
+
+
+
             //Traemos la venta relacionada con la nota de credito
-            let ventaRelacionada = (await axios.get(`${URL}ventas/${venta.numeroAsociado}`)).data;
-            if (ventaRelacionada.length === 0) {
-                ventaRelacionada = (await axios.get(`${URL}presupuesto/${venta.numeroAsociado}`)).data;
-            }
+            let ventaRelacionada = (await axios.get(`${URL}ventas/venta/ventaUnica/${venta.numeroAsociado}/${"Ticket Factura"}`)).data;
+            //subimos a la afip la factura electronica
+            let afip = await subirAAfip(venta,ventaRelacionada);
             //mandamos para que sea compensada
             venta.tipo_pago === "CC" &&  ponerEnCuentaCorrienteCompensada(venta,true);
             //Mandamos par que sea historica
             venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
+            
+            
             //mandamos la venta
             ipcRenderer.send('nueva-venta',venta)
-            //subimos a la afip la factura electronica
-            let afip = await subirAAfip(venta,ventaRelacionada[0]);
             //Imprimos el ticket
             imprimirVenta([venta,cliente,afip])
             await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
@@ -511,11 +552,12 @@ dnicuit.addEventListener('focus',e=>{
     return [parseFloat(totalIva21.toFixed(2)),parseFloat(totalIva105.toFixed(2)),parseFloat(gravado21.toFixed(2)),parseFloat(gravado105.toFixed(2)),cantIva]
  }
 
+
 const subirAAfip = async(venta,ventaAsociada)=>{
     const ventaAnterior = await afip.ElectronicBilling.getVoucherInfo(parseFloat(ventaAsociada.nro_comp),5,parseFloat(ventaAsociada.cod_comp)); 
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
-    (ultimoElectronica === 0) && (ultimoElectronica=1); 
+    //(ultimoElectronica === 0) && (ultimoElectronica=1); 
     let totalIva105 = 0
     let totalIva21=0
     let totalNeto21 = 0 
@@ -556,7 +598,7 @@ const subirAAfip = async(venta,ventaAsociada)=>{
         'PtoVta': 5,
         'MonCotiz' 	: 1,
         'Iva' 		: [],
-        }
+        };
         
         if (totalNeto105 !=0 ) {
             data.Iva.push({
@@ -564,14 +606,14 @@ const subirAAfip = async(venta,ventaAsociada)=>{
                     'BaseImp' 	: totalNeto105.toFixed(2), // Base imponible
                     'Importe' 	: totalIva105.toFixed(2) // Importe 
             })
-        }
+        };
         if (totalNeto21 !=0 ) {
             data.Iva.push({
                     'Id' 		: 5, // Id del tipo de IVA (5 para 21%)
                     'BaseImp' 	: totalNeto21.toFixed(2), // Base imponible
                     'Importe' 	: totalIva21.toFixed(2) // Importe 
             })
-        }
+        };
         const res = await afip.ElectronicBilling.createVoucher(data); //creamos la factura electronica
 
         const qr = {
@@ -594,7 +636,9 @@ const subirAAfip = async(venta,ventaAsociada)=>{
         return {
             QR,
             cae:res.CAE,
-            vencimientoCae:res.CAEFchVto
+            vencimientoCae:res.CAEFchVto,
+            texto:textoQR,
+            numero:ultimoElectronica
         }
 }
 
@@ -657,7 +701,7 @@ const ponerEnCuentaCorrienteHistorica = async(venta,valorizado,saldo)=>{
 const imprimirVenta = (arreglo)=>{
 
     const conector = new ConectorPlugin();
-    const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
+    const ponerValores = (Venta,{QR,cae,vencimientoCae,numero})=>{
         const fechaVenta = new Date(Venta.fecha)
         let dia = fechaVenta.getDate()
         let mes = fechaVenta.getMonth()+1;
@@ -683,14 +727,14 @@ const imprimirVenta = (arreglo)=>{
         conector.texto("INICIO DE ACTIVIDADES: 02-03-07\n");
         conector.texto("IVA RESPONSABLE INSCRIPTO\n");
         conector.texto("------------------------------------------\n");
-        conector.texto(`${comprobante}   ${Venta.nro_comp}\n`);
+        conector.texto(`${comprobante}   0005-${numero.toString().padStart(8,'0')}\n`);
         conector.texto(`FECHA: ${dia}-${mes}-${anio}    Hora:${horas}:${minutos}:${segundos}\n`);
         conector.texto("------------------------------------------\n");
         conector.texto(`${buscarCliente.value}\n`);
         conector.texto(`Dni O Cuit: ${dnicuit.value}\n`);
         conector.texto(`${Venta.condIva}\n`);
         conector.texto(`${direccion.value}   ${localidad.value}\n`);
-        Venta.numeroAsociado && conector.texto(`Comp Original Nº: ${venta.numeroAsociado}\n`);
+        Venta.numeroAsociado && conector.texto(`Comp Original Nº: ${Venta.numeroAsociado}\n`);
         conector.texto("------------------------------------------\n");
         conector.texto("CANTIDAD/PRECIO UNIT (%IVA)\n")
         conector.texto("DESCRIPCION           (%B.I)       IMPORTE\n")  
@@ -767,6 +811,6 @@ const imprimirVenta = (arreglo)=>{
         }
     }
     
-    const [Venta,Cliente,valoresQR] = arreglo
-    ponerValores(Cliente,Venta,valoresQR)
+    const [Venta,,valoresQR] = arreglo
+    ponerValores(Venta,valoresQR)
     }

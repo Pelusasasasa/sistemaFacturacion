@@ -197,12 +197,12 @@ ipcMain.on('imprimir-venta',async(e,args)=>{
         copies: cantidad,
     };
     if (tipo === "Recibos_P") {
-        abrirVentana("emitirRecibo/imprimirRecibo.html",1000,900);
+        abrirVentana("emitirRecibo/imprimirRecibo.html",1000,900,"noReiniciar");
 
     }else if(tipo === "Recibos"){
-        abrirVentana("emitirComprobante/imprimirTicket.html",800,200);
+        abrirVentana("emitirComprobante/imprimirTicket.html",800,200,"noReiniciar");
     }else{
-        abrirVentana("emitirComprobante/imprimir.html",1000,500);
+        abrirVentana("emitirComprobante/imprimir.html",1000,500,"noReiniciar");
 
     }
     await imprimir(options,args);
@@ -356,6 +356,12 @@ const templateMenu = [
                             abrirVentana("clientes/listadoSaldo.html",1000,900)
                         }
                     },
+                    {
+                        label:"Imprimir Presupuesto",
+                        click(){
+                            abrirVentana("clientes/imprimirPresupuesto.html",600,500)
+                        }
+                    }
                 ]
             },
             {

@@ -1,5 +1,10 @@
 const { ipcRenderer } = require("electron")
 
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
+
+
 const codigo = document.querySelector('#codigo')
 const descripcion = document.querySelector('#descripcion')
 const stock = document.querySelector('#stock')
@@ -12,7 +17,6 @@ let movProducto = {}
 let vendedor
 
 ipcRenderer.on('movimiento-producto-abrir',(e,args)=>{
-    console.log(JSON.parse(args))
     const [producto,usuario] = JSON.parse(args)
     codigo.value = producto._id
     descripcion.value = producto.descripcion
@@ -27,7 +31,7 @@ cantidad.addEventListener('keypress',e=>{
 })
 
 const tamanioMovimiento = async()=>{
-    const tamanio = await axios.get(`${URL}movProductos`);
+    const tamanio = (await axios.get(`${URL}movProductos`)).data;
     return (tamanio+1)
 }
 

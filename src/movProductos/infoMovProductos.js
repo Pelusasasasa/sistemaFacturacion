@@ -5,8 +5,15 @@ const tbody = document.querySelector('.tbody')
 // ipcRenderer.send('informacion-movimiento-producto')
 
 ipcRenderer.on('datos-movimiento-producto', (e,args)=>{
-    console.log(args)
     const listaMovimiento = JSON.parse(args)
+    listaMovimiento.sort((a,b)=>{
+        if (a.fecha > b.fecha) {
+            return 1
+        }else if(a.fecha < b.fecha){
+            return -1;
+        }
+        return 0
+    })
     tbody.innerHTML += " ";
     for(let movProducto of listaMovimiento){
         let fecha = new Date(movProducto.fecha)
@@ -31,8 +38,7 @@ ipcRenderer.on('datos-movimiento-producto', (e,args)=>{
 
 const salir = document.querySelector('.salir')
 salir.addEventListener('click',()=>{
-    console.log(window.location)
-    //window.close();
+    window.close();
 
 })
 

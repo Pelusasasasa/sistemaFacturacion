@@ -1,4 +1,4 @@
-const {ipcRenderer,remote} = require('electron');
+const {ipcRenderer} = require('electron');
 const Dialogs = require("dialogs");
 const dialogs = Dialogs();
 const axios = require('axios');
@@ -31,6 +31,7 @@ const ponerClientes = (clientes) =>{
     })
     for(let cliente of clientes){
         let nombre = cliente.cliente.toLowerCase();
+        texto = texto[0] === "*" ? texto.substr(1) : texto;
         if(nombre.indexOf(texto) !== -1){
            resultado.innerHTML += `
            <tr id="${cliente._id}">

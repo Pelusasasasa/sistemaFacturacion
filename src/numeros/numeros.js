@@ -105,7 +105,8 @@ async function cambiarPrecios(dolar) {
         return 0
     });
     const esperar = document.querySelector('.esperar');
-    for await(let producto of productos) {
+    const a = productos.filter(producto => producto.costodolar !== 0);
+    for await(let producto of a) {
         esperar.classList.remove('none');
         const costoTotal = ((parseFloat(producto.impuestos)+parseFloat(producto.costodolar))*parseFloat(dolar));
         producto.precio_venta = (costoTotal+((parseFloat(producto.utilidad)*costoTotal/100))).toFixed(2);

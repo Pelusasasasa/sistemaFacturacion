@@ -118,7 +118,7 @@ async function cantidad(e) {
         console.log(valor);
         if (valor === undefined || valor === "" || parseFloat(valor) === 0) {
             await seleccionado.classList.remove('seleccionado')
-            seleccionado = ""
+            seleccionado = "";
             buscarProducto.focus()
         }else{
             if(!Number.isInteger(parseFloat(valor)) && pro.unidad==="U"){
@@ -128,6 +128,10 @@ async function cantidad(e) {
                    _id: e.id
                     ,cantidad: valor
                 })
+                await seleccionado.classList.remove('seleccionado')
+                seleccionado = "";
+                buscarProducto.value = "";
+                buscarProducto.focus();
             }
         }
     })

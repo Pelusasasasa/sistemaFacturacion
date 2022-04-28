@@ -38,8 +38,15 @@ const mostrarNegro = ()=>{
 }
 
 const traerSaldo = async()=>{
-    Clientes = await axios.get(`${URL}clientes`)
-    Clientes = Clientes.data;
+    Clientes = (await axios.get(`${URL}clientes`)).data;
+    Clientes.sort((a,b)=>{
+        if (a.cliente<b.cliente) {
+            return -1;
+        }else if(a.cliente>b.cliente){
+            return 0;
+        }
+        return 0;
+    })
     mostrarLista(Clientes)
 }
 traerSaldo()
@@ -62,11 +69,11 @@ document.addEventListener('keyup',e=>{
 const mostrarLista = (clientes)=>{
     tbody.innerHTML = ""
     clientes.forEach(cliente => {
-        if (situacion === "blanco" && cliente.saldo !== "0") {
+        if (situacion === "blanco" && parseFloat(cliente.saldo) !== 0) {
             tbody.innerHTML += `
             <tr>
                 <td class = "id">${cliente._id}</td>
-                <td>${cliente.cliente}</td>
+                <td class ="nombre">${cliente.cliente}</td>
                 <td>${cliente.direccion}</td>
                 <td>${cliente.cond_iva}</td>
                 <td>${cliente.telefono}</td>

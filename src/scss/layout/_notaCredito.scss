@@ -54,7 +54,7 @@
             overflow: scroll;
             height: 25rem;
             @include Chico(){
-                height: 40rem;
+                height: 35rem;
             }
             @include Comun(){
                 height: 45rem;
@@ -63,7 +63,7 @@
                 height: 55rem;
             }
             @include P950(){
-                height: 60rem;
+                height: 55rem;
             }
             border: .1rem solid black;
             background-color: white;
@@ -95,9 +95,24 @@
 
             input{
                 padding: .5rem;
+                font-size: 1.5rem;
             }
             #descuento{
                 width: 15%;
+            }
+        }
+        .radioYtotal{
+            padding: 0 5rem;
+            display: flex;
+            justify-content: space-evenly;
+            width: 100%;
+            .vendedor{
+                border: .1rem solid black;
+            }
+
+            .cobrado{
+                padding: 1rem;
+                font-size: 2rem;
             }
         }
         .radios{

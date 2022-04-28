@@ -70,7 +70,7 @@ codigoC.focus()
  document.addEventListener('keydown',(event) =>{
     if (event.key === "Alt") {
        document.addEventListener('keydown',(e) =>{
-           if (e.key === "F3" && situacion === "negro") {
+           if (e.key === "F8" && situacion === "negro") {
                ocultarNegro();
                situacion = 'blanco'
            }
@@ -280,7 +280,7 @@ function mostrarVentas(objeto,cantidad) {
         <tr id=${id}>
         <td class="tdEnd">${(parseFloat(cantidad)).toFixed(2)}</td>
         <td>${objeto._id}</td>
-        <td>${objeto.descripcion}</td>
+        <td>${objeto.descripcion} ${objeto.marca}</td>
         <td class="tdEnd">${(objeto.iva !== "N" ? 10.50 : 21).toFixed(2)}</td>
         <td class="tdEnd">${parseFloat(objeto.precio_venta).toFixed(2)}</td>
         <td class="tdEnd">${(parseFloat(objeto.precio_venta)*(cantidad)).toFixed(2)}</td>
@@ -310,11 +310,9 @@ cambioPrecio.children[1].addEventListener('keypress',(e)=>{
     if (e.key === "Enter") {
         const  producto = listaProductos.find(({objeto,cantidad})=> objeto.identificadorTabla === yaSeleccionado.id);
         borrarUnProductoDeLaLista(yaSeleccionado)
-        console.log(listaProductos);
         producto.objeto.precio_venta = cambioPrecio.children[1].value !== "" ? parseFloat(cambioPrecio.children[1].value) : producto.objeto.precio_venta;
         producto.cantidad = nuevaCantidad.value !== "" ? nuevaCantidad.value : producto.cantidad;
         mostrarVentas(producto.objeto,producto.cantidad);
-        console.log(listaProductos);
         cambioPrecio.children[1].value = "";
         cambioPrecio.classList.add('none');
         nuevaCantidad.value = "";
@@ -329,17 +327,6 @@ const nuevaCantidad = document.querySelector('#nuevaCantidad');
 nuevaCantidad.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
         cambioPrecio.children[1].focus();
-        // const producto = listaProductos.find(({objeto,cantidad}) => objeto.identificadorTabla === yaSeleccionado.id);
-        // console.log(producto);
-        // borrarUnProductoDeLaLista(yaSeleccionado)
-        // if (producto) {
-        //     const index = listaProductos.indexOf(producto);
-        //     listaProductos.splice(index,1);
-        // }
-        // producto.cantidad = parseFloat(nuevaCantidad.value);
-        // mostrarVentas(producto.objeto,producto.cantidad);
-
-        // codigo.focus()
     }
 })
 
@@ -365,7 +352,7 @@ descuento.addEventListener('blur',()=>{
 //aplicamos el descuento de cobrado
 const cobrado = document.querySelector('#cobrado')
 cobrado.addEventListener('blur',()=>{
-    inputCobrado(cobrado.value)
+    cobrado.value !== "" && inputCobrado(cobrado.value)
 })
 cobrado.addEventListener('keypress',e=>{
     if(e.key === "Enter"){
@@ -386,7 +373,7 @@ function inputCobrado(numero) {
     Total=totalPrecioProducos
     descuentoN.value =  redondear(Total-numero)
     descuento.value = redondear(descuentoN.value*100/Total)
-    total.value = numero;
+    total.value = parseFloat(numero).toFixed(2);
 }
 //FIN PARTE DE DESCUENTO
 
@@ -421,6 +408,7 @@ function verCodComprobante(tipo){
     }
 }
 
+//Vemos que tipo de venta es
 function verQueVentaEs(tipo,cod_comp) {
     if (tipo === "Presupuesto") {
         return "Ultimo Presupuesto"
@@ -493,21 +481,20 @@ const traerTamanioDeMovProducto = async()=>{
     const tamanio = (await axios.get(`${URL}movProductos`)).data;
     return tamanio
 }
-
 //Registramos un movimiento de producto
-async function movimientoProducto(cantidad,objeto){
+async function movimientoProducto(cantidad,objeto,idCliente,cliente){
     const id = await traerTamanioDeMovProducto()
     let movProducto = {}
     movProducto._id = (id + 1);
     movProducto.codProd = objeto._id
     movProducto.descripcion = objeto.descripcion
-    movProducto.codCliente = cliente.cliente;
-    movProducto.cliente = cliente.nombreCliente;
+    movProducto.codCliente = idCliente;
+    movProducto.cliente = cliente;
     movProducto.comprobante = tipoVenta
     movProducto.tipo_comp = venta.tipo_comp
     movProducto.nro_comp=venta.nro_comp
     movProducto.egreso = cantidad
-    movProducto.stock = objeto.stock
+    movProducto.stock = parseFloat(objeto.stock) - cantidad
     movProducto.precio_unitario=objeto.precio_venta
     movProducto.total=(parseFloat(movProducto.egreso)*parseFloat(movProducto.precio_unitario)).toFixed(2)
     movProducto.vendedor = venta.vendedor;
@@ -528,7 +515,14 @@ const numeroDeFactura = document.querySelector('.numeroDeFactura')
 numeroDeFactura.addEventListener('click', async () =>{
     const mostrar = document.querySelector('#numeroFactura')
     texto = verNumero(conIva.value)
-    mostrar.value = ((await axios.get(`${URL}tipoVenta`)).data)[texto];
+     let numeroFactura = ((await axios.get(`${URL}tipoVenta`)).data)[texto];
+     console.log(numeroFactura)
+     numeroFactura = numeroFactura.split('-')
+     const puntoVenta = numeroFactura[0];
+     let numero = parseFloat(numeroFactura[1]) + 1;
+     numero = numero.toString();
+     numero = numero.padStart(8,'0')
+     mostrar.value = `${puntoVenta}-${numero}`
 })
 
 
@@ -626,26 +620,21 @@ presupuesto.addEventListener('click',async (e)=>{
                 valorizadoImpresion="no valorizado";
                 }
                 sacarIdentificadorTabla(venta.productos);
-                //si la venta es CC Sumamos un saldo al cliente y ponemos en cuenta corriente compensada y historica
-                 if (venta.tipo_pago === "CC") {
-                     sumarSaldoAlClienteEnNegro(venta.precioFinal,venta.cliente,valorizado.checked);
-                     ponerEnCuentaCorrienteCompensada(venta,valorizado.checked);
-                     ponerEnCuentaCorrienteHistorica(venta,valorizado.checked,saldo_p.value);
-                    if (venta.tipo_pago !== "PP") {
-                        //sacamos el stock y tambien creamos el movimiento de producto
+                
                         for (let producto of venta.productos){
                                 if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
-                                    producto.objeto.precio_venta = parseFloat(producto.cantidad) * (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
+                                    producto.objeto.precio_venta =  (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
                                     producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
                                 }
-                                sacarStock(producto.cantidad,producto.objeto)
-                                await movimientoProducto(producto.cantidad,producto.objeto);
                             }
-                    }
-                 }
-    
-                 await actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
                  ipcRenderer.send('nueva-venta',venta);
+                 await actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+                 //si la venta es CC Sumamos un saldo al cliente y ponemos en cuenta corriente compensada y historica
+                 if (venta.tipo_pago === "CC") {
+                    await sumarSaldoAlClienteEnNegro(venta.precioFinal,venta.cliente,valorizado.checked);
+                    await  ponerEnCuentaCorrienteCompensada(venta,valorizado.checked);
+                    await ponerEnCuentaCorrienteHistorica(venta,valorizado.checked,saldo_p.value);
+                }
                  if (impresion.checked) {
                      let cliente = {
                          _id:codigoC.value,
@@ -656,9 +645,16 @@ presupuesto.addEventListener('click',async (e)=>{
                          cond_iva: conIva.value
                      }
                      if (venta.tipo_pago === "CC") {
-                         ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion])
+                        ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion])
                      }else{
                          ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion])
+                     }
+                 }
+                 //si la venta es distinta de presupuesto sacamos el stock y movimiento de producto
+                 if(venta.tipo_pago !== "PP"){
+                    for(let producto of venta.productos){
+                        await sacarStock(producto.cantidad,producto.objeto);
+                        await movimientoProducto(producto.cantidad,producto.objeto,venta.cliente,venta.nombreCliente);
                      }
                  }
 
@@ -689,6 +685,7 @@ ticketFactura.addEventListener('click',async (e) =>{
         alert("Seleccionar un modo de venta");
     }else{
         venta.nombreCliente = buscarCliente.value;
+        venta.direccion = direccion.value;
         venta._id = await tamanioVentas("ticket factura");
         venta.observaciones = observaciones.value;
         venta.fecha = new Date();
@@ -696,22 +693,21 @@ ticketFactura.addEventListener('click',async (e) =>{
         venta.precioFinal = redondear(total.value);
         venta.tipo_comp = tipoVenta;
         numeroComprobante(tipoVenta);
+
         venta.cod_comp = verCodComprobante(tipoVenta);
         venta.nro_comp = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp);
-        if (venta.precioFinal >=10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" && dnicuit.value === "00000000" && direccion.value === "CHAJARI")) {
+        if (venta.precioFinal >=10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" || dnicuit.value === "00000000")) {
             alert("Factura mayor a 10000, poner datos cliente");
         }else{
-        venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente);
-        venta.tipo_pago === "CC" && ponerEnCuentaCorrienteCompensada(venta,true);
-        venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
+        
         venta.empresa = inputEmpresa.value;
+
         for(let producto of venta.productos){
            if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
-               producto.objeto.precio_venta = parseFloat(producto.cantidad) * (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
+               producto.objeto.precio_venta = (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
                producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
            }
-            sacarStock(producto.cantidad,producto.objeto)
-            await movimientoProducto(producto.cantidad,producto.objeto)
+
         };
         const [iva21,iva105,gravado21,gravado105,cant_iva] = gravadoMasIva(venta.productos);
         venta.comprob = venta.nro_comp;
@@ -720,12 +716,25 @@ ticketFactura.addEventListener('click',async (e) =>{
         venta.iva21 = iva21;
         venta.iva105 = iva105;
         venta.cant_iva = cant_iva;
+        const afip = await subirAAfip(venta);
+        
+        venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente);
+        venta.tipo_pago === "CC" && ponerEnCuentaCorrienteCompensada(venta,true);
+        venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
         actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp);
-        const afip = await subirAAfip(venta)
+        
         await ipcRenderer.send('nueva-venta',venta);
         const cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
         await imprimirVenta([venta,cliente,afip]);
         await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
+
+        if(venta.tipo_pago !== "PP"){
+             for(let producto of venta.productos){
+                 sacarStock(producto.cantidad,producto.objeto)
+                 await movimientoProducto(producto.cantidad,producto.objeto,venta.cliente,venta.nombreCliente)
+             }
+        }
+
         if (borraNegro) {
             //borramos la cuenta compensada
             await borrrarCuentaCompensada(ventaDeCtaCte);
@@ -953,7 +962,7 @@ const borrarVenta = async(numero)=>{
 const subirAAfip = async(venta)=>{
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
-    (ultimoElectronica === 0) && (ultimoElectronica=1); 
+    //(ultimoElectronica === 0) && (ultimoElectronica=1); 
     let data = {
         'CantReg': 1,
         'CbteTipo': venta.cod_comp,
@@ -1012,7 +1021,8 @@ const subirAAfip = async(venta)=>{
             QR,
             cae:res.CAE,
             vencimientoCae:res.CAEFchVto,
-            texto:textoQR
+            texto:textoQR,
+            numero:ultimoElectronica
         }
 }
 
@@ -1131,7 +1141,7 @@ function selecciona_value(idInput) {
         listaProductos.forEach(({objeto,cantidad})=>{
             nuevoTotal += (objeto.precio_venta * cantidad);
         })
-        total.value = parseFloat(descuento.value) !== 0 ? (nuevoTotal - (nuevoTotal*parseFloat(descuento.value)/100)).toFixed(2) : nuevoTotal;
+        total.value = parseFloat(descuento.value) !== 0 ? (nuevoTotal - (nuevoTotal*parseFloat(descuento.value)/100)).toFixed(2) : nuevoTotal.toFixed(2);
         descuentoN.value = (nuevoTotal*parseFloat(descuento.value)/100).toFixed(2)
         codigo.focus()
     }
@@ -1139,7 +1149,7 @@ function selecciona_value(idInput) {
 const imprimirVenta = (arreglo)=>{
 
 const conector = new ConectorPlugin();
-const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
+const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae,numero})=>{
     const fechaVenta = new Date(Venta.fecha)
     let dia = fechaVenta.getDate()
     let mes = fechaVenta.getMonth()+1;
@@ -1166,7 +1176,7 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     conector.texto("INICIO DE ACTIVIDADES: 02-03-07\n");
     conector.texto("IVA RESPONSABLE INSCRIPTO\n");
     conector.texto("------------------------------------------\n");
-    conector.texto(`${comprobante}   ${Venta.nro_comp}\n`);
+    conector.texto(`${comprobante}   0005-${numero.toString().padStart(8,'0')}\n`);
     conector.texto(`FECHA: ${dia}-${mes}-${anio}    Hora:${horas}:${minutos}:${segundos}\n`);
     conector.texto("------------------------------------------\n");
     conector.texto(`${buscarCliente.value}\n`);
@@ -1180,8 +1190,7 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
     conector.texto("------------------------------------------\n");
     Venta.productos && Venta.productos.forEach(({cantidad,objeto})=>{
         if (conIva.value === "Inscripto") {
-            conector.texto(`${cantidad}/${objeto.iva === "N" ? (parseFloat(objeto.precio_venta)/1.21).toFixed(2) : (parseFloat(objeto.precio_venta)/1.105.toFixed(2))}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
-
+            conector.texto(`${cantidad}/${objeto.iva === "N" ? (parseFloat(objeto.precio_venta)/1.21).toFixed(2) : (parseFloat(objeto.precio_venta))/1.105.toFixed(2)}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
             conector.texto(`${objeto.descripcion.slice(0,30)}    ${(parseFloat(cantidad)*parseFloat(objeto.iva === "N" ? parseFloat(objeto.precio_venta)/1.21 : parseFloat(objeto.precio_venta)/1.105)).toFixed(2)}\n`);
         }else{
             conector.texto(`${cantidad}/${objeto.precio_venta}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
@@ -1194,22 +1203,22 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae})=>{
         if (venta.gravado21 !== 0) {
             conector.feed(2);
             conector.texto("NETO SIN IVA              " + Venta.gravado21.toFixed(2) + "\n" );
-            conector.texto("IVA 21.00/              " +  Venta.iva21.toFixed(2) + "\n" );
+            conector.texto("IVA 21.00/                  " +  Venta.iva21.toFixed(2) + "\n" );
             conector.texto("NETO SIN IVA              0.00" + "\n" );
         }
         if (venta.gravado105 !== 0) {
             conector.feed(2);
             conector.texto("NETO SIN IVA              " + Venta.gravado105.toFixed(2) + "\n");
-            conector.texto("IVA 10.50/              " + Venta.iva105.toFixed(2) + "\n");
+            conector.texto("IVA 10.50/                  " + Venta.iva105.toFixed(2) + "\n");
             conector.texto("NETO SIN IVA              0.00"  + "\n");
         }
     }
     conector.feed(2);
     conector.establecerTamanioFuente(2,1);
-    conector.texto("TOTAL        $" +  Venta.precioFinal + "\n");
+    conector.texto("TOTAL      $" +  (Venta.precioFinal).toFixed(2) + "\n");
     conector.establecerTamanioFuente(1,1);
     conector.texto("Recibimos(mos)\n");
-    conector.texto(`${venta.tipo_pago === "CD" ? `Efectivo                  ${Venta.precioFinal}`  : "Cuenta Corriente"}` + "\n");0
+    conector.texto(`${venta.tipo_pago !== "CC" ? `Contado                  ${(Venta.precioFinal).toFixed(2)}`  : "Cuenta Corriente"}` + "\n");0
     conector.establecerTamanioFuente(2,1);
     conector.texto("CAMBIO         $0.00\n");
     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);

@@ -129,7 +129,7 @@ function listarVentas(ventas,situacion,saldoAnterior,saldoAnterior_P) {
         })
     }
     let saldoAnteriorFinal = situacion === "blanco" ? saldoAnterior : saldoAnterior_P;
-        tbody.innerHTML += `<tr><td></td><td></td><td></td><td></td><td>Saldo Anterior</td><td>${saldoAnteriorFinal}</td></tr>`
+        tbody.innerHTML += `<tr><td></td><td></td><td></td><td></td><td>Saldo Anterior</td><td>${saldoAnteriorFinal.toFixed(2)}</td></tr>`
         listaAux.forEach(venta => {
             const fecha = new Date(venta.fecha);
             const dia = fecha.getDate();

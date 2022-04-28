@@ -1,5 +1,9 @@
 const { ipcRenderer } = require("electron");
 
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
+
 const fecha = document.querySelector('.fecha');
         const numero = document.querySelector('.numero');
         const vendedor = document.querySelector('.vendedor');
@@ -25,8 +29,13 @@ const fecha = document.querySelector('.fecha');
         const minuto = tomarFecha.getMinutes();
         const segundo = tomarFecha.getSeconds();
 
-        const listar = (venta,cliente,valorizado)=>{
-            const lista = venta.productos
+        const listar = async (venta,cliente,valorizado)=>{
+            
+            let lista = (await axios.get(`${URL}movProductos/${venta.nro_comp}/Presupuesto`)).data;
+            if (lista.length >16) {
+                const tabla = document.querySelector('.tabla');
+                tabla.classList.add('hojaGrande');
+            }
             numero.innerHTML=venta.nro_comp
             clientes.innerHTML = cliente.cliente;
             venta.observaciones !== "" ? clientes.innerHTML += ` (${venta.observaciones})` : "";
@@ -55,23 +64,23 @@ const fecha = document.querySelector('.fecha');
                 cond_iva.innerHTML = "Consumidor Final"
             }
             tbody.innerHTML=""
-             for (let {objeto,cantidad} of lista) {
+             for (let objeto of lista) {
                  if (venta.tipo_pago !== "CC" || (valorizado === "valorizado" && venta.tipo_pago === "CC"   )) {
                         
                     tbody.innerHTML += `
                     <tr>
-                        <td>${(parseFloat(cantidad)).toFixed(2)}</td>
-                        <td>${objeto._id}</td>
+                        <td>${(parseFloat(objeto.egreso)).toFixed(2)}</td>
+                        <td>${objeto.codProd}</td>
                         <td class="descripcion">${objeto.descripcion}</td>
-                        <td>${parseFloat(objeto.precio_venta).toFixed(2)}</td>
-                        <td>${(parseFloat(objeto.precio_venta)*cantidad).toFixed(2)}</td>
+                        <td>${parseFloat(objeto.precio_unitario).toFixed(2)}</td>
+                        <td>${(parseFloat(objeto.precio_unitario)*objeto.egreso).toFixed(2)}</td>
                     </tr>
                     `
                 }else{
                     tbody.innerHTML += `
                     <tr>
-                        <td>${(parseFloat(cantidad)).toFixed(2)}</td>
-                        <td class="descripcion">${objeto._id}</td>
+                        <td>${(parseFloat(objeto.egreso)).toFixed(2)}</td>
+                        <td class="descripcion">${objeto.codProd}</td>
                         <td>${objeto.descripcion}</td>
                     </tr>
                     `

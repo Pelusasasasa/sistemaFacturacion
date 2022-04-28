@@ -99,6 +99,7 @@ function mostrarVentas(objeto,cantidad) {
         <td>${nombre.value}</td>
         <td>${numero.value}</td>
         <td>${objeto.stock}</td>
+        <td><input type:"text" id=${objeto._id}></td>
         </tr>
     `
 }
@@ -116,6 +117,7 @@ grabar.addEventListener('click', async e =>{
         Pedido.cliente = td.children[3].innerHTML;
         Pedido.value = td.children[4].innerHTML;
         Pedido.stock = td.children[5].innerHTML;
+        Pedido.observacion = td.children[6].children[0].value;
         Pedido.vendedor = vendedor; 
         await axios.post(`${URL}pedidos`,Pedido)
     })

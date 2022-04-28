@@ -39,6 +39,11 @@ const ventas = (Ventas)=>{
         delete venta.abonado
         delete venta.cliente
         delete venta.condIva
+        delete venta.gravado21
+        delete venta.iva21
+        delete venta.gravado105
+        delete venta.iva105
+        delete venta.cant_iva
     });
 
     //Lo que hacemos es ordenar el array por fechas
@@ -56,14 +61,15 @@ const ventas = (Ventas)=>{
         let dia = fecha.getDate();
         let mes = fecha.getMonth()+1;
         let anio = fecha.getFullYear();
+        let hora = fecha.getHours();
+        let minuts = fecha.getMinutes();
+        let secons = fecha.getSeconds();
         dia = dia < 10 ? `0${dia}` : dia;
         mes = mes < 10 ? `0${mes}` : mes;
         mes = mes === 13 ? 1 : mes;
-
-        venta.fecha = `${dia}/${mes}/${anio}`;
-        console.log(venta)
+        venta.cobrado = venta.descuento ? parseFloat(venta.precioFinal)-parseFloat(venta.descuento) : venta.precioFinal;
+        venta.fecha = `${dia}/${mes}/${anio} - ${hora}:${minuts}:${secons}`;
     })
-    console.log(Ventas)
     let newWs = XLSX.utils.json_to_sheet(Ventas)
     XLSX.utils.book_append_sheet(wb,newWs,'Ventas')
     XLSX.writeFile(wb,"Ventas.xlsx")

@@ -26,6 +26,7 @@ const traerPedidos = async()=>{
             <td>${pedido.vendedor}</td>
             <td class = "stock">${(stock).toFixed(2)}</td>
             <td class="estado"><input disabled name="estadoPedido" id="estadoPedido${index}" value="${pedido.estadoPedido}"></input></td>
+            <td>${pedido.observacion}</td>
         </tr>
         `
     }

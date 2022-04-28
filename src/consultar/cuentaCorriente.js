@@ -179,6 +179,7 @@ const listarLista = (lista,situacion,tipo)=>{
 const detalle = document.querySelector('.detalle')
 async function mostrarDetalles(id,tipo,vendedor) {
     detalle.innerHTML = '';
+    console.log(tipo)
     if (tipo === "Recibos_P" || tipo === "Recibos") {
         const vendedor = (await axios.get(`${URL}ventas/venta/ventaUnica/${seleccionado.id}/${tipo}`)).data.vendedor;
         detalle.innerHTML += `
@@ -210,25 +211,33 @@ let saldoABorrar = 0
 
     actualizar.addEventListener('click',async e=>{
         if (seleccionado) {
+                venta = (await axios.get(`${URL}presupuesto/${seleccionado.id}`)).data[0];
+                console.log(venta)
+                let cuentaCompensada = (await axios.get(`${URL}cuentaComp/id/${seleccionado.id}`)).data[0];
+                let cuentaHistorica = (await axios.get(`${URL}cuentaHisto/id/${seleccionado.id}`)).data[0];
+                let cliente = (await axios.get(`${URL}clientes/id/${cuentaCompensada.codigo}`)).data;
             if (confirm("Grabar Importe")) {
                 const index = listaHistorica.map(e=>e.nro_comp).indexOf(seleccionado.id);
                 let arregloRestante = listaHistorica.slice(index+1);
                 arregloRestante = arregloRestante.filter(e=>{
                     return (e.tipo_comp === "Presupuesto" || e.tipo_comp === "Recibos_P");
                 })
-
-                venta = (await axios.get(`${URL}presupuesto/${seleccionado.id}`)).data[0]
-                let cuentaCompensada = (await axios.get(`${URL}cuentaComp/id/${seleccionado.id}`)).data[0];
-                let cuentaHistorica = (await axios.get(`${URL}cuentaHisto/id/${seleccionado.id}`)).data[0];
-                let cliente = (await axios.get(`${URL}clientes/id/${venta.cliente}`)).data
+                let movimientos = (await axios.get(`${URL}movProductos/${seleccionado.id}/Presupuesto`)).data;
+                
+                
                 let saldo = parseFloat(cliente.saldo_p) - parseFloat(cuentaCompensada.importe);
                 let total = 0;
                 //traemos los productos para ver su precio y actualizarlos
-                for await(let {objeto,cantidad} of venta.productos){
+                let productos = [];
+                for await(let movimiento of movimientos ){
+                    const producto = (await axios.get(`${URL}productos/${movimiento.codProd}`)).data;
+                    productos.push({cantidad:movimiento.egreso,objeto:producto});
+                }
+                venta.productos = productos;
+                for await(let {objeto,cantidad} of productos){
                     let producto = (await axios.get(`${URL}productos/${objeto._id}`)).data
                     objeto.precio_venta = producto.precio_venta;
                     total += parseFloat(cantidad)*parseFloat(objeto.precio_venta);
-                    venta.precioFinal = total.toFixed(2);
 
                     //actualizamos el importe de la cuentaCompensada
                     cuentaCompensada.importe = parseFloat(parseFloat(total).toFixed(2));
@@ -237,31 +246,35 @@ let saldoABorrar = 0
                     cuentaCompensada.saldo = parseFloat((parseFloat(total) - cuentaCompensada.pagado).toFixed(2));
                 }
 
-                const movProductos = (await axios.get(`${URL}movProductos/${seleccionado.id}/${venta.tipo_comp}`)).data;
-                movProductos.forEach(async movProducto =>{
-                    let producto = (await axios.get(`${URL}productos/${movProducto.codProd}`)).data;
+                const movProductos = (await axios.get(`${URL}movProductos/${seleccionado.id}/Presupuesto`)).data;
+               for await (let movProducto of movProductos) {
+                    let producto =(await axios.get(`${URL}productos/${movProducto.codProd}`)).data;
                     movProducto.precio_unitario = parseFloat(producto.precio_venta);
                     movProducto.total = parseFloat(movProducto.egreso*movProducto.precio_unitario);
+                    console.log("a")
                     await axios.put(`${URL}movProductos/${movProducto._id}`,movProducto);
-                })
+                };
                 cuentaHistorica.saldo -= cuentaHistorica.debe;
                 cuentaHistorica.debe = cuentaCompensada.importe;
                 //Guardamos la venta con el nuevo precioFinal
-                await axios.put(`${URL}presupuesto/${venta.nro_comp}`,venta);
+                venta.precioFinal = total;
+                venta && await axios.put(`${URL}presupuesto/${venta.nro_comp}`,venta);
                 saldo += parseFloat(cuentaCompensada.importe);
                 cuentaHistorica.saldo = parseFloat((parseFloat(cuentaHistorica.saldo) + parseFloat(cuentaHistorica.debe)).toFixed(2))
                 let ultimoSaldo = cuentaHistorica.saldo;
-                arregloRestante.forEach(async e=>{
+                for await (let e of arregloRestante){
                     e.saldo= (e.tipo_comp === "Recibos_P") ?  parseFloat((ultimoSaldo - e.haber).toFixed(2)) : parseFloat((e.debe + ultimoSaldo).toFixed(2));
                     ultimoSaldo = e.saldo;
-                await axios.put(`${URL}cuentaHisto/id/${e.nro_comp}`,e)
-                })
+                    await axios.put(`${URL}cuentaHisto/id/${e.nro_comp}`,e)
+                };
                 cliente.saldo_p = saldo.toFixed(2);
                 await axios.put(`${URL}cuentaHisto/id/${cuentaHistorica.nro_comp}`,cuentaHistorica);
-                await axios.put(`${URL}cuentaComp/id/${cuentaCompensada.nro_comp}`,cuentaCompensada);  
+                await axios.put(`${URL}cuentaComp/id/${cuentaCompensada.nro_comp}`,cuentaCompensada);
                 await axios.put(`${URL}clientes/${cliente._id}`,cliente);
                 ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante","valorizado"]);
                 location.reload();
+                }else{
+                    ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante","valorizado"]);
                 }
         }else{
             alert("Venta no seleccionada")

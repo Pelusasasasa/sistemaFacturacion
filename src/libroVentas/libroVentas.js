@@ -41,7 +41,7 @@ let listaNotaCredito = []
 buscar.addEventListener('click',async e=>{
 
     const desdeFecha = new Date(desde.value)
-    let hastaFecha = DateTime.fromISO(hasta.value).endOf('day')
+    let hastaFecha = DateTime.fromISO(hasta.value).endOf('day');
     let ventas = (await axios.get(`${URL}ventas/${desdeFecha}/${hastaFecha}`)).data;
     ventasTraidas(ventas);
 })
@@ -73,6 +73,9 @@ const ventasTraidas = (ventas)=>{
         }
     });
 
+    listar(ventasHoy)
+
+
 
 
     // listaTicketFactura = ventas.filter(venta=>venta.tipo_comp === "Ticket Factura");
@@ -81,7 +84,7 @@ const ventasTraidas = (ventas)=>{
     //(listaTicketFactura.length > 0) && listar(listaTicketFactura);
 }
 
-const listar = (ventas,diaVentaAnterior)=>{
+const listar = async (ventas,diaVentaAnterior)=>{
     let cliente;
     let cond_iva;
     let totalgravado21 = 0;
@@ -98,9 +101,11 @@ const listar = (ventas,diaVentaAnterior)=>{
             return -1
         }
         return 0
-    })
+    });
+    console.log(ventas)
     let tipo_comp = ventas[0].tipo_comp;
-    ventas.forEach(async venta => {
+
+   for await (let venta of ventas){
         let fecha = new Date(venta.fecha)
         let day = fecha.getDate();
         let month = fecha.getMonth() + 1;
@@ -116,9 +121,7 @@ const listar = (ventas,diaVentaAnterior)=>{
         iva105 = venta.iva105;
         iva21 = venta.iva21;
 
-        console.log(tipo_comp)
-
-
+        
         tbody.innerHTML += await `
             <tr>
                 <td>${day}/${month}/${year}</td>
@@ -135,8 +138,9 @@ const listar = (ventas,diaVentaAnterior)=>{
             </tr>
         `
         const indexSiguiente = ventas.indexOf(venta) + 1;
-        let ventaSiguiente = ventas.find(venta=>ventas.indexOf(venta) === indexSiguiente);
 
+        let ventaSiguiente = ventas.find(venta=>ventas.indexOf(venta) === indexSiguiente);
+        
         if (venta.tipo_comp === tipo_comp) {
             totalgravado21 +=  venta.gravado21
             totaliva21 +=  venta.iva21
@@ -144,7 +148,7 @@ const listar = (ventas,diaVentaAnterior)=>{
             totaliva105 +=  venta.iva105
             total +=  venta.precioFinal
         }
-        ventaSiguiente = ventaSiguiente ? ventaSiguiente : {};
+        ventaSiguiente = ventaSiguiente ? ventaSiguiente : {}; 
             if (ventaSiguiente.tipo_comp !== tipo_comp) {
                 tbody.innerHTML += await `
                 <tr class="oscuro">
@@ -168,5 +172,5 @@ const listar = (ventas,diaVentaAnterior)=>{
                 totalgravado105 = 0
                 totaliva105 = 0
         }
-    });
+    };
 }

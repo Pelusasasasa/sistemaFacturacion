@@ -33,9 +33,9 @@ buscar.addEventListener('click',async e=>{
     let hastafecha = DateTime.fromISO(hasta.value).endOf('day');
     let tickets = await axios.get(`${URL}ventas/${desdefecha}/${hastafecha}`)
     tickets = tickets.data;
-    console.log(tickets)
     let presupuesto = await axios.get(`${URL}presupuesto/${desdefecha}/${hastafecha}`)
     presupuesto = presupuesto.data;
+    console.log(presupuesto)
     ventas = [...tickets,...presupuesto];
 })
 
@@ -59,20 +59,27 @@ cteCorriente.addEventListener('click',e=>{
 function listarVentas(lista) {
     tbody.innerHTML = ""
     lista.forEach(venta => {
-        let total = 0
         venta.productos.forEach(({objeto,cantidad})=>{
             const fecha = new Date(venta.fecha);
             let hoy = fecha.getDate();
             let mes = fecha.getMonth();
+            let hours = fecha.getHours();
+            let minutes = fecha.getMinutes();
+            let seconds = fecha.getSeconds();
+
+            
             mes = (mes===0) ? mes + 1 : mes;
             mes = (mes<10) ? `0${mes}` : mes;
             hoy = (hoy<10) ? `0${hoy}` : hoy;
+            hours = (hours<10) ? `0${hours}` : hours;
+            minutes = (minutes<10) ? `0${minutes}` : minutes;
+            seconds = (seconds<10) ? `0${seconds}` : seconds;
             let anio = fecha.getFullYear();
-            total += objeto.precio_venta*cantidad
+
             tbody.innerHTML += `
             <tr>
                 <td>${venta.nro_comp}</td>
-                <td>${hoy}/${mes}/${anio}</td>
+                <td>${hoy}/${mes}/${anio} - ${hours}:${minutes}:${seconds}</td>
                 <td>${venta.nombreCliente}</td>
                 <td>${objeto._id}</td>
                 <td>${objeto.descripcion}</td>
@@ -83,7 +90,7 @@ function listarVentas(lista) {
         `
         })
         tbody.innerHTML += `
-        <tr class="total"><td></td><td></td><td></td><td></td><td></td><td></td><td class=tdTotal>${total.toFixed(2)}</td></tr>`
+        <tr class="total"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class=tdTotal>${parseFloat(venta.precioFinal).toFixed(2)}</td></tr>`
     });
 }
 
