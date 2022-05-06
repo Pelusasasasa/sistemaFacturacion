@@ -78,13 +78,12 @@ cambiar.addEventListener('click',e=>{
 //creamos el movimiento de producto
 const crearMovimiento = async(producto,stock)=>{
     const movimiento = {};
-    movimiento._id = (await axios.get(`${URL}movProductos`)).data + 1;
     movimiento.codProd = producto._id;
     movimiento.descripcion = producto.descripcion;
     movimiento.ingreso = stock;
     movimiento.stock = stock;
     movimiento.precio_unitario = producto.precio_venta;
-    await axios.post(`${URL}movProductos`,movimiento);
+    await axios.post(`${URL}movProductos`,[movimiento]);
 }
 
 

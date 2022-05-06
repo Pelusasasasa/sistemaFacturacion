@@ -102,7 +102,8 @@ ipcMain.on('mando-el-producto', async (e, args) => {
     ventanaPrincipal.webContents.send('mando-el-producto', JSON.stringify({
         producto: producto,
         cantidad: args.cantidad
-    }))
+    }));
+
 })
 //FIN PRODUCTOS
 
@@ -261,19 +262,21 @@ ipcMain.on('ventaModificada',async (e,[args,id])=>{
 //Abrir ventana para modificar un producto
 ipcMain.on('abrir-ventana-modificar-producto',  (e, args) => {
     const [id,acceso,texto,seleccion] = args
-    abrirVentana('productos/modificarProducto.html',1000,600)
+    abrirVentana('productos/modificarProducto.html',1000,600,'noReiniciar')
     nuevaVentana.on('ready-to-show',async ()=>{
     nuevaVentana.webContents.send('id-producto', id)
     nuevaVentana.webContents.send('acceso', JSON.stringify(acceso))
     })
     nuevaVentana.on('close', async()=> {
-        await ventanaPrincipal.reload()
         ventanaPrincipal.once('ready-to-show',async ()=>{
-        ventanaPrincipal.webContents.send("Historial",JSON.stringify([texto,seleccion]))
         })
         
         nuevaVentana = null
     })
+});
+
+ipcMain.on('productoModificado',(e,args)=>{
+    ventanaPrincipal.webContents.send('productoModificado',JSON.stringify(args))
 })
 
 
@@ -485,10 +488,10 @@ ipcMain.on('abrir-ventana', (e, args) => {
 function abrirVentana(texto,width,height,reinicio){
     if (texto === "resumenCuenta") {
         nuevaVentana = new BrowserWindow({
-            parent:ventanaPrincipal,
             width: 800,
             height: 500,
             parent:ventanaPrincipal,
+            modal:true,
             webPreferences: {
                 contextIsolation: false,
                 nodeIntegration: true
@@ -506,6 +509,7 @@ function abrirVentana(texto,width,height,reinicio){
     }else if(texto === "clientes"){
         nuevaVentana = new BrowserWindow({
             parent:ventanaPrincipal,
+            modal:true,
             width: 1000,
             height: 600,
             webPreferences: {
@@ -526,6 +530,7 @@ function abrirVentana(texto,width,height,reinicio){
     }else if(texto === "productos"){
         nuevaVentana = new BrowserWindow({
             parent:ventanaPrincipal,
+            modal:true,
             width: 1200,
             height: 600,
             webPreferences: {
@@ -542,6 +547,9 @@ function abrirVentana(texto,width,height,reinicio){
 
         nuevaVentana.on('close', function (event) {
             nuevaVentana= null
+        });
+        nuevaVentana.on('ready-to-show',()=>{
+        //   ventanaPrincipal.show();
         })
         nuevaVentana.setMenuBarVisibility(false)
     }else if(texto.includes("usuarios")){
@@ -549,6 +557,7 @@ function abrirVentana(texto,width,height,reinicio){
         nuevaVentana = new BrowserWindow({
             width: 500,
             parent:ventanaPrincipal,
+            modal:true,
             height: 450,
             webPreferences: {
                 contextIsolation: false,
@@ -570,6 +579,7 @@ function abrirVentana(texto,width,height,reinicio){
     }else{
         nuevaVentana = new BrowserWindow({
             parent:ventanaPrincipal,
+            modal:true,
             width: width,
             height: height,
             webPreferences: {
@@ -589,6 +599,7 @@ function abrirVentana(texto,width,height,reinicio){
             reinicio !== "noReiniciar" && ventanaPrincipal.reload()
         })
     }
+
 }
 
 

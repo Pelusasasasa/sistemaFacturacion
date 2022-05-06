@@ -21,7 +21,7 @@ ipcRenderer.on('movimiento-producto-abrir',(e,args)=>{
     codigo.value = producto._id
     descripcion.value = producto.descripcion
     stock.value = producto.stock
-    vendedor = usuario
+    vendedor = usuario;
 })
 
 cantidad.addEventListener('keypress',e=>{
@@ -30,10 +30,7 @@ cantidad.addEventListener('keypress',e=>{
     }
 })
 
-const tamanioMovimiento = async()=>{
-    const tamanio = (await axios.get(`${URL}movProductos`)).data;
-    return (tamanio+1)
-}
+
 
 
 let operacion = "Compra"
@@ -54,10 +51,8 @@ cantidad.addEventListener('blur',e=>{
 })
 
 aceptar.addEventListener('click', async (e) => {
-
     movProducto.codProd = codigo.value;
     movProducto.descripcion = descripcion.value;
-    movProducto._id = await tamanioMovimiento();
     if (operacion==="Compra") {
         (movProducto.tipo_comp="C") 
       }else if(operacion==="Suma"){
@@ -68,7 +63,7 @@ aceptar.addEventListener('click', async (e) => {
     ( operacion==="Resta") ? (movProducto.egreso=cantidad.value) : (movProducto.ingreso=cantidad.value);
     movProducto.stock=nuevoStock.value;
       movProducto.vendedor = vendedor;
-      await axios.post(`${URL}movProductos`,movProducto);
+      await axios.post(`${URL}movProductos`,[movProducto]);
       let producto = (await axios.get(`${URL}productos/${movProducto.codProd}`)).data;
       producto.stock = movProducto.stock;
       await axios.put(`${URL}productos/${movProducto.codProd}`,producto)

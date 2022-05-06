@@ -28,7 +28,7 @@ aceptar.addEventListener('click',async e=>{
     }
     console.log(venta)
     const cliente = (await axios.get(`${URL}clientes/id/${venta.cliente}`)).data;
-    //ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante","valorizado"])
+    ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante","valorizado"])
 });
 
 puntoVenta.addEventListener('keypress',e=>{

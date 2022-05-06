@@ -115,7 +115,6 @@ filtrar();
 async function cantidad(e) {
     await dialogs.prompt("cantidad",async(valor) =>{
         const pro = productos.find(e=>e._id === seleccionado.id)
-        console.log(valor);
         if (valor === undefined || valor === "" || parseFloat(valor) === 0) {
             await seleccionado.classList.remove('seleccionado')
             seleccionado = "";
@@ -124,6 +123,8 @@ async function cantidad(e) {
             if(!Number.isInteger(parseFloat(valor)) && pro.unidad==="U"){
                 alert("El producto no se puede escribir con decimal")
             }else{
+                parseFloat(e.children[4].innerHTML)<0 && alert("Stock Negativo");
+                (parseFloat(e.children[4].innerHTML) === 0 && alert("Precio del producto en 0"));
                ipcRenderer.send('mando-el-producto',{
                    _id: e.id
                     ,cantidad: valor

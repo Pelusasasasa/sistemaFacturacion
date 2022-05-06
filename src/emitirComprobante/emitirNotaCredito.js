@@ -47,6 +47,8 @@ let venta = {};
 let listaProductos = [];
 let yaSeleccionado;
 let totalPrecioProductos = 0;
+let arregloMovimiento = [];
+let arregloProductosDescontarStock = [];
 let precioFinal = 0
 
 codigoC.addEventListener('keypress',async e=>{
@@ -252,8 +254,6 @@ factura.addEventListener('click',async e=>{
         venta.observaciones = observaciones.value;
         venta.descuento = descuentoN.value;
         venta.cod_comp = verCod_comp(cliente.cond_iva)
-        venta.nro_comp = await traerNumeroComprobante(venta.cod_comp)
-        venta.comprob = venta.nro_comp;
         venta.productos = listaProductos;
         venta.numeroAsociado = facturaOriginal.value;
         venta.dnicuit = dnicuit.value;
@@ -280,36 +280,42 @@ factura.addEventListener('click',async e=>{
             venta.gravado21 = gravado21;
             venta.gravado105 = gravado105;
             venta.cant_iva = cant_iva;  
-             //Actualizamos el numero de comprobante
+
+            
+            //Traemos la venta relacionada con la nota de credito
+            let ventaRelacionada = (await axios.get(`${URL}ventas/venta/ventaUnica/${venta.numeroAsociado}/${"Ticket Factura"}`)).data;
+            //subimos a la afip la factura electronica
+            let afip = await subirAAfip(venta,ventaRelacionada);
+            venta.nro_comp = `0005-${(afip.numero).toString().padStart(8,'0')}`;
+            venta.comprob = venta.nro_comp;
+            //Actualizamos el numero de comprobante
             await actualizarNroCom(venta.nro_comp,venta.cod_comp);
+
+            //mandamos para que sea compensada
+            venta.tipo_pago === "CC" &&  ponerEnCuentaCorrienteCompensada(venta,true);
+            //Mandamos par que sea historica
+            venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
+            
+            //mandamos la venta
+            ipcRenderer.send('nueva-venta',venta)
+            //Imprimos el ticket
+            imprimirVenta([venta,cliente,afip]);
             
             //Si la venta no es Presupuesto Presupuesto descontamos el stock y hacemos movimiento de producto
             if (venta.tipo_pago !== "PP") {
                 //Si la venta es CC le sumamos el saldo
                 venta.tipo_pago === "CC" && sumarSaldo(venta.precioFinal,venta.cliente);
                 //movimiento de producto y stock
-                venta.productos.forEach(({objeto,cantidad}) =>{
-                    agregarStock(objeto._id,cantidad);
-                    movimientoProducto(objeto,cantidad,venta);
-                })
+               for await (let producto of venta.productos){
+                    await agregarStock(producto.objeto._id,producto.cantidad);
+                    await movimientoProducto(producto.objeto,producto.cantidad,venta);
+                }
+                await axios.put(`${URL}productos`,arregloProductosDescontarStock);
+                await axios.post(`${URL}movProductos`,arregloMovimiento);
+                arregloMovimiento = [];
+                arregloProductosDescontarStock = [];
             }
 
-
-
-            //Traemos la venta relacionada con la nota de credito
-            let ventaRelacionada = (await axios.get(`${URL}ventas/venta/ventaUnica/${venta.numeroAsociado}/${"Ticket Factura"}`)).data;
-            //subimos a la afip la factura electronica
-            let afip = await subirAAfip(venta,ventaRelacionada);
-            //mandamos para que sea compensada
-            venta.tipo_pago === "CC" &&  ponerEnCuentaCorrienteCompensada(venta,true);
-            //Mandamos par que sea historica
-            venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
-            
-            
-            //mandamos la venta
-            ipcRenderer.send('nueva-venta',venta)
-            //Imprimos el ticket
-            imprimirVenta([venta,cliente,afip])
             await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
             location.href="../index.html";
         }}});
@@ -320,21 +326,14 @@ const agregarStock = async (codigo,cantidad)=>{
     let producto = (await axios.get(`${URL}productos/${codigo}`)).data;
     const descontar = parseFloat(producto.stock) + parseFloat(cantidad);
     producto.stock = descontar.toFixed(2);
-    await axios.put(`${URL}productos/${codigo}`,producto);
-}
-
-const traerTamanioDeMovProducto = async()=>{
-    const tamanio = (await axios.get(`${URL}movProductos`)).data;
-    return tamanio
+    arregloProductosDescontarStock.push(producto);
 }
 
 const movimientoProducto = async(objeto,cantidad,venta)=>{
-    const id = await traerTamanioDeMovProducto()
     let movProducto = {}
-    movProducto._id = (id + 1);
     movProducto.codProd = objeto._id;
     movProducto.descripcion = objeto.descripcion;
-    movProducto.cliente = venta.nombrecliente;
+    movProducto.cliente = venta.nombreCliente;
     movProducto.codCliente = venta.cliente;
     movProducto.comprobante = "Nota de Credito";
     movProducto.tipo_comp = venta.tipo_comp;
@@ -344,7 +343,7 @@ const movimientoProducto = async(objeto,cantidad,venta)=>{
     movProducto.precio_unitario=objeto.precio_venta;
     movProducto.total=(parseFloat(movProducto.ingreso)*parseFloat(movProducto.precio_unitario)).toFixed(2)
     movProducto.vendedor = venta.vendedor;
-    await axios.post(`${URL}movProductos`,movProducto);
+    arregloMovimiento.push(movProducto)
 }
 
 //Sumamos el saldo al cluente si la venta  es Cuenta Corriente
@@ -638,7 +637,7 @@ const subirAAfip = async(venta,ventaAsociada)=>{
             cae:res.CAE,
             vencimientoCae:res.CAEFchVto,
             texto:textoQR,
-            numero:ultimoElectronica
+            numero:ultimoElectronica + 1
         }
 }
 
@@ -717,7 +716,8 @@ const imprimirVenta = (arreglo)=>{
         conector.establecerTamanioFuente(2,2);
         conector.establecerFuente(ConectorPlugin.Constantes.FuenteC)
         conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-        conector.texto("*ELECTRO AVENIDA*\n")
+        const ruta = __dirname + "\\..\\imagenes\\Logo.jpg";
+        conector.imagenLocal(ruta)
         conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
         conector.establecerTamanioFuente(1,1);
         conector.texto("GIANOVI MARINA ISABEL\n");

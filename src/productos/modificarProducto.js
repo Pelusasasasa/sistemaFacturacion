@@ -141,8 +141,8 @@ guardar.addEventListener('click',async e=>{
     producto.precio_venta = precioVenta.value
     producto.unidad = unidad.value
     producto.impuestos = ivaImp.value
-    console.log(producto)
-    await axios.put(`${URL}productos/${producto._id}`,producto)
+    await axios.put(`${URL}productos/${producto._id}`,producto);
+    ipcRenderer.send('productoModificado',producto);
     window.close()
 })
 
@@ -323,4 +323,8 @@ function selecciona_value(idInput) {
 
     observaciones.addEventListener('focus',e=>{
         selecciona_value(observaciones.id)
+    })
+
+    precioVenta.addEventListener('focus',e=>{
+        selecciona_value(precioVenta.id)
     })

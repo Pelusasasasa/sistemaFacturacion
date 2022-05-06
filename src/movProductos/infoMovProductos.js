@@ -8,11 +8,11 @@ ipcRenderer.on('datos-movimiento-producto', (e,args)=>{
     const listaMovimiento = JSON.parse(args)
     listaMovimiento.sort((a,b)=>{
         if (a.fecha > b.fecha) {
-            return 1
+            return 1;
         }else if(a.fecha < b.fecha){
             return -1;
         }
-        return 0
+        return 0;
     })
     tbody.innerHTML += " ";
     for(let movProducto of listaMovimiento){

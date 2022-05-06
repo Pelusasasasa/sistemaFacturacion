@@ -21,21 +21,23 @@ const fecha = document.querySelector('.fecha');
         const seccionQR = document.querySelector('.seccionQR');
         const tipoFactura = document.querySelector('.tipoFactura');
         const descuento = document.querySelector('.descuento');
-        const tomarFecha = new Date();
-        const dia = tomarFecha.getDate(); 
-        const mes = tomarFecha.getMonth() + 1
-        const anio = tomarFecha.getFullYear();
-        const hora = tomarFecha.getHours();
-        const minuto = tomarFecha.getMinutes();
-        const segundo = tomarFecha.getSeconds();
+
 
         const listar = async (venta,cliente,valorizado)=>{
-            
-            let lista = (await axios.get(`${URL}movProductos/${venta.nro_comp}/Presupuesto`)).data;
+            let lista = venta.productos;
             if (lista.length >16) {
                 const tabla = document.querySelector('.tabla');
                 tabla.classList.add('hojaGrande');
-            }
+            };
+
+            const tomarFecha = new Date(venta.fecha);
+            const dia = tomarFecha.getDate(); 
+            const mes = tomarFecha.getMonth() + 1
+            const anio = tomarFecha.getFullYear();
+            const hora = tomarFecha.getHours();
+            const minuto = tomarFecha.getMinutes();
+            const segundo = tomarFecha.getSeconds();
+
             numero.innerHTML=venta.nro_comp
             clientes.innerHTML = cliente.cliente;
             venta.observaciones !== "" ? clientes.innerHTML += ` (${venta.observaciones})` : "";
@@ -46,7 +48,7 @@ const fecha = document.querySelector('.fecha');
             localidad.innerHTML = cliente.localidad
             fecha.innerHTML = `${dia}/${mes}/${anio} ${hora}:${minuto}:${segundo}`
             numeroComp.innerHTML = venta.nro_comp
-            subtotal.innerHTML=parseFloat(venta.precioFinal)+parseFloat(venta.descuento)
+            subtotal.innerHTML =  venta.descuento ? parseFloat(venta.precioFinal)+parseFloat(venta.descuento) : 0;
             precioFinal.innerHTML=(parseFloat(venta.precioFinal)).toFixed(2);
             tipoPago.innerHTML= venta.tipo_pago
             tipoFactura.innerHTML = "R"
@@ -64,23 +66,23 @@ const fecha = document.querySelector('.fecha');
                 cond_iva.innerHTML = "Consumidor Final"
             }
             tbody.innerHTML=""
-             for (let objeto of lista) {
+             for await (let {objeto,cantidad} of lista) {
                  if (venta.tipo_pago !== "CC" || (valorizado === "valorizado" && venta.tipo_pago === "CC"   )) {
                         
                     tbody.innerHTML += `
                     <tr>
-                        <td>${(parseFloat(objeto.egreso)).toFixed(2)}</td>
-                        <td>${objeto.codProd}</td>
+                        <td>${(parseFloat(cantidad)).toFixed(2)}</td>
+                        <td>${objeto._id}</td>
                         <td class="descripcion">${objeto.descripcion}</td>
-                        <td>${parseFloat(objeto.precio_unitario).toFixed(2)}</td>
-                        <td>${(parseFloat(objeto.precio_unitario)*objeto.egreso).toFixed(2)}</td>
+                        <td>${parseFloat(objeto.precio_venta).toFixed(2)}</td>
+                        <td>${(parseFloat(objeto.precio_venta)*cantidad).toFixed(2)}</td>
                     </tr>
                     `
                 }else{
                     tbody.innerHTML += `
                     <tr>
-                        <td>${(parseFloat(objeto.egreso)).toFixed(2)}</td>
-                        <td class="descripcion">${objeto.codProd}</td>
+                        <td>${(parseFloat(cantidad)).toFixed(2)}</td>
+                        <td class="descripcion">${objeto._id}</td>
                         <td>${objeto.descripcion}</td>
                     </tr>
                     `

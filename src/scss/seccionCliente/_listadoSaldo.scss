@@ -19,6 +19,14 @@
 
     .seccionTabla{
 
+        @media print{
+            tr{
+                td{
+                    font-size: 2rem;
+                }
+            }
+        }
+
         #tabla{
             border-collapse: collapse;
             width: 100%;
@@ -33,9 +41,10 @@
                             resize: both;
                             text-overflow: clip;
                             padding: 0;
-                            border: .1rem solid black
+                            border: .1rem solid black;
+                            font-size: 1.2rem;
                     }
-                    .nombre{
+                    .inicio{
                         text-align: start;
                     }
                 }
@@ -43,3 +52,4 @@
         }
     }
 }
+

@@ -31,6 +31,7 @@ const ventas = (Ventas)=>{
         delete venta.tipo_pago
         delete venta.productos
         delete venta.comprob
+        delete venta.direccion
         delete venta.cod_comp
         delete venta.cod_doc
         delete venta.dnicuit
@@ -56,7 +57,16 @@ const ventas = (Ventas)=>{
 
         return 0
     })
+    let recibos = 0;
+    let facturas = 0;
+    let presupuesto = 0;
+    const agregarVenta = {}
+
     Ventas.forEach(venta=>{
+        recibos += (venta.tipo_comp === "Recibos_P" ||  venta.tipo_comp === "Recibos") ? venta.precioFinal : 0;
+        facturas += (venta.tipo_comp === "Ticket Factura") ? venta.precioFinal : 0;
+        facturas -= (venta.tipo_comp === "Nota Credito") ? venta.precioFinal : 0;
+        presupuesto += (venta.tipo_comp === "Presupuesto") ? venta.precioFinal : 0;
         const fecha = new Date(venta.fecha);
         let dia = fecha.getDate();
         let mes = fecha.getMonth()+1;
@@ -67,9 +77,13 @@ const ventas = (Ventas)=>{
         dia = dia < 10 ? `0${dia}` : dia;
         mes = mes < 10 ? `0${mes}` : mes;
         mes = mes === 13 ? 1 : mes;
-        venta.cobrado = venta.descuento ? parseFloat(venta.precioFinal)-parseFloat(venta.descuento) : venta.precioFinal;
+        venta.precioSinDescuento = venta.descuento ? parseFloat(venta.precioFinal) + parseFloat(venta.descuento) : venta.precioFinal;
         venta.fecha = `${dia}/${mes}/${anio} - ${hora}:${minuts}:${secons}`;
-    })
+    });
+    agregarVenta.recibos = recibos;
+    agregarVenta.facturas = facturas;
+    agregarVenta.presupuesto = presupuesto;
+    Ventas.push(agregarVenta);
     let newWs = XLSX.utils.json_to_sheet(Ventas)
     XLSX.utils.book_append_sheet(wb,newWs,'Ventas')
     XLSX.writeFile(wb,"Ventas.xlsx")

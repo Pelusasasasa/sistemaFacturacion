@@ -9,11 +9,12 @@ const direccion = document.querySelector('.direccion')
 const telefono = document.querySelector('.telefono')
 const buscador = document.querySelector('#buscador');
 const tbody = document.querySelector('.tbody');
-const saldoActual = document.querySelector('#saldoActual');
 const imprimir = document.querySelector('.imprimir')
 const desde = document.querySelector('#desde')
 const ocultar = document.querySelector('.seccion-buscador')
 const volver = document.querySelector('.volver');
+const saldoImprimir = document.querySelector('.saldoImprimir');
+
 
 const dateNow = new Date()
 let day = dateNow.getDate()
@@ -90,32 +91,27 @@ const mostrarNegro = ()=>{
 
 ipcRenderer.on('mando-el-cliente',async(e,args)=>{
     cliente = JSON.parse(args)
-    nombre.innerHTML = cliente.cliente
+    nombre.innerHTML = cliente.cliente + "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp" + cliente._id
     direccion.innerHTML = `${cliente.direccion}-${cliente.localidad}`;
     telefono.innerHTML = cliente.telefono;
     let cuentas = (await axios.get(`${URL}cuentaHisto/cliente/${cliente._id}`)).data;
     let ventasAnteriores = cuentas.filter(e=>e.fecha < desde.value);
-     await ventasAnteriores.forEach(e=>{
-        if (e.tipo_comp !== "Recibos_P" && e.tipo_comp !== "Presupuesto") {
-            saldoAnterior = (e.tipo_comp === "Ticket Factura" ? (saldoAnterior + e.debe ):  (saldoAnterior - e.haber));
-        }
-        if (e.tipo_comp !== "Ticket Factura" && e.tipo_comp !== "Recibos") {
-            console.log(e.debe);
-            console.log(e.haber);
-            saldoAnterior_P = e.tipo_comp === "Presupuesto" ? (saldoAnterior_P + e.debe ) : (saldoAnterior_P - e.haber);
-        }
-    })
+    //Aca vemos si ya debia algo del progama viejo
+    ventasAnteriores = ventasAnteriores.reverse();
+    const primerHistoP = ventasAnteriores.find(venta =>venta.tipo_comp === "Presupuesto" || venta.tipo_comp === "Recibos_P");
+    const primerHisto = ventasAnteriores.find(venta =>venta.tipo_comp === "Ticket Factura" || venta.tipo_comp === "Recibos"  || venta.tipo_comp === "Nota Credito");
+    saldoAnterior_P = primerHistoP ? primerHistoP.saldo : 0;
+    saldoAnterior = primerHisto ? primerHisto.saldo : 0;
     cuentas = cuentas.filter(e=> {
         return (e.fecha >= desde.value)
     });
     nuevaLista = [];
     listaVentas = cuentas;
-    console.log(saldoAnterior_P)
+
     listarVentas(listaVentas,situacion,saldoAnterior,saldoAnterior_P)
 })
 
 function listarVentas(ventas,situacion,saldoAnterior,saldoAnterior_P) {
-    console.log(saldoAnterior_P)
     tbody.innerHTML = "";
     const aux = (situacion === "blanco") ? "Ticket Factura" : "Presupuesto";
     let listaAux = ventas;
@@ -125,21 +121,32 @@ function listarVentas(ventas,situacion,saldoAnterior,saldoAnterior_P) {
         })
     }else{
         listaAux = listaAux.filter(e=>{
-            return (e.tipo_comp === aux || e.tipo_comp === "Recibos")
+            return (e.tipo_comp === aux || e.tipo_comp === "Recibos" || e.tipo_comp === "Nota Credito")
         })
-    }
+    };
+    
     let saldoAnteriorFinal = situacion === "blanco" ? saldoAnterior : saldoAnterior_P;
         tbody.innerHTML += `<tr><td></td><td></td><td></td><td></td><td>Saldo Anterior</td><td>${saldoAnteriorFinal.toFixed(2)}</td></tr>`
+        listaAux = situacion==="negro" ? listaAux.filter(venta=> (venta.tipo_comp !== "Recibos_P" || venta.haber !== 0)) : listaAux.filter(venta=> (venta.tipo_comp !== "Recibos" || venta.haber !== 0))
         listaAux.forEach(venta => {
             const fecha = new Date(venta.fecha);
             const dia = fecha.getDate();
             const mes = fecha.getMonth() + 1;
             const anio = fecha.getUTCFullYear();
-           
+            let comprobante = venta.tipo_comp;
+
+            if (venta.tipo_comp === "Ticket Factura") {
+                comprobante = venta.cod_comp === 1 ? "Factura A" : "Factura B";
+            }else if(venta.tipo_comp === "Nota Credito"){
+                comprobante = venta.cod_comp === 3 ? "Nota Credito A" : "Nota Credito B";
+            }else if(venta.tipo_comp === "Recibos"){
+                comprobante = venta.cod_comp === 4 ? "Recibos A" : "Recibos B"
+            }
+
             tbody.innerHTML += `
                 <tr>
                     <td>${dia}/${mes}/${anio}</td>
-                    <td>${venta.tipo_comp === "Recibos_P" ? "Recibos" : venta.tipo_comp}</td>
+                    <td>${comprobante}</td>
                     <td>${venta.nro_comp}</td>
                     <td>${(venta.debe === 0.00) ?  "" : venta.debe.toFixed(2)}</td>
                     <td>${(venta.haber === 0.00) ? "" : venta.haber.toFixed(2)}</td>
@@ -149,18 +156,18 @@ function listarVentas(ventas,situacion,saldoAnterior,saldoAnterior_P) {
 
         });
         if (cliente[saldo] === undefined) {
-            saldoActual.value = "0";
+            saldoImprimir.innerHTML = "0.00"
         }else{
-            saldoActual.value = (parseFloat(cliente[saldo])).toFixed(2);
+            saldoImprimir.innerHTML = (parseFloat(cliente[saldo])).toFixed(2);
         }
 }
 
 imprimir.addEventListener('click',e=>{
     const header = document.querySelector('header')
-    volver.classList.add('disable')
-    ocultar.classList.add('disable')
-    header.classList.add('m-0')
-    header.classList.add('p-0')
+    volver.classList.add('disable');
+    ocultar.classList.add('disable');
+    header.classList.add('m-0');
+    header.classList.add('p-0');
     window.print()
     location.reload();
 })

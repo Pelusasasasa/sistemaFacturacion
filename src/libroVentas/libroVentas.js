@@ -39,16 +39,17 @@ let listaTicketFactura = []
 let listaNotaCredito = []
 
 buscar.addEventListener('click',async e=>{
-
+    tbody.innerHTML = "";
     const desdeFecha = new Date(desde.value)
     let hastaFecha = DateTime.fromISO(hasta.value).endOf('day');
     let ventas = (await axios.get(`${URL}ventas/${desdeFecha}/${hastaFecha}`)).data;
+    ventas = ventas.filter(venta=>venta.tipo_comp !== "Recibos");
+    ventas = ventas.filter(venta => venta.tipo_comp !== "Recibos_P");
     ventasTraidas(ventas);
 })
 
-const ventasTraidas = (ventas)=>{
-    ventas = ventas.filter(venta => venta.tipo_comp !== "Recibos_P");
-
+const ventasTraidas = async (ventas)=>{
+    
     //Ordenamos la ventas por fecha
     ventas.sort((a,b)=>{
         if (a.fecha > b.fecha) {
@@ -59,29 +60,23 @@ const ventasTraidas = (ventas)=>{
         }
         return 0
     });
+    
     let diaVentaAnterior = new Date((ventas[0].fecha)).getDate();
     diaVentaAnterior = diaVentaAnterior < 10 ? `0${diaVentaAnterior}` : diaVentaAnterior;
     let ventasHoy = [];
-    ventas.forEach(venta=>{
+   for await(let venta of ventas){
+        
         if (new Date(venta.fecha).getDate() === diaVentaAnterior + 1) {
-            listar(ventasHoy,diaVentaAnterior)
+            console.log(ventasHoy)
+            await listar(ventasHoy,diaVentaAnterior)
             ventasHoy = [];
             diaVentaAnterior = new Date(venta.fecha).getDate();
             ventasHoy.push(venta);
         }else{
             ventasHoy.push(venta);
         }
-    });
-
-    listar(ventasHoy)
-
-
-
-
-    // listaTicketFactura = ventas.filter(venta=>venta.tipo_comp === "Ticket Factura");
-    // listaNotaCredito = ventas.filter(venta=>venta.tipo_comp !== "Ticket Factura");
-    // (listaNotaCredito.length > 0) && listar(ventas);
-    //(listaTicketFactura.length > 0) && listar(listaTicketFactura);
+    };
+     listar(ventasHoy)
 }
 
 const listar = async (ventas,diaVentaAnterior)=>{
@@ -102,7 +97,6 @@ const listar = async (ventas,diaVentaAnterior)=>{
         }
         return 0
     });
-    console.log(ventas)
     let tipo_comp = ventas[0].tipo_comp;
 
    for await (let venta of ventas){
@@ -125,16 +119,16 @@ const listar = async (ventas,diaVentaAnterior)=>{
         tbody.innerHTML += await `
             <tr>
                 <td>${day}/${month}/${year}</td>
-                <td>${venta.nombreCliente}</td>
-                <td>${cond_iva}</td>
-                <td>${cliente.cuit}</td>
-                <td>${venta.tipo_comp}</td>
+                <td class = "inicio">${venta.nombreCliente}</td>
+                <td class = "inicio">${cond_iva}</td>
+                <td class = "inicio">${cliente.cuit}</td>
+                <td class = "inicio">${venta.tipo_comp}</td>
                 <td>${venta.nro_comp}</td>
-                <td>${gravado21}</td>
-                <td>${iva21}</td>
-                <td>${gravado105}</td>
-                <td>${iva105}</td>
-                <td>${venta.precioFinal}<td>
+                <td class = "final">${gravado21}</td>
+                <td class = "final">${iva21}</td>
+                <td class = "final">${gravado105}</td>
+                <td class = "final">${iva105}</td>
+                <td class = "final">${venta.precioFinal}<td>
             </tr>
         `
         const indexSiguiente = ventas.indexOf(venta) + 1;
@@ -157,12 +151,12 @@ const listar = async (ventas,diaVentaAnterior)=>{
                     <td></td>
                     <td></td>
                     <td>Totales Diarios</td>
-                    <td>${venta.tipo_comp}</td>
-                    <td>${totalgravado21.toFixed(2)}</td>
-                    <td>${totaliva21.toFixed(2)}</td>
-                    <td>${totalgravado105.toFixed(2)}</td>
-                    <td>${totaliva105.toFixed(2)}</td>
-                    <td>${total.toFixed(2)}</td>
+                    <td class = "final">${venta.tipo_comp}</td>
+                    <td class = "final">${totalgravado21.toFixed(2)}</td>
+                    <td class = "final">${totaliva21.toFixed(2)}</td>
+                    <td class = "final">${totalgravado105.toFixed(2)}</td>
+                    <td class = "final">${totaliva105.toFixed(2)}</td>
+                    <td class = "final">${total.toFixed(2)}</td>
                     </tr>
                 `
                 tipo_comp = ventaSiguiente.tipo_comp;

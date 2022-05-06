@@ -54,7 +54,7 @@ function listarVentas(lista,bodyelegido) {
                 <td>${objeto.descripcion}</td>
                 <td>${cantidad}</td>
                 <td>${objeto.precio_venta}</td>
-                <td>${objeto.precio_venta*cantidad}</td>
+                <td>${(objeto.precio_venta*cantidad).toFixed(2)}</td>
             </tr>
         `
         })

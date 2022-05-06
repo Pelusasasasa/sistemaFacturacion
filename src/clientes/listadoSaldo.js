@@ -6,6 +6,18 @@ const axios = require("axios");
 require("dotenv").config;
 const URL = process.env.URL;
 
+const fecha = document.querySelector('.fecha');
+const fechaHoy = new Date();
+let hoy = fechaHoy.getDate();
+let month = fechaHoy.getMonth() + 1;
+let year = fechaHoy.getFullYear();
+
+hoy = hoy < 10 ? `0${hoy}` : hoy;
+month = month < 10 ? `0${month}` : month;
+month = month === 13 ? 1 : month;
+
+fecha.innerHTML = `${hoy}/${month}/${year}`
+
 document.addEventListener('keydown',(event) =>{
     if (event.key === "Alt") {
        document.addEventListener('keydown',(e) =>{
@@ -73,21 +85,21 @@ const mostrarLista = (clientes)=>{
             tbody.innerHTML += `
             <tr>
                 <td class = "id">${cliente._id}</td>
-                <td class ="nombre">${cliente.cliente}</td>
-                <td>${cliente.direccion}</td>
-                <td>${cliente.cond_iva}</td>
-                <td>${cliente.telefono}</td>
+                <td class ="inicio">${cliente.cliente}</td>
+                <td class ="inicio">${cliente.direccion}</td>
+                <td class ="inicio">${cliente.cond_iva}</td>
+                <td class ="inicio">${cliente.telefono}</td>
                 <td>${cliente.saldo}</td>
             </tr>
         `
-        }else if(situacion === "negro"){
+        }else if(situacion === "negro" && ((parseFloat(cliente.saldo) !== 0) || parseFloat(cliente.saldo_p) !== 0) ){
             tbody.innerHTML += `
                 <tr>
                     <td class = "id">${cliente._id}</td>
-                    <td>${cliente.cliente}</td>
-                    <td>${cliente.direccion}</td>
-                    <td>${cliente.cond_iva}</td>
-                    <td>${cliente.telefono}</td>
+                    <td class = "inicio">${cliente.cliente}</td>
+                    <td class ="inicio">${cliente.direccion}</td>
+                    <td class ="inicio">${cliente.cond_iva}</td>
+                    <td class ="inicio">${cliente.telefono}</td>
                     <td>${cliente.saldo}</td>
                     <td>${cliente.saldo_p}</td>
                 </tr>

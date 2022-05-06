@@ -42,7 +42,7 @@ document.addEventListener('keydown',(event) =>{
 document.addEventListener('keydown',(event) =>{
    if (event.key === "Alt") {
       document.addEventListener('keydown',(e) =>{
-          if (e.key === "F3" && situacion === "negro") {
+          if (e.key === "F8" && situacion === "negro") {
               ocultarNegro();
               situacion = 'blanco';
               (parseFloat(cliente.saldo)>0) && saldoAfavor.setAttribute('disabled',"");
@@ -56,6 +56,7 @@ const body = document.querySelector('.contenedorEmitirRecibo')
 const informacionCliente = document.querySelector('.informacionCliente')
 const botones = document.querySelector('.botones')
 const pagado = document.querySelector('.pagado')
+const alerta = document.querySelector('.alerta')
 const ocultarNegro = ()=>{
     pagado.classList.remove('mostrarNegro')
     informacionCliente.classList.remove('mostrarNegro')
@@ -123,9 +124,20 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
 })
 
 const listarLista = (lista,situacion)=>{
-    let aux
-    (situacion === "negro") ? (aux = "Presupuesto") : (aux = "Ticket Factura")
-    listaGlobal = lista.filter(e=>e.tipo_comp === aux)
+    let aux;
+    let auxRecibo = situacion === "negro" ? "Recibos_P" : "Recibos";
+    (situacion === "negro") ? (aux = "Presupuesto") : (aux = "Ticket Factura");
+    const listaRecibo = lista.filter(e=>e.tipo_comp === auxRecibo);
+    const listaVenta = lista.filter(e=>e.tipo_comp === aux );
+    listaGlobal = [...listaRecibo,...listaVenta];
+    listaGlobal.sort((a,b)=>{
+        if (a.fecha>b.fecha) {
+            return 1;
+        }else if(a.fecha<b.fecha){
+            return -1;
+        }
+        return 0
+    })
     listar.innerHTML = " ";
     listaGlobal.forEach(venta => {
         if (venta.length !== 0) {
@@ -141,11 +153,11 @@ const listarLista = (lista,situacion)=>{
 
             listar.innerHTML += `
                 <tr id="${venta.nro_comp}">
-                <td> ${ dia } / ${ mes } / ${ anio } </td>
-                <td> ${ venta.tipo_comp } </td>
-                <td> ${ venta.nro_comp } </td>
-                <td> ${ ( venta.importe ).toFixed ( 2 ) } </td>
-                <td> ${ parseFloat ( ( venta.pagado ) ).toFixed ( 2 ) } </td>
+                <td>${dia}/${mes}/${anio}</td>
+                <td>${ venta.tipo_comp }</td>
+                <td>${ venta.nro_comp }</td>
+                <td>${ ( venta.importe ).toFixed ( 2 ) }</td>
+                <td>${ parseFloat ( ( venta.pagado ) ).toFixed ( 2 ) } </td>
                 <td> <input type="text" id = ${ venta.nro_comp } name = "pagadoActual"> </td>
                 <td class = "saldop"> ${ saldo.toFixed( 2 ) } </td>
                 <td> ${ venta.observaciones } </td>
@@ -213,12 +225,25 @@ saldoAfavor.addEventListener('keydown',e=>{
 
 imprimir.addEventListener('click', e=>{
     e.preventDefault;
-    hacerRecibo();
+    if(parseFloat(total.value) === 0){
+        if (confirm("RECIBO EN 0,DESEA CONTINUAR?")) {
+            hacerRecibo();
+        }
+    }else{
+           hacerRecibo();
+    }
+    
 })
 imprimir.addEventListener('keydown',e=>{
     e.preventDefault()
     if (e.key === "Enter") {
-        hacerRecibo();
+        if(parseFloat(total.value) === 0){
+            if (confirm("RECIBO EN 0,DESEA CONTINUAR?")) {
+                hacerRecibo();
+            }
+        }else{
+               hacerRecibo();
+        }
     }
 })
 
@@ -227,6 +252,8 @@ const hacerRecibo = async()=>{
 
     //Pnemos en un arreglo las ventas que se modificaron, asi despues imprimimos el recibo
     let arregloParaImprimir = [];
+
+    alerta.classList.remove('none');
     const trs = document.querySelectorAll('tbody tr');
     trs.forEach(tr=>{
         if (tr.children[5].children[0].value !== "" && parseFloat(tr.children[5].children[0].value) !== 0) {
@@ -239,45 +266,68 @@ const hacerRecibo = async()=>{
             })
         }
     })
-     modificarVentas(nuevaLista);
-     const nrmComp = await traerUltimoNroRecibo();
-     modifcarNroRecibo(nrmComp)
+    
+
      const recibo = {}
-     recibo.nro_comp = nrmComp
      recibo.cod_comp = verCodComp(cond_iva.value)
      recibo.dnicuit = cuit.value
-     recibo._id = await tamanioVentas()
-     recibo.pagado = true
+     recibo._id = await tamanioVentas();
+     recibo.fecha = new Date()
      recibo.cliente = cliente._id;
      recibo.nombreCliente = cliente.cliente;
      recibo.vendedor = Vendedor;
-     recibo.precioFinal = parseFloat(total.value).toFixed(2);
+     recibo.direccion = direccion.value;
+     recibo.condIva = cond_iva.value
+     recibo.precioFinal =parseFloat( parseFloat(total.value).toFixed(2));
      recibo.tipo_comp = (situacion === "blanco" ? "Recibos" : "Recibos_P" );
      const aux = (situacion === "negro") ? "saldo_p" : "saldo"
      let saldoFavor = 0;
      saldoFavor = (saldoAfavor.value !== "") && parseFloat(saldoAFavor.value);
      recibo.abonado = saldoAfavor.value;
      const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2));
+
      //Tomamos el cliente y agregamos a su lista Ventas la venta y tambien modificamos su saldo
      const _id = recibo.cliente;
      let clienteTraido = await axios.get(`${URL}clientes/id/${_id}`);
      clienteTraido = clienteTraido.data;
-     saldo
      clienteTraido[aux] = saldoNuevo.toFixed(2);
-    //  listaVentas
-     let listaVentas = clienteTraido.listaVentas;
-     listaVentas[0] === "" ? (listaVentas[0] = recibo.nro_comp) : (listaVentas.push(recibo.nro_comp));
-     clienteTraido.listaVentas = listaVentas;
-     await axios.put(`${URL}clientes/${_id}`,clienteTraido);
-     await axios.post(`${URL}ventas`,recibo);
-     saldoAfavor.value !== "" && ponerEnCuentaCorrienteCompensada(recibo);
-     await ponerEnCuentaCorrienteHistorica(recibo);
-     //const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
-     //const impresora = recibo.tipo_comp === "Recibos" ? "SAM4S GIANT-100" : undefined;
 
-     // arregloParaImprimir contiene todos las ventas que tiene pagadas y total contiene el total del recibo
-    ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,arregloParaImprimir,total.value]);
-    location.href = "../index.html"
+     try {
+        const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
+        //modificamos las ventas en cuentas compensada
+        modificarVentas(nuevaLista);
+        
+        //modificamos el  numero del recibo
+        recibo.nro_comp = recibo.tipo_comp === "Recibos" ? `0005-${(afip.numero).toString().padStart(8,'0')}` : await traerUltimoNroRecibo();
+        const numeroAModificar = recibo.tipo_comp === "Recibos" ? afip.numero : parseFloat(recibo.nro_comp.split('-')[1])
+        await modifcarNroRecibo(numeroAModificar,recibo.tipo_comp,clienteTraido.cond_iva);
+
+        let listaVentas = clienteTraido.listaVentas;
+        listaVentas[0] === "" ? (listaVentas[0] = recibo.nro_comp) : (listaVentas.push(recibo.nro_comp));
+        clienteTraido.listaVentas = listaVentas;
+
+        //Ponemos en la historica el Recibo
+        await ponerEnCuentaCorrienteHistorica(recibo);
+        //Ponemos en la compensada si le queda saldo a favor
+        saldoAfavor.value !== "" && await ponerEnCuentaCorrienteCompensada(recibo);
+        
+        await axios.put(`${URL}clientes/${_id}`,clienteTraido);
+        await axios.post(`${URL}ventas`,recibo);
+
+        // arregloParaImprimir contiene todos las ventas que tiene pagadas y total contiene el total del recibo
+        alerta.children[1].children[0].innerHTML = "Imprimiendo Recibo";
+        recibo.tipo_comp === "Recibos_P" ? ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,arregloParaImprimir,total.value]) : imprimirVenta([recibo,clienteTraido,afip,arregloParaImprimir]);
+        //Mandar Recibo para que se guarde como pdf
+        recibo.productos = arregloParaImprimir
+        recibo.tipo_comp === "Recibos" && (alerta.children[1].children[0].innerHTML = "Guardando Recibo Como PDF");
+        recibo.tipo_comp === "Recibos" && await axios.post(`${URL}crearPdf`,[recibo,cliente,afip]);
+        location.href = "../index.html";
+    } catch (error) {
+        console.log(error)
+        alert("No se pudo generar el recibo")
+    }finally{
+        alerta.classList.add('none');   
+    }
 }
 
 const traerUltimoNroRecibo = async ()=>{
@@ -286,16 +336,19 @@ const traerUltimoNroRecibo = async ()=>{
     return numero
 }
 
-const modifcarNroRecibo = async(numero)=>{
-    let [n1,n2] = numero.split('-')
-    n2 = parseFloat(n2 ) + 1
-    n2 = n2.toString().padStart(8,0)
-    let nrmComp = n1 + "-" + n2
-
-    let numeros = await axios.get(`${URL}tipoVenta`)
-    numeros = numeros.data;
-    numeros["Ultimo Recibo"] = nrmComp;
-    await axios.put(`${URL}tipoventa`,numeros)
+const modifcarNroRecibo = async(numero,tipo_comp,iva)=>{
+    let numeros = (await axios.get(`${URL}tipoVenta`)).data;
+    if (tipo_comp === "Recibos_P") {
+        console.log(numeros["Ultimo Recibo"])
+        numeros["Ultimo Recibo"] = `0004-${(numero + 1).toString().padStart(8,'0')}`;    
+    }else{
+        if (iva === "Inscripto") {
+            numeros["Ultima Recibo A"] = numero + 1;
+        }else{
+            numeros["Ultima Recibo B"] = numero + 1;
+        }
+    }
+    await axios.put(`${URL}tipoventa`,numeros);
 
 }
 
@@ -355,12 +408,7 @@ const modificarVentas = (lista)=>{
             if(tr.id === venta.nro_comp){
                 venta.pagado = (tr.children[5].children[0].value !== "") ? parseFloat((parseFloat(tr.children[4].innerHTML) + parseFloat(tr.children[5].children[0].value)).toFixed(2)) : parseFloat(venta.pagado);
                 venta.saldo = parseFloat(tr.children[6].innerHTML);
-                if(venta.importe === venta.pagado){
-                    await axios.delete(`${URL}cuentaComp/id/${venta.nro_comp}`);
-                }else{
                     await axios.put(`${URL}cuentaComp/id/${venta.nro_comp}`,venta);
-                }
-                
             }
         })
     })
@@ -373,9 +421,14 @@ cancelar.addEventListener('click',e=>{
 });
 
 const subirAAfip = async(venta)=>{
+    alerta.children[1].children[0].innerHTML = "Esperando Confirmacion de la AFIP";
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+
+    const serverStatus = await afip.ElectronicBilling.getServerStatus();
+    console.log(serverStatus)
+
     let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
-    (ultimoElectronica === 0) && (ultimoElectronica=1); 
+    const docTipo = venta.cod_comp === 4 ? 80 : 20;
     let totalIva105 = 0
     let totalIva21=0
     let totalNeto21 = 0 
@@ -384,7 +437,7 @@ const subirAAfip = async(venta)=>{
         'CantReg': 1,
         'CbteTipo': venta.cod_comp,
         'Concepto': 1,
-        'DocTipo': 20,
+        'DocTipo': docTipo,
         'DocNro': venta.dnicuit,
         'CbteDesde': 1,
         'CbteHasta': ultimoElectronica+1,
@@ -407,15 +460,16 @@ const subirAAfip = async(venta)=>{
                 "Importe": parseFloat((parseFloat(venta.precioFinal) - parseFloat(venta.precioFinal)/1.21).toFixed(2))
             }
         )
+        console.log(data)
         const res = await afip.ElectronicBilling.createNextVoucher(data); //creamos la factura electronica
-
+        alerta.children[1].children[0].innerHTML = "Recibo Confirmado Por la AFIP";
         const qr = {
             ver: 1,
             fecha: data.CbteFch,
             cuit: 27165767433,
             ptoVta: 5 ,
             tipoCmp: venta.cod_comp,
-            nroCmp: ultimoElectronica,
+            nroCmp: ultimoElectronica + 1,
             importe: data.ImpTotal,
             moneda: "PES",
             ctz: 1,
@@ -429,7 +483,9 @@ const subirAAfip = async(venta)=>{
         return {
             QR,
             cae:res.CAE,
-            vencimientoCae:res.CAEFchVto
+            vencimientoCae:res.CAEFchVto,
+            texto:textoQR,
+            numero: ultimoElectronica + 1
         }
 }
 
@@ -472,4 +528,88 @@ const ponerEnCuentaCorrienteHistorica = async(recibo)=>{
     cuenta.haber = parseFloat(recibo.precioFinal);
     cuenta.saldo = cuenta.tipo_comp === "Recibos" ? parseFloat((parseFloat(cliente.saldo) - cuenta.haber).toFixed(2))  : parseFloat((parseFloat(cliente.saldo_p) - cuenta.haber).toFixed(2));
     await axios.post(`${URL}cuentaHisto`,cuenta)
+}
+
+const imprimirVenta = async(arreglo)=>{
+const conector = new ConectorPlugin();
+const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae,numero},arregloConTickets)=>{
+    const fechaVenta = new Date(Venta.fecha);
+    let dia = fechaVenta.getDate()
+    let mes = fechaVenta.getMonth()+1;
+    let horas = fechaVenta.getHours();
+    let minutos = fechaVenta.getMinutes();
+    let segundos = fechaVenta.getSeconds();
+    dia = dia<10 ? `0${dia}` : dia;
+    mes = mes<10 ? `0${mes}` : mes;
+    horas = horas<10 ? `0${horas}` : horas;
+    let anio = fechaVenta.getFullYear()
+    const comprobante = verTipoComp(Venta.cod_comp)
+    conector.cortar()
+    conector.establecerTamanioFuente(2,2);
+    conector.establecerFuente(ConectorPlugin.Constantes.FuenteC)
+    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
+    const ruta = __dirname + "\\..\\imagenes\\Logo.jpg";
+    conector.imagenLocal(ruta)
+    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
+    conector.establecerTamanioFuente(1,1);
+    conector.texto("GIANOVI MARINA ISABEL\n");
+    conector.texto("INGRESO BRUTOS: 27165767433\n")
+    conector.texto("C.U.I.T Nro: 27165767433\n");
+    conector.texto("AV.9 DE JULIO-3380 (3228);CHAJARI E.R.\n");
+    conector.texto("INICIO DE ACTIVIDADES: 02-03-07\n");
+    conector.texto("IVA RESPONSABLE INSCRIPTO\n");
+    conector.texto("------------------------------------------\n");
+    conector.texto(`${comprobante}   0005-${numero.toString().padStart(8,'0')}\n`);
+    conector.texto(`FECHA: ${dia}-${mes}-${anio}    Hora:${horas}:${minutos}:${segundos}\n`);
+    conector.texto("------------------------------------------\n");
+    conector.texto(`${nombre.value}\n`);
+    conector.texto(`Dni O Cuit: ${cuit.value}\n`);
+    conector.texto(`${cond_iva.value !== "" ? cond_iva.value : "Consumidor Final"}\n`);
+    conector.texto(`${direccion.value}   ${localidad.value}\n`);
+    conector.texto("------------------------------------------\n");
+    conector.texto("Fecha         Numero            Pagado\n")
+    arregloConTickets.forEach(ticket=>{
+        conector.texto(`${ticket.fecha}    ${ticket.numero}     ${ticket.pagado} \n` )
+    })
+    conector.feed(2);
+    conector.establecerTamanioFuente(2,1);
+    conector.texto("TOTAL      $" +  (Venta.precioFinal).toFixed(2) + "\n");
+    conector.establecerTamanioFuente(1,1);
+    conector.texto("Recibimos(mos)\n");
+    conector.texto(`${Venta.tipo_pago !== "CC" ? `Contado                  ${(Venta.precioFinal).toFixed(2)}`  : "Cuenta Corriente"}` + "\n");0
+    conector.establecerTamanioFuente(2,1);
+    conector.texto("CAMBIO         $0.00\n");
+    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
+    conector.texto("*MUCHA GRACIAS*\n")
+    conector.qrComoImagen(QR);
+    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
+    conector.establecerTamanioFuente(1,1);
+    conector.texto("CAE:" + "                  " + "Vencimiento CAE:" + "\n")
+    conector.texto(cae + "           " + vencimientoCae + "\n")
+    conector.feed(3)
+    conector.cortar()
+
+    conector.imprimirEn("SAM4S GIANT-100")
+        .then(respuestaAlImprimir => {
+            if (respuestaAlImprimir === true) {
+                console.log("Impreso correctamente");
+            } else {
+                console.log("Error. La respuesta es: " + respuestaAlImprimir);
+                imprimirVenta(arreglo);
+            }
+        });
+   }
+
+
+
+const verTipoComp = (codigoComprobante)=>{
+   if(codigoComprobante === 4){
+        return "Cod: 004 - Recibos A"
+    }else if(codigoComprobante === 9){
+        return "Cod: 009 - Recibos B"
+    }
+}
+
+const [Venta,Cliente,valoresQR,arregloParaImprimir] = arreglo;
+ponerValores(Cliente,Venta,valoresQR,arregloParaImprimir)
 }

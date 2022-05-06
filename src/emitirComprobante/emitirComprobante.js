@@ -43,7 +43,8 @@ const observaciones = document.querySelector('#observaciones')
 const codigo = document.querySelector('#codigo')
 const tiposVentas = document.querySelectorAll('input[name="tipoVenta"]')
 const borrarProducto = document.querySelector('.borrarProducto')
-const inputEmpresa = document.querySelector('#empresa')
+const inputEmpresa = document.querySelector('#empresa');
+const alerta = document.querySelector('.alerta');
 inputEmpresa.value = empresa;
 
 let situacion = "blanco"//para teclas alt y F9
@@ -52,6 +53,8 @@ let yaSeleccionado;
 let tipoVenta;
 let borraNegro = false;
 let ventaDeCtaCte = "";
+let arregloMovimiento= [];
+let arregloProductosDescontarStock = [];
 codigoC.focus()
 
 
@@ -178,6 +181,36 @@ observaciones.addEventListener('keypress',e=>{
     if (e.key==='Enter') {
         codigo.focus()
     }
+});
+
+descripcion.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        precio.focus();
+    }
+});
+
+const descripcionAgregar = document.querySelector('.parte-producto_descripcion');
+const precioAgregar = document.querySelector('.parte-producto_precio');
+
+precioAgregar.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        const product = {
+            descripcion: descripcionAgregar.children[0].value,
+            precio_venta: parseFloat(precioAgregar.children[0].value),
+            _id:codigo.value,
+            marca:""
+        }
+        dialogs.prompt("Cantidad",async valor =>{
+            await mostrarVentas(product,valor)
+            codigo.value = await "";
+            codigo.focus()
+            precioAgregar.children[0].value = await "";
+            precioAgregar.classList.add('none');
+            descripcionAgregar.children[0].value = await "";
+            descripcionAgregar.classList.add('none');
+        });
+    }
+
 })
 
 
@@ -189,29 +222,11 @@ codigo.addEventListener('keypress',async (e) => {
     }
     if (e.key === 'Enter') {
         if (e.target.value !== "") {
-            if (codigo.value === "999-999") {
-                const descripcion = document.querySelector('.parte-producto_descripcion')
-                const precio = document.querySelector('.parte-producto_precio')
-                descripcion.classList.remove('none')
-                precio.classList.remove('none')
-                descripcion.children[0].focus()
-                precio.addEventListener('keypress',e=>{
-                    if (e.key === "Enter") {
-                        const product = {
-                            descripcion: descripcion.children[0].value,
-                            precio_venta: parseFloat(precio.children[0].value),
-                            _id:codigo.value
-                        }
-                        dialogs.prompt("Cantidad",async valor =>{
-                            await mostrarVentas(product,valor)
-                            codigo.value = "";
-                            codigo.focus()
-                            precio.classList.add('none')
-                            descripcion.classList.add('none')
-                        })
-                    }
-
-                })
+            if (codigo.value === "999-999") {               
+                descripcionAgregar.classList.remove('none');
+                precioAgregar.classList.remove('none');
+                descripcionAgregar.children[0].focus();
+                
             }else if(codigo.value === "888-888"){
                 const precio = document.querySelector('.parte-producto_precio')
                 let descripcion = document.querySelector('.parte-producto_descripcion')
@@ -254,6 +269,9 @@ codigo.addEventListener('keypress',async (e) => {
                                 await alert("La cantidad de este producto no puede ser en decimal")
                                 codigo.focus()
                             }else{
+                                producto.stock<0 && alert("Stock En Negativo");
+                                console.log(producto.precio_venta);
+                               (parseFloat(producto.precio_venta) === 0 && alert("Precio del producto en 0"))
                                 await mostrarVentas(producto,valor);
                                 e.target.value="";
                                 codigo.focus();
@@ -268,12 +286,6 @@ ipcRenderer.on('mando-el-producto',(e,args) => {
 })
 let id = 1 //id de la tabla de ventas
 function mostrarVentas(objeto,cantidad) {
-    (objeto.precio_venta === "0.00" || objeto.precio_venta === "0.0" || objeto.precio_venta === "0") && alert("Precio del producto en 0")
-
-    if (objeto.stock <= 0) {
-        alert("Stock En Negativo")
-    }
-
     Preciofinal += (parseFloat(objeto.precio_venta)*cantidad);
     total.value = (parseFloat(Preciofinal)).toFixed(2)
     resultado.innerHTML += `
@@ -469,36 +481,31 @@ function codDoc(dniocuit) {
 //Vamos a descontar el stock 
 async function sacarStock(cantidad,objeto) {
     let producto = (await axios.get(`${URL}productos/${objeto._id}`)).data;
+    console.log(producto.stock);
+    console.log(cantidad)
     const descontar = parseInt(producto.stock) - parseFloat(cantidad);
     producto.stock = descontar.toFixed(2);
-    await axios.put(`${URL}productos/${objeto._id}`,producto);
-
+    arregloProductosDescontarStock.push(producto);
 }
 
 //INICIO MOVPRODUCTOS
 
-const traerTamanioDeMovProducto = async()=>{
-    const tamanio = (await axios.get(`${URL}movProductos`)).data;
-    return tamanio
-}
 //Registramos un movimiento de producto
 async function movimientoProducto(cantidad,objeto,idCliente,cliente){
-    const id = await traerTamanioDeMovProducto()
     let movProducto = {}
-    movProducto._id = (id + 1);
     movProducto.codProd = objeto._id
-    movProducto.descripcion = objeto.descripcion
+    movProducto.descripcion = `${objeto.descripcion} ${objeto.marca ? objeto.marca :""} ${objeto.cod_fabrica ? objeto.cod_fabrica : ""}`;
     movProducto.codCliente = idCliente;
     movProducto.cliente = cliente;
     movProducto.comprobante = tipoVenta
     movProducto.tipo_comp = venta.tipo_comp
     movProducto.nro_comp=venta.nro_comp
     movProducto.egreso = cantidad
-    movProducto.stock = parseFloat(objeto.stock) - cantidad
+    movProducto.stock = parseFloat((parseFloat(objeto.stock) - cantidad).toFixed(2))
     movProducto.precio_unitario=objeto.precio_venta
     movProducto.total=(parseFloat(movProducto.egreso)*parseFloat(movProducto.precio_unitario)).toFixed(2)
     movProducto.vendedor = venta.vendedor;
-    await axios.post(`${URL}movProductos`,movProducto);
+    arregloMovimiento.push(movProducto);
 }
 
 //FIN MOV PRODUCTOS
@@ -513,16 +520,9 @@ function verNumero(condicion) {
 //Vemos el numero de factura para las tarjetas
 const numeroDeFactura = document.querySelector('.numeroDeFactura')
 numeroDeFactura.addEventListener('click', async () =>{
-    const mostrar = document.querySelector('#numeroFactura')
-    texto = verNumero(conIva.value)
-     let numeroFactura = ((await axios.get(`${URL}tipoVenta`)).data)[texto];
-     console.log(numeroFactura)
-     numeroFactura = numeroFactura.split('-')
-     const puntoVenta = numeroFactura[0];
-     let numero = parseFloat(numeroFactura[1]) + 1;
-     numero = numero.toString();
-     numero = numero.padStart(8,'0')
-     mostrar.value = `${puntoVenta}-${numero}`
+    const mostrar = document.querySelector('#numeroFactura');
+    texto = verNumero(conIva.value);
+     mostrar.value = ((await axios.get(`${URL}tipoVenta`)).data)[texto];
 })
 
 
@@ -588,77 +588,91 @@ const sacarIdentificadorTabla = (arreglo)=>{
 }
 
 //Aca mandamos la venta en presupuesto
-const presupuesto = document.querySelector('.presupuesto')
+const presupuesto = document.querySelector('.presupuesto');
+
 presupuesto.addEventListener('click',async (e)=>{
     e.preventDefault()
-
+    
     if (confirm("Presupuesto?")) {
 
         if (listaProductos.length===0) {
             //Avisamos que no se puede hacer una venta sin productos
             alert("Cargar Productos")
-
         }else{
-
             venta.productos = listaProductos;
             venta.tipo_pago = await verElTipoDeVenta(tiposVentas); //vemos si es CD,CC o PP en el input[radio]
             if (venta.tipo_pago === "Ninguno") {
-                    alert("Seleccionar un modo de venta")
+                    alert("Seleccionar un modo de venta");
             }else{
-                venta.nombreCliente = buscarCliente.value;
-                tipoVenta="Presupuesto"
-                venta._id = await tamanioVentas("presupuesto")
-                venta.descuento = (descuentoN.value);
-                venta.precioFinal = redondear(total.value);
-                venta.tipo_comp = tipoVenta;
-                venta.observaciones = observaciones.value;
-                //Le pasamos que es un presupuesto contado CD
-                venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.cod_comp,venta.tipo_pago);
-                venta.empresa = inputEmpresa.value;
-                let valorizadoImpresion = "valorizado"
-                if (!valorizado.checked && venta.tipo_pago === "CC") {
-                valorizadoImpresion="no valorizado";
-                }
-                sacarIdentificadorTabla(venta.productos);
-                
-                        for (let producto of venta.productos){
-                                if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
-                                    producto.objeto.precio_venta =  (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
-                                    producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
+                try {
+                    alerta.classList.remove('none');
+                    venta.nombreCliente = buscarCliente.value;
+                    tipoVenta="Presupuesto"
+                    venta._id = await tamanioVentas("presupuesto")
+                    venta.descuento = (descuentoN.value);
+                    venta.precioFinal = redondear(total.value);
+                    venta.fecha = new Date();
+                    venta.tipo_comp = tipoVenta;
+                    venta.observaciones = observaciones.value;
+                    //Le pasamos que es un presupuesto contado CD
+                    venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.cod_comp,venta.tipo_pago);
+                    venta.empresa = inputEmpresa.value;
+                    let valorizadoImpresion = "valorizado"
+                    if (!valorizado.checked && venta.tipo_pago === "CC") {
+                    valorizadoImpresion="no valorizado";
+                    }
+                    sacarIdentificadorTabla(venta.productos);
+                    
+                            for (let producto of venta.productos){
+                                    if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
+                                        producto.objeto.precio_venta =  (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
+                                        producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
+                                    }
                                 }
-                            }
-                 ipcRenderer.send('nueva-venta',venta);
-                 await actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-                 //si la venta es CC Sumamos un saldo al cliente y ponemos en cuenta corriente compensada y historica
-                 if (venta.tipo_pago === "CC") {
-                    await sumarSaldoAlClienteEnNegro(venta.precioFinal,venta.cliente,valorizado.checked);
-                    await  ponerEnCuentaCorrienteCompensada(venta,valorizado.checked);
-                    await ponerEnCuentaCorrienteHistorica(venta,valorizado.checked,saldo_p.value);
-                }
-                 if (impresion.checked) {
-                     let cliente = {
-                         _id:codigoC.value,
-                         cliente: buscarCliente.value,
-                         cuit: dnicuit.value,
-                         direccion: direccion.value,
-                         localidad: localidad.value,
-                         cond_iva: conIva.value
-                     }
+                     ipcRenderer.send('nueva-venta',venta);
+                     await actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+                     //si la venta es CC Sumamos un saldo al cliente y ponemos en cuenta corriente compensada y historica
                      if (venta.tipo_pago === "CC") {
-                        ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion])
-                     }else{
-                         ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion])
+                        await sumarSaldoAlClienteEnNegro(venta.precioFinal,venta.cliente,valorizado.checked);
+                        await  ponerEnCuentaCorrienteCompensada(venta,valorizado.checked);
+                        await ponerEnCuentaCorrienteHistorica(venta,valorizado.checked,saldo_p.value);
+                    }
+                     if (impresion.checked) {
+                         let cliente = {
+                             _id:codigoC.value,
+                             cliente: buscarCliente.value,
+                             cuit: dnicuit.value,
+                             direccion: direccion.value,
+                             localidad: localidad.value,
+                             cond_iva: conIva.value
+                         }
+                         if (venta.tipo_pago === "CC") {
+                            ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion])
+                         }else{
+                             ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion])
+                         }
                      }
-                 }
-                 //si la venta es distinta de presupuesto sacamos el stock y movimiento de producto
-                 if(venta.tipo_pago !== "PP"){
-                    for(let producto of venta.productos){
-                        await sacarStock(producto.cantidad,producto.objeto);
-                        await movimientoProducto(producto.cantidad,producto.objeto,venta.cliente,venta.nombreCliente);
+                     //si la venta es distinta de presupuesto sacamos el stock y movimiento de producto
+                     if(venta.tipo_pago !== "PP"){
+                        for(let producto of venta.productos){
+                            producto.objeto._id !== "999-999" &&  await sacarStock(producto.cantidad,producto.objeto);
+                            await movimientoProducto(producto.cantidad,producto.objeto,venta.cliente,venta.nombreCliente);
+                         }
+                         await axios.put(`${URL}productos`,arregloProductosDescontarStock)
+                         await axios.post(`${URL}movProductos`,arregloMovimiento);
+                         arregloMovimiento = [];
+                         arregloProductosDescontarStock = [];
                      }
-                 }
-
-                 window.location = "../index.html";
+    
+                     window.location = "../index.html";
+                     
+                } catch (error) {
+                    console.log(error)
+                    alert("No se puedo cargar la venta")
+                }finally{
+                    alerta.classList.add('none');
+                }
+               
             }
         }
     }
@@ -676,74 +690,95 @@ ticketFactura.addEventListener('click',async (e) =>{
         alert("Ticket Factura no puede ser productos en negativo");
     }else if(listaProductos.length===0){
         alert("Ningun producto cargado")
-    }else{
-      venta.productos = listaProductos;
+    }else{  
+      
 
      tipoVenta = "Ticket Factura";
      venta.tipo_pago = await verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
      if (venta.tipo_pago === "Ninguno") {
-        alert("Seleccionar un modo de venta");
-    }else{
-        venta.nombreCliente = buscarCliente.value;
-        venta.direccion = direccion.value;
-        venta._id = await tamanioVentas("ticket factura");
-        venta.observaciones = observaciones.value;
-        venta.fecha = new Date();
-        venta.descuento = (descuentoN.value);
-        venta.precioFinal = redondear(total.value);
-        venta.tipo_comp = tipoVenta;
-        numeroComprobante(tipoVenta);
-
-        venta.cod_comp = verCodComprobante(tipoVenta);
-        venta.nro_comp = await traerUltimoNroComprobante("Ticket Factura",venta.cod_comp);
-        if (venta.precioFinal >=10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" || dnicuit.value === "00000000")) {
-            alert("Factura mayor a 10000, poner datos cliente");
+            alert("Seleccionar un modo de venta");
         }else{
+            alerta.classList.remove('none');
+            venta.productos = listaProductos;
+            venta.nombreCliente = buscarCliente.value;
+            venta._id = await tamanioVentas("ticket factura");
+            venta.observaciones = observaciones.value;
+            venta.fecha = new Date();
+            venta.direccion = direccion.value
+            venta.descuento = (descuentoN.value);
+            venta.precioFinal = redondear(total.value);
+            venta.tipo_comp = tipoVenta;
+            numeroComprobante(tipoVenta);
+            venta.empresa = inputEmpresa.value;
+            venta.cod_comp = verCodComprobante(tipoVenta);
+            if (venta.precioFinal >=10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" || dnicuit.value === "00000000")) {
+                alert("Factura mayor a 10000, poner datos cliente");
+            }else{
+                try {
+                    for(let producto of venta.productos){
+                        if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
+                            producto.objeto.precio_venta = (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
+                            producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
+                        }
+                    };
+                    const [iva21,iva105,gravado21,gravado105,cant_iva] = gravadoMasIva(venta.productos);
+                    
+                    venta.gravado21 = gravado21;
+                    venta.gravado105 = gravado105;
+                    venta.iva21 = iva21;
+                    venta.iva105 = iva105;
+                    venta.cant_iva = cant_iva;
+                    borraNegro && (venta.observaciones = ventaAnterior.nro_comp);
+                    const afip = await subirAAfip(venta);
+                    venta.nro_comp = `0005-${(afip.numero).toString().padStart(8,'0')}`;
+                    venta.comprob = venta.nro_comp;
+                    venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente);
+                    venta.tipo_pago === "CC" && ponerEnCuentaCorrienteCompensada(venta,true);
+                    venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
+                    actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp);
+                    
+                    await ipcRenderer.send('nueva-venta',venta);
+                    const cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
+                    alerta.children[1].children[0].innerHTML = "Imprimiendo Venta";
+                    await imprimirVenta([venta,cliente,afip]);
+                    await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
+                    
+                    if(venta.tipo_pago !== "PP" && !borraNegro){
+                        for(let producto of venta.productos){
+                            producto.objeto._id !== "999-999" &&  await sacarStock(producto.cantidad,producto.objeto)
+                            await movimientoProducto(producto.cantidad,producto.objeto,venta.cliente,venta.nombreCliente)
+                        }
+                        await axios.put(`${URL}productos`,arregloProductosDescontarStock)
+                        await axios.post(`${URL}movProductos`,arregloMovimiento);
+                        arregloMovimiento = [];
+                        arregloProductosDescontarStock = [];
+                    }
         
-        venta.empresa = inputEmpresa.value;
+                    if (borraNegro) {
 
-        for(let producto of venta.productos){
-           if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
-               producto.objeto.precio_venta = (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
-               producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
-           }
+                        //traemos los movimientos de productos de la venta anterior y lo modificamos a la nueva venta
+                        const movimientosViejos = (await axios.get(`${URL}movProductos/${ventaAnterior.nro_comp}/Presupuesto`)).data;
+                        for await (let mov of movimientosViejos){
+                            mov.nro_comp = venta.nro_comp;
+                            mov.tipo_comp = "Ticket Factura";
+                        }
+                        await axios.put(`${URL}movProductos`,movimientosViejos);
 
-        };
-        const [iva21,iva105,gravado21,gravado105,cant_iva] = gravadoMasIva(venta.productos);
-        venta.comprob = venta.nro_comp;
-        venta.gravado21 = gravado21;
-        venta.gravado105 = gravado105;
-        venta.iva21 = iva21;
-        venta.iva105 = iva105;
-        venta.cant_iva = cant_iva;
-        const afip = await subirAAfip(venta);
-        
-        venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente);
-        venta.tipo_pago === "CC" && ponerEnCuentaCorrienteCompensada(venta,true);
-        venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
-        actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp);
-        
-        await ipcRenderer.send('nueva-venta',venta);
-        const cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
-        await imprimirVenta([venta,cliente,afip]);
-        await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
-
-        if(venta.tipo_pago !== "PP"){
-             for(let producto of venta.productos){
-                 sacarStock(producto.cantidad,producto.objeto)
-                 await movimientoProducto(producto.cantidad,producto.objeto,venta.cliente,venta.nombreCliente)
-             }
-        }
-
-        if (borraNegro) {
-            //borramos la cuenta compensada
-            await borrrarCuentaCompensada(ventaDeCtaCte);
-            //descontamos el saldo del cliente y le borramos la venta de la lista
-            await descontarSaldo(ventaAnterior.cliente,ventaAnterior.precioFinal,ventaAnterior.nro_comp);
-            await borrarCuentaHistorica(ventaAnterior.nro_comp,ventaAnterior.cliente,ventaAnterior.tipo_comp);
-            await borrarVenta(ventaAnterior.nro_comp)
-        };
-        !borraNegro ? (window.location = '../index.html') : window.close();
+                        //borramos la cuenta compensada
+                        await borrrarCuentaCompensada(ventaDeCtaCte);
+                        //descontamos el saldo del cliente y le borramos la venta de la lista
+                        await descontarSaldo(ventaAnterior.cliente,ventaAnterior.precioFinal,ventaAnterior.nro_comp);
+                        await borrarCuentaHistorica(ventaAnterior.nro_comp,ventaAnterior.cliente,ventaAnterior.tipo_comp);
+                        await borrarVenta(ventaAnterior.nro_comp)
+                    };
+                    !borraNegro ? (window.location = '../index.html') : window.close();
+                } catch (error) {
+                    alert("No se puedo generar la Venta")
+                    console.log(error)
+                }finally{
+                    alerta.classList.add('none')
+                }
+           
         }
     }
     }
@@ -960,9 +995,14 @@ const borrarVenta = async(numero)=>{
 
 
 const subirAAfip = async(venta)=>{
+    alerta.children[1].children[0].innerHTML = "Esperando Confirmacion de AFIP";
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
+
+    const serverStatus = await afip.ElectronicBilling.getServerStatus();
+    console.log(serverStatus)
+
     let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
-    //(ultimoElectronica === 0) && (ultimoElectronica=1); 
+
     let data = {
         'CantReg': 1,
         'CbteTipo': venta.cod_comp,
@@ -997,16 +1037,17 @@ const subirAAfip = async(venta)=>{
                     'BaseImp' 	: venta.gravado21, // Base imponible
                     'Importe' 	: venta.iva21 // Importe 
             })
-        }
-        const res = await afip.ElectronicBilling.createVoucher(data); //creamos la factura electronica
+        };
 
+        const res = await afip.ElectronicBilling.createVoucher(data); //creamos la factura electronica
+        alerta.children[1].children[0].innerHTML = "Venta en AFIP Aceptada";
         const qr = {
             ver: 1,
             fecha: data.CbteFch,
             cuit: 27165767433,
             ptoVta: 5 ,
             tipoCmp: venta.cod_comp,
-            nroCmp: ultimoElectronica,
+            nroCmp: ultimoElectronica + 1,
             importe: data.ImpTotal,
             moneda: "PES",
             ctz: 1,
@@ -1022,7 +1063,7 @@ const subirAAfip = async(venta)=>{
             cae:res.CAE,
             vencimientoCae:res.CAEFchVto,
             texto:textoQR,
-            numero:ultimoElectronica
+            numero:ultimoElectronica + 1
         }
 }
 
@@ -1165,7 +1206,7 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae,numero})=>{
     conector.establecerTamanioFuente(2,2);
     conector.establecerFuente(ConectorPlugin.Constantes.FuenteC)
     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-    const ruta = __dirname + "\\..\\imagenes\\Logo.jpeg";
+    const ruta = __dirname + "\\..\\imagenes\\Logo.jpg";
     conector.imagenLocal(ruta)
     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
     conector.establecerTamanioFuente(1,1);
@@ -1189,12 +1230,18 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae,numero})=>{
     conector.texto("DESCRIPCION           (%B.I)       IMPORTE\n")  
     conector.texto("------------------------------------------\n");
     Venta.productos && Venta.productos.forEach(({cantidad,objeto})=>{
+        const descripcion = objeto.descripcion;
+        const primeraParte = objeto.descripcion.slice(0,23)
+        const segundaParte = objeto.descripcion.slice(24)
+        if (Venta.vendedor === "CARLA") {
+            
+        }
         if (conIva.value === "Inscripto") {
-            conector.texto(`${cantidad}/${objeto.iva === "N" ? (parseFloat(objeto.precio_venta)/1.21).toFixed(2) : (parseFloat(objeto.precio_venta))/1.105.toFixed(2)}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
-            conector.texto(`${objeto.descripcion.slice(0,30)}    ${(parseFloat(cantidad)*parseFloat(objeto.iva === "N" ? parseFloat(objeto.precio_venta)/1.21 : parseFloat(objeto.precio_venta)/1.105)).toFixed(2)}\n`);
+            conector.texto(`${cantidad}/${objeto.iva === "N" ? (parseFloat(objeto.precio_venta)/1.21).toFixed(2) : (parseFloat(objeto.precio_venta)/1.105).toFixed(2)}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
+            conector.texto(`${Venta.vendedor === "CARLA" ? primeraParte + "\n" + segundaParte : objeto.descripcion.slice(0,30)}    ${(parseFloat(cantidad)*parseFloat(objeto.iva === "N" ? parseFloat(objeto.precio_venta)/1.21 : parseFloat(objeto.precio_venta)/1.105)).toFixed(2)}\n`);
         }else{
             conector.texto(`${cantidad}/${objeto.precio_venta}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
-            conector.texto(`${objeto.descripcion.slice(0,30)}    ${(parseFloat(cantidad)*parseFloat(objeto.precio_venta)).toFixed(2)}\n`);
+            conector.texto(`${Venta.vendedor === "CARLA" ? primeraParte + "\n" + segundaParte : objeto.descripcion.slice(0,30)}    ${(parseFloat(cantidad)*parseFloat(objeto.precio_venta)).toFixed(2)}\n`);
         }
 
     })
@@ -1218,7 +1265,7 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae,numero})=>{
     conector.texto("TOTAL      $" +  (Venta.precioFinal).toFixed(2) + "\n");
     conector.establecerTamanioFuente(1,1);
     conector.texto("Recibimos(mos)\n");
-    conector.texto(`${venta.tipo_pago !== "CC" ? `Contado                  ${(Venta.precioFinal).toFixed(2)}`  : "Cuenta Corriente"}` + "\n");0
+    conector.texto(`${(Venta.tipo_pago !== "CC" || Venta.cliente === "M122") ? `Contado                  ${(Venta.precioFinal).toFixed(2)}`  : "Cuenta Corriente"}` + "\n");0
     conector.establecerTamanioFuente(2,1);
     conector.texto("CAMBIO         $0.00\n");
     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
@@ -1237,6 +1284,7 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae,numero})=>{
                 console.log("Impreso correctamente");
             } else {
                 console.log("Error. La respuesta es: " + respuestaAlImprimir);
+                imprimirVenta(arreglo);
             }
         });
    }

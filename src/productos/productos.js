@@ -22,6 +22,17 @@ let seleccionado
 const body = document.querySelector('body')
 buscarProducto.focus()
 
+ipcRenderer.on('productoModificado',(e,args)=>{
+    const producto = JSON.parse(args);
+    const tr = document.getElementById(`${producto._id}`)
+    const aux = tr.children;
+    aux[1].innerHTML = producto.descripcion;
+    aux[2].innerHTML = producto.precio_venta;
+    aux[3].innerHTML = producto.marca;
+    aux[5].innerHTML = producto.cod_fabrica;
+    aux[6].innerHTML = producto.observacion;
+})
+
 
 //Lo que hacemos es cuando se hace click en la tabla se le agrega una clase que dice que el foco lo tiene la tabla o no
 const table = document.querySelector('.m-0')
@@ -129,7 +140,6 @@ function mostrarImagen(id) {
 
 ipcRenderer.once('Historial',async(e,args)=>{
     const [textoA,seleccionA] = JSON.parse(args)
-    console.log(textoA,seleccionA);
     buscarProducto.value = await textoA;
     select.value = await seleccionA;
     filtrar()
@@ -167,10 +177,9 @@ movimiento.addEventListener('click',()=>{
 const ingresarMov = document.querySelector('.ingresar')
 ingresarMov.addEventListener('click', e => {
    if (seleccionado) {
-       dialogs.promptPassword("Contraseña",async valor=>{
-        let vendedor = (await axios.get(`${URL}usuarios/${valor}`)).data;
-           vendedor ?  ipcRenderer.send('abrir-ventana-movimiento-producto',[seleccionado.id,vendedor]) : alert("Contraseña Incorrecta");
-        })
+        let vendedor = getParameterByName('vendedor');
+        console.log(vendedor)
+        vendedor ?  ipcRenderer.send('abrir-ventana-movimiento-producto',[seleccionado.id,vendedor]) : alert("Contraseña Incorrecta");
    }else{
         alert('Producto no seleccionado')
        }

@@ -32,6 +32,13 @@
                 .tbody{
                     text-align: center;
                     font-size: 1.5rem;
+
+                    .inicio{
+                        text-align: start;
+                    }
+                    .final{
+                        text-align: end;
+                    }
                 }
             }
         }

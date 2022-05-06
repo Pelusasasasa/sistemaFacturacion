@@ -72,7 +72,7 @@ cantidad.addEventListener('keypress',e=>{
         const producto = {
             _id: "999-999",
             descripcion:descripcion.value,
-            stock:"0"
+            stock:0
         }
         mostrarVentas(producto,cantidad.value)
         cantidad.classList.add('none')
@@ -91,11 +91,13 @@ ipcRenderer.on('mando-el-producto',(e,args) => {
 })
 
 function mostrarVentas(objeto,cantidad) {
+    const marca = objeto.marca ? objeto.marca : "";
+    const codfabrica = objeto.cod_fabrica ? objeto.cod_fabrica : "";
     tbody.innerHTML += `
         <tr>
         <td>${objeto._id}</td>
-        <td>${cantidad}</td>
-        <td>${objeto.descripcion}</td>
+        <td>${parseFloat(cantidad).toFixed(2)}</td>
+        <td>${objeto.descripcion}  ${marca}  ${codfabrica}</td>
         <td>${nombre.value}</td>
         <td>${numero.value}</td>
         <td>${objeto.stock}</td>
