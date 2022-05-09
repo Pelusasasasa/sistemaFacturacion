@@ -193,7 +193,6 @@ async function mostrarDetalles(id,tipo,vendedor) {
         `
     }else{
     let productos = (await axios.get(`${URL}movProductos/${id}/${tipo}`)).data;
-    console.log(productos)
     let movimientos1 = productos.filter(movimiento => movimiento.codCliente === clienteTraido._id);
     let movimientos2 = productos.filter(movimiento => movimiento.codigo === clienteTraido._id);
     productos = [...movimientos1,...movimientos2]
@@ -230,8 +229,6 @@ let saldoABorrar = 0
                 let total = 0;
                 for await(let movimiento of movimientos ){
                     const producto = (await axios.get(`${URL}productos/${movimiento.codProd}`)).data;
-                    console.log(movimiento.egreso);
-                    console.log(producto.precio_venta)
                     total += parseFloat(movimiento.egreso)*parseFloat(producto.precio_venta);
                     productos.push({cantidad:movimiento.egreso,objeto:producto});
                 };
@@ -279,9 +276,12 @@ let saldoABorrar = 0
                     await axios.put(`${URL}cuentaHisto/id/${cuentaHistorica.nro_comp}`,cuentaHistorica);
                     await axios.put(`${URL}cuentaComp/id/${cuentaCompensada.nro_comp}`,cuentaCompensada);
                     await axios.put(`${URL}clientes/${cliente._id}`,cliente);
-                    location.reload();
-                }else{
-                    location.reload();
+                    const cuentaCompensadaModificada  = (await axios.get(`${URL}cuentaComp/id/${seleccionado.id}`)).data[0];
+                    seleccionado.children[3].innerHTML = cuentaCompensadaModificada.importe;
+                    seleccionado.children[4].innerHTML = cuentaCompensadaModificada.pagado;
+                    seleccionado.children[5].innerHTML = cuentaCompensadaModificada.saldo;
+                    saldo.value = cliente.saldo;
+                    saldo_p.value = cliente.saldo_p
                 }
                 
         }else{

@@ -62,13 +62,13 @@ const ventasTraidas = async (ventas)=>{
     });
     
     let diaVentaAnterior = new Date((ventas[0].fecha)).getDate();
-    diaVentaAnterior = diaVentaAnterior < 10 ? `0${diaVentaAnterior}` : diaVentaAnterior;
+    // diaVentaAnterior = diaVentaAnterior < 10 ? `0${diaVentaAnterior}` : diaVentaAnterior;
     let ventasHoy = [];
    for await(let venta of ventas){
-        
-        if (new Date(venta.fecha).getDate() === diaVentaAnterior + 1) {
-            console.log(ventasHoy)
-            await listar(ventasHoy,diaVentaAnterior)
+       console.log(new Date(venta.fecha).getDate());
+       console.log(diaVentaAnterior)
+        if (new Date(venta.fecha).getDate() > diaVentaAnterior) {
+            ventasHoy.length !== 0 && await listar(ventasHoy,diaVentaAnterior)
             ventasHoy = [];
             diaVentaAnterior = new Date(venta.fecha).getDate();
             ventasHoy.push(venta);
@@ -76,7 +76,7 @@ const ventasTraidas = async (ventas)=>{
             ventasHoy.push(venta);
         }
     };
-     listar(ventasHoy)
+    //  listar(ventasHoy)
 }
 
 const listar = async (ventas,diaVentaAnterior)=>{

@@ -270,7 +270,6 @@ codigo.addEventListener('keypress',async (e) => {
                                 codigo.focus()
                             }else{
                                 producto.stock<0 && alert("Stock En Negativo");
-                                console.log(producto.precio_venta);
                                (parseFloat(producto.precio_venta) === 0 && alert("Precio del producto en 0"))
                                 await mostrarVentas(producto,valor);
                                 e.target.value="";
@@ -599,6 +598,9 @@ presupuesto.addEventListener('click',async (e)=>{
             //Avisamos que no se puede hacer una venta sin productos
             alert("Cargar Productos")
         }else{
+            //creamos una lista sin los descuentos para imprimirlos
+            const listaSinDescuento = JSON.parse(JSON.stringify(listaProductos));
+
             venta.productos = listaProductos;
             venta.tipo_pago = await verElTipoDeVenta(tiposVentas); //vemos si es CD,CC o PP en el input[radio]
             if (venta.tipo_pago === "Ninguno") {
@@ -607,7 +609,7 @@ presupuesto.addEventListener('click',async (e)=>{
                 try {
                     alerta.classList.remove('none');
                     venta.nombreCliente = buscarCliente.value;
-                    tipoVenta="Presupuesto"
+                    tipoVenta="Presupuesto";
                     venta._id = await tamanioVentas("presupuesto")
                     venta.descuento = (descuentoN.value);
                     venta.precioFinal = redondear(total.value);
@@ -623,12 +625,13 @@ presupuesto.addEventListener('click',async (e)=>{
                     }
                     sacarIdentificadorTabla(venta.productos);
                     
-                            for (let producto of venta.productos){
-                                    if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
-                                        producto.objeto.precio_venta =  (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
-                                        producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
-                                    }
-                                }
+                    for await (let producto of venta.productos){
+                            if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
+                                producto.objeto.precio_venta =  (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
+                                producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
+                            }
+                        }
+
                      ipcRenderer.send('nueva-venta',venta);
                      await actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
                      //si la venta es CC Sumamos un saldo al cliente y ponemos en cuenta corriente compensada y historica
@@ -647,9 +650,10 @@ presupuesto.addEventListener('click',async (e)=>{
                              cond_iva: conIva.value
                          }
                          if (venta.tipo_pago === "CC") {
-                            ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion])
+                            ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion,listaSinDescuento])
                          }else{
-                             ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion])
+                            console.log(listaSinDescuento)
+                             ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion,listaSinDescuento])
                          }
                      }
                      //si la venta es distinta de presupuesto sacamos el stock y movimiento de producto
@@ -664,7 +668,7 @@ presupuesto.addEventListener('click',async (e)=>{
                          arregloProductosDescontarStock = [];
                      }
     
-                     window.location = "../index.html";
+                     //window.location = "../index.html";
                      
                 } catch (error) {
                     console.log(error)
@@ -691,14 +695,13 @@ ticketFactura.addEventListener('click',async (e) =>{
     }else if(listaProductos.length===0){
         alert("Ningun producto cargado")
     }else{  
-      
-
      tipoVenta = "Ticket Factura";
      venta.tipo_pago = await verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
      if (venta.tipo_pago === "Ninguno") {
             alert("Seleccionar un modo de venta");
         }else{
             alerta.classList.remove('none');
+            const listaSinDescuento = JSON.parse(JSON.stringify(listaProductos))
             venta.productos = listaProductos;
             venta.nombreCliente = buscarCliente.value;
             venta._id = await tamanioVentas("ticket factura");
@@ -739,8 +742,9 @@ ticketFactura.addEventListener('click',async (e) =>{
                     
                     await ipcRenderer.send('nueva-venta',venta);
                     const cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
+
                     alerta.children[1].children[0].innerHTML = "Imprimiendo Venta";
-                    await imprimirVenta([venta,cliente,afip]);
+                    await imprimirVenta([venta,cliente,afip,listaSinDescuento]);
                     await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
                     
                     if(venta.tipo_pago !== "PP" && !borraNegro){
@@ -1190,7 +1194,7 @@ function selecciona_value(idInput) {
 const imprimirVenta = (arreglo)=>{
 
 const conector = new ConectorPlugin();
-const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae,numero})=>{
+const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae,numero},listaProductos)=>{
     const fechaVenta = new Date(Venta.fecha)
     let dia = fechaVenta.getDate()
     let mes = fechaVenta.getMonth()+1;
@@ -1229,7 +1233,7 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae,numero})=>{
     conector.texto("CANTIDAD/PRECIO UNIT (%IVA)\n")
     conector.texto("DESCRIPCION           (%B.I)       IMPORTE\n")  
     conector.texto("------------------------------------------\n");
-    Venta.productos && Venta.productos.forEach(({cantidad,objeto})=>{
+    listaProductos && listaProductos.forEach(({cantidad,objeto})=>{
         const descripcion = objeto.descripcion;
         const primeraParte = objeto.descripcion.slice(0,23)
         const segundaParte = objeto.descripcion.slice(24)
@@ -1307,8 +1311,8 @@ const verTipoComp = (codigoComprobante)=>{
     }
 }
 
-const [Venta,Cliente,valoresQR] = arreglo;
-ponerValores(Cliente,Venta,valoresQR)
+const [Venta,Cliente,valoresQR,listaSinDescuento] = arreglo;
+ponerValores(Cliente,Venta,valoresQR,listaSinDescuento)
 }
 
 //Inicio Compensada

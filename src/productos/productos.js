@@ -29,6 +29,7 @@ ipcRenderer.on('productoModificado',(e,args)=>{
     aux[1].innerHTML = producto.descripcion;
     aux[2].innerHTML = producto.precio_venta;
     aux[3].innerHTML = producto.marca;
+    aux[4].innerHTML = producto.stock;
     aux[5].innerHTML = producto.cod_fabrica;
     aux[6].innerHTML = producto.observacion;
 })
@@ -54,7 +55,7 @@ body.addEventListener('keypress',e=>{
 //cada vez que apretamos una tecla vemos si la tabla tiene el foco y si las teclas son arriba o abajo recorremos la tabla
 //si la tecla es escape se cierra la pagina
 body.addEventListener('keydown',e=>{
-    if (table.classList.contains('tablaFocus')) {
+    if (document.activeElement.nodeName === "BODY") {
         recorrerConFlechas(e)
     }
 }) 
@@ -121,7 +122,6 @@ seleccionarTBody.addEventListener('click',(e) =>{
     const sacarSeleccion = document.querySelector('.seleccionado')
     sacarSeleccion && sacarSeleccion.classList.remove('seleccionado')
     seleccionado.classList.toggle('seleccionado')
-    console.log("first")
     //mostrar imagen
     seleccionado && mostrarImagen(seleccionado.id)
 })
@@ -164,7 +164,6 @@ agregarProducto.addEventListener('click',e=>{
 
 //Info Movimiento de producto
 const movimiento = document.querySelector('.movimiento')
-
 movimiento.addEventListener('click',()=>{
     if (seleccionado) {
         ipcRenderer.send('abrir-ventana-info-movimiento-producto',seleccionado.id)

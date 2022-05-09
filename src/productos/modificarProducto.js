@@ -57,7 +57,7 @@ function asignarCampos(producto) {
     (parseFloat(producto.costo) !== 0) ? (costoPesos.value = parseFloat(producto.costo).toFixed(2)) : (costoPesos.value = "0.00");
     (parseFloat(producto.costodolar) !== 0) ? (costoDolares.value = parseFloat(producto.costodolar).toFixed(3)) : (costoDolares.value = "0.00");
 
-    if (parseFloat(costoPesos.value) === 0) {
+    if (parseFloat(costoDolares.value) !== 0) {
         ivaImp.value = parseFloat(producto.impuestos);
         costo = parseFloat(costoDolares.value);
         costoTotal.value = ((costo+parseFloat(producto.impuestos))*dolar).toFixed(3);
@@ -83,12 +83,12 @@ if (costoPesos.focus) {
     }
 
 costoTotal.addEventListener('focus',()=>{
-    (parseFloat(costoPesos.value) === 0) ? (ivaImp.value = parseFloat((costoDolares.value * valorTasaIva / 100).toFixed(3))) : ivaImp.value = costo.toFixed(3)
+    (parseFloat(costoDolares.value) !== 0) ? (ivaImp.value = parseFloat((costoDolares.value * valorTasaIva / 100).toFixed(3))) : ivaImp.value = costo.toFixed(3)
     selecciona_value(costoTotal.id);
     costoT = parseFloat(ivaImp.value)
     let costoP = 0
     
-    if (parseFloat(costoPesos.value) === 0) {
+    if (parseFloat(costoDolares.value) !== 0) {
         costoP = parseFloat(costoDolares.value);
         costoTotal.value = ((parseFloat(ivaImp.value)+parseFloat(costoDolares.value))*dolar).toFixed(2)
     }else{

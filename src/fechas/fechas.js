@@ -7,6 +7,7 @@ const URL = process.env.URL;
 
 const desde = document.querySelector('#desde');
 const hasta = document.querySelector('#hasta');
+const select = document.querySelector('#hora');
 const aceptar = document.querySelector('.aceptar');
 const cancelar = document.querySelector('.cancelar');
 
@@ -15,10 +16,19 @@ const date = new Date();
 let day = date.getDate();
 let month = date.getMonth() + 1;
 let year = date.getFullYear();
+let hora = date.getHours();
+
+if (hora>14) {
+    select.value = "PM";
+}else{
+    select.value = "AM"
+}
 
 day = day<10 ? `0${day}` : day;
 month = month<10 ? `0${month}` : month;
 month = month===13 ? 1 : month;
+
+
 
 desde.value = `${year}-${month}-${day}`
 hasta.value = `${year}-${month}-${day}`
@@ -41,11 +51,17 @@ aceptar.addEventListener('click',async e=>{
                 return presu
             }
         });
-        const arreglo = [...ticketsDelDia,...presupuestosDelDia];
-        ipcRenderer.send('enviar-arreglo-descarga',arreglo);
-        window.close();
+        let arreglo = [...ticketsDelDia,...presupuestosDelDia];
+        if (select.value === "AM") {
+            arreglo = arreglo.filter(venta=>(new Date(venta.fecha)).getHours()<14);
+        }else if(select.value === "PM"){
+            arreglo = arreglo.filter(venta=>(new Date(venta.fecha)).getHours()>14);
+        }
+         ipcRenderer.send('enviar-arreglo-descarga',arreglo);
+         window.close();
 });
 
+//cuando apretamos enter le pasamos el foco a hasta
 desde.addEventListener('keypress',e=>{
     e.preventDefault();
     if (e.key === "Enter") {
@@ -53,6 +69,7 @@ desde.addEventListener('keypress',e=>{
     }
 });
 
+//cuando apretamos enter le pasamos el foco a aceptar
 hasta.addEventListener('keypress',e=>{
     e.preventDefault();
     if (e.key === "Enter") {

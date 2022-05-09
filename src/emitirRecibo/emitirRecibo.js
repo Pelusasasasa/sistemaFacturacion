@@ -408,6 +408,7 @@ const modificarVentas = (lista)=>{
             if(tr.id === venta.nro_comp){
                 venta.pagado = (tr.children[5].children[0].value !== "") ? parseFloat((parseFloat(tr.children[4].innerHTML) + parseFloat(tr.children[5].children[0].value)).toFixed(2)) : parseFloat(venta.pagado);
                 venta.saldo = parseFloat(tr.children[6].innerHTML);
+                console.log(venta)
                     await axios.put(`${URL}cuentaComp/id/${venta.nro_comp}`,venta);
             }
         })

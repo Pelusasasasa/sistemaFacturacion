@@ -23,9 +23,9 @@ const fecha = document.querySelector('.fecha');
         const descuento = document.querySelector('.descuento');
 
 
-        const listar = async (venta,cliente,valorizado)=>{
-            let lista = venta.productos;
-            if (lista.length >16) {
+        const listar = async (venta,cliente,valorizado,lista)=>{
+            console.log(lista)
+            if (lista.length >16){
                 const tabla = document.querySelector('.tabla');
                 tabla.classList.add('hojaGrande');
             };
@@ -97,6 +97,6 @@ const fecha = document.querySelector('.fecha');
         })
 
     ipcRenderer.on('imprimir',(e,args)=>{
-        [venta,cliente,,,,valorizado] = JSON.parse(args)
-        listar(venta,cliente,valorizado)
+        [venta,cliente,,,,valorizado,lista] = JSON.parse(args)
+        listar(venta,cliente,valorizado,lista)
     })

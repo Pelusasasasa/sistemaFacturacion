@@ -155,7 +155,7 @@ ipcMain.on('borrarVentaACliente',async (e,args)=>{
 })
 
 ipcMain.on('abrir-ventana-clientesConSaldo',async(e,args)=>{
-    abrirVentana("resumenCuenta/clientes.html",1200,500 , "noReiniciar");
+    abrirVentana("resumenCuenta/clientes.html",1200,500 , "noReinician");
     nuevaVentana.on('ready-to-show',()=>{
         nuevaVentana.webContents.send('situacion',JSON.stringify(args))
     })
@@ -198,12 +198,12 @@ ipcMain.on('imprimir-venta',async(e,args)=>{
         copies: cantidad,
     };
     if (tipo === "Recibos_P") {
-        abrirVentana("emitirRecibo/imprimirRecibo.html",1000,900,"noReiniciar");
+        abrirVentana("emitirRecibo/imprimirRecibo.html",1000,900,"noReinician");
 
     }else if(tipo === "Recibos"){
-        abrirVentana("emitirComprobante/imprimirTicket.html",800,200,"noReiniciar");
+        abrirVentana("emitirComprobante/imprimirTicket.html",800,200,"noReinician");
     }else{
-        abrirVentana("emitirComprobante/imprimir.html",1000,500,"noReiniciar");
+        abrirVentana("emitirComprobante/imprimir.html",1000,500,"noReinician");
 
     }
     await imprimir(options,args);
@@ -262,7 +262,7 @@ ipcMain.on('ventaModificada',async (e,[args,id])=>{
 //Abrir ventana para modificar un producto
 ipcMain.on('abrir-ventana-modificar-producto',  (e, args) => {
     const [id,acceso,texto,seleccion] = args
-    abrirVentana('productos/modificarProducto.html',1000,600,'noReiniciar')
+    abrirVentana('productos/modificarProducto.html',1000,600,'noReinician')
     nuevaVentana.on('ready-to-show',async ()=>{
     nuevaVentana.webContents.send('id-producto', id)
     nuevaVentana.webContents.send('acceso', JSON.stringify(acceso))
@@ -277,7 +277,7 @@ ipcMain.on('abrir-ventana-modificar-producto',  (e, args) => {
 
 ipcMain.on('productoModificado',(e,args)=>{
     ventanaPrincipal.webContents.send('productoModificado',JSON.stringify(args))
-})
+});
 
 
 //abrir ventana agregar producto
@@ -291,7 +291,7 @@ ipcMain.on('abrir-ventana-agregar-producto',async(e,args)=>{
 //Abrir ventana de movimiento de producto
 ipcMain.on('abrir-ventana-movimiento-producto',async (e,arreglo)=>{
     const [id,vendedor] = arreglo
-    abrirVentana('movProductos/movProductos.html',800,500)
+    abrirVentana('movProductos/movProductos.html',800,500,"noReinician")
     let producto = await axios.get(`${URL}productos/${id}`);
     producto = producto.data
     nuevaVentana.on('ready-to-show',()=>{
@@ -301,7 +301,7 @@ ipcMain.on('abrir-ventana-movimiento-producto',async (e,arreglo)=>{
 
 //Abrir ventana de Informacion de producto
 ipcMain.on('abrir-ventana-info-movimiento-producto',async (e,args)=>{
-    abrirVentana('movProductos/infoMovProductos.html',1000,500)
+    abrirVentana('movProductos/infoMovProductos.html',1000,500,"noReinician")
 
 //informacion de movimiento de producto
     nuevaVentana.on('ready-to-show',async()=>{
@@ -330,8 +330,8 @@ const templateMenu = [
         {
             label: 'Ventas',
             click() {
-                abrirVentana('fechas/fechas.html',400,200);
-                // descargas("Ventas")
+                abrirVentana('fechas/fechas.html',400,300);
+
             }
         }]
     },
@@ -549,7 +549,6 @@ function abrirVentana(texto,width,height,reinicio){
             nuevaVentana= null
         });
         nuevaVentana.on('ready-to-show',()=>{
-        //   ventanaPrincipal.show();
         })
         nuevaVentana.setMenuBarVisibility(false)
     }else if(texto.includes("usuarios")){
@@ -596,7 +595,7 @@ function abrirVentana(texto,width,height,reinicio){
         nuevaVentana.on('close',e=>{
             nuevaVentana = null;
 
-            reinicio !== "noReiniciar" && ventanaPrincipal.reload()
+            reinicio !== "noReinician" && ventanaPrincipal.reload()
         })
     }
 

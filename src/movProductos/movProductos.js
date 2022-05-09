@@ -28,10 +28,7 @@ cantidad.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
         aceptar.focus()
     }
-})
-
-
-
+});
 
 let operacion = "Compra"
 function verTipoDeOperacion(tipo){
@@ -67,6 +64,7 @@ aceptar.addEventListener('click', async (e) => {
       let producto = (await axios.get(`${URL}productos/${movProducto.codProd}`)).data;
       producto.stock = movProducto.stock;
       await axios.put(`${URL}productos/${movProducto.codProd}`,producto)
+      ipcRenderer.send('productoModificado',producto);
       window.close()
 })
 
