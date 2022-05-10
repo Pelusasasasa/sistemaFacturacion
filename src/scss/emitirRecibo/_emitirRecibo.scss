@@ -40,19 +40,19 @@
     background-color: white;
     overflow: scroll;
     border: 0.1rem solid black;
-    @include Chico(){
-      height: 48rem;
-    }
-    @include Comun(){
-      height: 50rem;
-    }
-    @include P900(){
-      height: 60rem;
-    }
-    @include P950(){
-      height: 65rem;
-    }
-    height: 25rem;
+    // @include Chico(){
+    //   height: 48rem;
+    // }
+    // @include Comun(){
+    //   height: 50rem;
+    // }
+    // @include P900(){
+    //   height: 60rem;
+    // }
+    // @include P950(){
+    //   height: 65rem;
+    // }
+    height: 65vh;
     
 
     table {

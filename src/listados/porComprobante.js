@@ -5,7 +5,11 @@ require("dotenv").config;
 const URL = process.env.URL;
 
 const hoy = new Date();
-let dia = hoy.getDate()
+let dia = hoy.getDate();
+
+let totalRecibos = 0;
+let totalFactura = 0;
+let totalPresupuesto = 0;
 
 if (dia<10) {
     dia = `0${dia}`
@@ -139,9 +143,46 @@ function listarVentas(lista) {
                 </tr>
             `
         }
+        if (venta.tipo_comp === "Ticket Factura" || venta.tipo_comp === "Nota Credito") {
+            totalFactura += venta.precioFinal;
+        }else if(venta.tipo_comp === "Presupuesto"){
+            totalPresupuesto += venta.precioFinal;
+        }else{
+            totalRecibos += venta.precioFinal;
+        }
         tbody.innerHTML += `
         <tr class="total"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class=tdTotal>${parseFloat(venta.precioFinal).toFixed(2)}</td></tr>`
     });
+
+    tbody.innerHTML += `
+        <tr class="total">
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>Presupuesto: </td>
+            <td>${totalPresupuesto.toFixed(2)}</td>
+        </tr>
+        <tr class="total">
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>Facturas: </td>
+            <td>${totalFactura.toFixed(2)}</td>
+        </tr>
+        <tr class="total">
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>Recibos: </td>
+            <td>${totalRecibos.toFixed(2)}</td>
+        </tr>
+    `
 }
 
 

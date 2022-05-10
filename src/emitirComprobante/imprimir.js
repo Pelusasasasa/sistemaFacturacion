@@ -24,7 +24,7 @@ const fecha = document.querySelector('.fecha');
 
 
         const listar = async (venta,cliente,valorizado,lista)=>{
-            console.log(lista)
+            lista = lista === undefined ? venta.productos : lista;
             if (lista.length >16){
                 const tabla = document.querySelector('.tabla');
                 tabla.classList.add('hojaGrande');

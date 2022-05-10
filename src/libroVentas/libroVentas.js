@@ -12,6 +12,19 @@ mes = (mes < 10) ? (mes = `0${mes}`) : mes;
 dia = (dia<10) ? (dia = `0${dia}`) : dia;
 const anio = fecha.getFullYear();
 
+
+//varaibles globales del total
+let totalGlobalGravado21Nota = 0;
+let totalGlobalIva21Nota = 0;
+let totalGlobalGravado105Nota = 0;
+let totalGlobalIva105Nota = 0;
+let totalGlobalNota = 0;
+let totalGlobalGravado21Factura = 0;
+let totalGlobalIva21Factura = 0;
+let totalGlobalGravado105Factura = 0;
+let totalGlobalIva105Factura = 0;
+let totalGlobalFactura = 0;
+
 let ultimoDiaMesAnterior = (new Date(anio,mes-1,0))
 ultimoDiaMesAnterior=ultimoDiaMesAnterior.getDate()
 
@@ -60,13 +73,12 @@ const ventasTraidas = async (ventas)=>{
         }
         return 0
     });
-    
+    let ultimoDia = new Date((ventas[ventas.length - 1].fecha)).getDate();
+    console.log(ultimoDia)
     let diaVentaAnterior = new Date((ventas[0].fecha)).getDate();
     // diaVentaAnterior = diaVentaAnterior < 10 ? `0${diaVentaAnterior}` : diaVentaAnterior;
     let ventasHoy = [];
    for await(let venta of ventas){
-       console.log(new Date(venta.fecha).getDate());
-       console.log(diaVentaAnterior)
         if (new Date(venta.fecha).getDate() > diaVentaAnterior) {
             ventasHoy.length !== 0 && await listar(ventasHoy,diaVentaAnterior)
             ventasHoy = [];
@@ -76,7 +88,70 @@ const ventasTraidas = async (ventas)=>{
             ventasHoy.push(venta);
         }
     };
-    //  listar(ventasHoy)
+    const ventasUltimoDia = ventas.filter(venta => new Date(venta.fecha).getDate() === ultimoDia);
+    await listar(ventasUltimoDia);
+    tbody.innerHTML += `
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td>TOTAL MENSUAL</td>
+            <td>${(totalGlobalGravado21Factura-totalGlobalGravado21Nota).toFixed(2)}</td>
+            <td>${(totalGlobalIva21Factura-totalGlobalIva21Nota).toFixed(2)}</td>
+            <td>${(totalGlobalGravado105Factura-totalGlobalGravado105Nota).toFixed(2)}</td>
+            <td>${(totalGlobalIva105Factura-totalGlobalIva105Nota).toFixed(2)}</td>
+            <td>${(totalGlobalFactura-totalGlobalNota).toFixed(2)}</td>
+        </tr>
+
+        <tr >
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td  class="borde">TOTAL Nota Credito</td>
+            <td  class="borde">${totalGlobalGravado21Nota.toFixed(2)}</td>
+            <td  class="borde">${totalGlobalIva21Nota.toFixed(2)}</td>
+            <td  class="borde">${totalGlobalGravado105Nota.toFixed(2)}</td>
+            <td  class="borde">${totalGlobalIva105Nota.toFixed(2)}</td>
+            <td  class="borde">${totalGlobalNota.toFixed(2)}</td>
+        </tr>
+
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td  class="borde">TOTAL Facturas</td>
+            <td  class="borde">${totalGlobalGravado21Factura.toFixed(2)}</td>
+            <td  class="borde">${totalGlobalIva21Factura.toFixed(2)}</td>
+            <td  class="borde">${totalGlobalGravado105Factura.toFixed(2)}</td>
+            <td  class="borde">${totalGlobalIva105Factura.toFixed(2)}</td>
+            <td  class="borde">${totalGlobalFactura.toFixed(2)}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="borde">Gravado</td>
+            <td class="borde">Iva 21%</td>
+            <td class="borde">Iva 10.5%</td>
+            <td class="borde">Total</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="borde">${(totalGlobalGravado105Factura + totalGlobalGravado21Factura - totalGlobalGravado105Nota - totalGlobalGravado21Nota).toFixed(2)}</td>
+            <td class="borde">${(totalGlobalIva21Factura - totalGlobalIva21Nota).toFixed(2)}</td>
+            <td class="borde">${(totalGlobalIva105Factura - totalGlobalIva105Nota).toFixed(2)}</td>
+            <td class="borde">${((totalGlobalGravado105Factura + totalGlobalGravado21Factura - totalGlobalGravado105Nota - totalGlobalGravado21Nota)+(totalGlobalIva21Factura - totalGlobalIva21Nota)+(totalGlobalIva105Factura - totalGlobalIva105Nota)).toFixed(2)}</td>
+        </tr>
+    `
 }
 
 const listar = async (ventas,diaVentaAnterior)=>{
@@ -87,7 +162,7 @@ const listar = async (ventas,diaVentaAnterior)=>{
     let totaliva21 = 0;
     let totaliva105 = 0;
     let total = 0
-    let tamanioVentas = ventas.length - 1;
+
     ventas.sort((a,b)=>{
         if (a.tipo_comp > b.tipo_comp) {
             return 1
@@ -159,6 +234,19 @@ const listar = async (ventas,diaVentaAnterior)=>{
                     <td class = "final">${total.toFixed(2)}</td>
                     </tr>
                 `
+                if (tipo_comp === "Ticket Factura") {
+                    totalGlobalGravado105Factura += totalgravado105;
+                    totalGlobalGravado21Factura += totalgravado21;
+                    totalGlobalIva105Factura += totaliva105;
+                    totalGlobalIva21Factura += totaliva21;
+                    totalGlobalFactura += total;
+                }else{
+                    totalGlobalGravado105Nota += totalgravado105;
+                    totalGlobalGravado21Nota += totalgravado21;
+                    totalGlobalIva105Nota += totaliva105;
+                    totalGlobalIva21Nota += totaliva21;
+                    totalGlobalNota += total;
+                }
                 tipo_comp = ventaSiguiente.tipo_comp;
                 total = 0
                 totalgravado21 = 0

@@ -110,7 +110,7 @@ const ponerProductos = productos =>{
 }
 
 buscarProducto.addEventListener('keydown',e=>{
-    if (e.key === "ArrowLeft") {
+    if (e.key === "ArrowLeft" && buscarProducto.value === "") {
         select.focus();
     }
 })
@@ -217,6 +217,10 @@ if (acceso === "2" || acceso === "1") {
 }
 
 //cunado se cambie la conidcion el codigo toma el foco
-select.addEventListener('change',e=>{
-    buscarProducto.select()
+select.addEventListener('keydown',e=>{
+    if(e.key === "ArrowUp" || e.key === "ArrowDown"){
+        buscarProducto.focus()
+    }else{
+        e.preventDefault();
+    }
 })

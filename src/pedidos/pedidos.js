@@ -74,7 +74,8 @@ cantidad.addEventListener('keypress',e=>{
             descripcion:descripcion.value,
             stock:0
         }
-        mostrarVentas(producto,cantidad.value)
+        const valorDeCantidad = cantidad.value === "" ? 0 : cantidad.value;
+        mostrarVentas(producto,valorDeCantidad)
         cantidad.classList.add('none')
         cantidad.value = "";
         descripcion.value = "";

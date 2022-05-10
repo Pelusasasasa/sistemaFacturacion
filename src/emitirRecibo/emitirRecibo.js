@@ -513,8 +513,8 @@ const ponerEnCuentaCorrienteCompensada = async(recibo)=>{
     cuenta.cliente = cliente.cliente;
     cuenta.tipo_comp = recibo.tipo_comp;
     cuenta.nro_comp = recibo.nro_comp;
-    cuenta.importe = saldoAfavor.value;
-    cuenta.saldo = saldoAfavor.value;
+    cuenta.importe = parseFloat(saldoAfavor.value) * -1;
+    cuenta.saldo = parseFloat(saldoAfavor.value) * -1;
     await axios.post(`${URL}cuentaComp`,cuenta);
 }
 

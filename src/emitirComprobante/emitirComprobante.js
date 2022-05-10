@@ -292,7 +292,7 @@ function mostrarVentas(objeto,cantidad) {
         <td class="tdEnd">${(parseFloat(cantidad)).toFixed(2)}</td>
         <td>${objeto._id}</td>
         <td>${objeto.descripcion} ${objeto.marca}</td>
-        <td class="tdEnd">${(objeto.iva !== "N" ? 10.50 : 21).toFixed(2)}</td>
+        <td class="tdEnd">${(objeto.iva === "R" ? 10.50 : 21).toFixed(2)}</td>
         <td class="tdEnd">${parseFloat(objeto.precio_venta).toFixed(2)}</td>
         <td class="tdEnd">${(parseFloat(objeto.precio_venta)*(cantidad)).toFixed(2)}</td>
         </tr>
@@ -668,7 +668,7 @@ presupuesto.addEventListener('click',async (e)=>{
                          arregloProductosDescontarStock = [];
                      }
     
-                     //window.location = "../index.html";
+                     window.location = "../index.html";
                      
                 } catch (error) {
                     console.log(error)

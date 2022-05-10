@@ -81,8 +81,10 @@ guardar.addEventListener('click', async e=>{
 const eliminarPedido = document.querySelector('.eliminarPedido')
 eliminarPedido.addEventListener("click", async e =>{
         if (id) {
-            await axios.delete(`${URL}pedidos/${id.id}`);
-            location.reload()
+            if (confirm("Seguro quiere Eliminar el Pedido")) {
+                await axios.delete(`${URL}pedidos/${id.id}`);
+                location.reload();
+            }
         }else{
             dialogs.alert('Pedido no seleccionado')
         }
