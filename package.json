@@ -13,10 +13,10 @@
   "license": "ISC",
   "bugs": {},
   "devDependencies": {
-    "electron": "^11.4.10",
+    "electron": "^18.2.3",
     "electron-builder": "^22.11.7",
     "electron-packager": "^15.4.0",
-    "gulp": "^4.0.2",
+    "gulp": "^3.9.1",
     "gulp-autoprefixer": "^6.1.0",
     "gulp-postcss": "^9.0.1",
     "gulp-sass": "^5.0.0",

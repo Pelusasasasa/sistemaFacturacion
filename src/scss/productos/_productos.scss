@@ -7,6 +7,9 @@
   background-color: lightgreen;
   display: flex;
   flex-direction: column;
+  .seleccionado{
+    background-color: gray;
+  }
 
   .buscador {
     display: flex;
@@ -51,19 +54,6 @@
       margin: 0;
       overflow: scroll;
       scroll-behavior: smooth;
-
-      // @include Chico(){
-      //   height: 50rem;
-      // }
-      // @include Comun(){
-      //   height: 52rem;
-      // }
-      // @include P900(){
-      //   height: 60rem;
-      // }
-      // @include P950(){
-      //   height: 68rem;
-      // }
       height: 65vh;
       border: 0.1rem solid black;
     }
@@ -85,7 +75,7 @@
         background-color: white;
       }
       tr:nth-child(odd){
-        background-color: lightgray;
+        background-color: rgb(230, 230, 230);
       }
       tr:hover {
         background-color: gray;

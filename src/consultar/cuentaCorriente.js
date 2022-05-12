@@ -57,8 +57,10 @@ document.addEventListener('keydown',(event) =>{
    }
 });
 
+
 //Pasamos de negro a blanco
 document.addEventListener('keydown',(event) =>{
+    console.log(event.keyCode)
    if (event.key === "Alt") {
       document.addEventListener('keydown',(e) =>{
           if (e.key === "F8" && situacion === "negro") {
@@ -67,6 +69,59 @@ document.addEventListener('keydown',(event) =>{
               tipo === "compensada" ? listarLista(listaCompensada,situacion,tipo) : listarLista(listaHistorica,situacion,tipo);
           }
       })
+  }else if(event.key === "Control"){
+      document.addEventListener('keydown',e=>{
+          if (e.keyCode === 67) {
+            if (subseleccion) {
+                let aux = document.createElement("textarea");
+                aux.innerHTML = subseleccion.innerHTML
+                document.body.appendChild(aux);
+                aux.select();
+                document.execCommand("copy");
+                document.body.removeChild(aux);
+            }
+          }
+      })
+  }else if(event.keyCode === 39){
+    subseleccion.classList.remove('subseleccionado');
+    subseleccion = subseleccion.nextElementSibling;
+    subseleccion.classList.add('subseleccionado');
+  }else if(event.keyCode === 37){
+    if(subseleccion.previousElementSibling){
+        subseleccion.classList.remove('subseleccionado');
+        subseleccion = subseleccion.previousElementSibling
+        subseleccion.classList.add('subseleccionado');
+    }
+  }else if(event.keyCode === 38){
+    if (seleccionado.previousElementSibling) {
+        let aux;
+        for(let i = 0;i<seleccionado.children.length;i++){
+            if (seleccionado.children[i].className.includes("subseleccionado")) {
+                aux = i;
+            }
+        }
+        seleccionado.classList.remove('seleccionado');
+        subseleccion.classList.remove('subseleccionado');
+        seleccionado = seleccionado.previousElementSibling;
+        subseleccion = seleccionado.children[aux]
+        subseleccion.classList.add('subseleccionado')
+        seleccionado.classList.add('seleccionado')
+    }
+  }else if(event.keyCode === 40){
+    if (seleccionado.nextElementSibling) {
+        let aux;
+        for(let i = 0;i<seleccionado.children.length;i++){
+            if (seleccionado.children[i].className.includes("subseleccionado")) {
+                aux = i;
+            }
+        }
+        seleccionado.classList.remove('seleccionado');
+        subseleccion.classList.remove('subseleccionado');
+        seleccionado = seleccionado.nextElementSibling;
+        subseleccion = seleccionado.children[aux];
+        subseleccion.classList.add('subseleccionado');
+        seleccionado.classList.add('seleccionado');
+    }
   }
 });
 
@@ -136,6 +191,8 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
 //si hacemos click en el tbody vamos a seleccionar una cuenta compensada o historica y pasamos a mostrar los detalles de la cuenta
 listar.addEventListener('click',e=>{
     seleccionado = e.path[0].nodeName === "TD" ?  e.path[1] : e.path[2];
+    subseleccion && subseleccion.classList.remove('subseleccionado');
+    subseleccion && (subseleccion = "");
     subseleccion = e.path[0].nodeName === "TD" ? e.path[0] : e.path[1];
     subseleccion.classList.add('subseleccionado');
     const sacarSeleccion = document.querySelector('.seleccionado')
@@ -334,7 +391,6 @@ document.addEventListener('keydown',e=>{
 //Ponemos los datos del cliente en los inputs y traemos las compensadas e historicas
 const ponerDatosCliente = async (Cliente)=>{
     clienteTraido = Cliente
-    console.log(Cliente)
     codigoCliente.value = Cliente._id
     cliente.value = Cliente.cliente;
     saldo.value = (parseFloat(Cliente.saldo)).toFixed(2)
