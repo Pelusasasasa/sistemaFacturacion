@@ -50,6 +50,7 @@
       background-color: white;
       margin: 0;
       overflow: scroll;
+      scroll-behavior: smooth;
 
       // @include Chico(){
       //   height: 50rem;

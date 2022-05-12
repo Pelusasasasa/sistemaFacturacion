@@ -6,38 +6,45 @@ const axios = require("axios");
 require("dotenv").config;
 const URL = process.env.URL;
 
-
-const cliente = document.querySelector('#buscador')
-const saldo = document.querySelector('#saldo')
-const listar = document.querySelector('.listar')
-const compensada = document.querySelector('.compensada')
-const historica = document.querySelector('.historica')
-const actualizar = document.querySelector('.actualizar')
+const codigoCliente = document.querySelector('#codigoCliente');
+const cliente = document.querySelector('#buscador');
+const saldo = document.querySelector('#saldo');
+const listar = document.querySelector('.listar');
+const compensada = document.querySelector('.compensada');
+const historica = document.querySelector('.historica');
+const actualizar = document.querySelector('.actualizar');
+const detalle = document.querySelector('.detalle');
 
 let listaCompensada=[];
 let listaHistorica=[];
-let lista=[]
-let clienteTraido = {}
-let listaGlobal=[]
-vendedor = ""
+let clienteTraido = {};
+let listaGlobal=[];
+vendedor = "";
 let seleccionado = "";
+let subseleccion = "";
 let situacion = "blanco";
-let tipo = "compensada"
+let tipo = "compensada";
 
+
+//mostramos la base de datos cuenta historica del cliente
 historica.addEventListener('click',e=>{
     historica.classList.add("disable")
     compensada.classList.remove('disable')
     tipo = "historica"
     listarLista(listaHistorica,situacion,tipo)
-})
+});
 
+
+//mostramos la base de datos cuenta compensada del cliente
 compensada.addEventListener('click',e=>{
     compensada.classList.add("disable")
     historica.classList.remove('disable')
     tipo = "compensada"
     listarLista(listaCompensada,situacion,tipo)
-})
+});
 
+
+//Pasamos de blanco a negro
 document.addEventListener('keydown',(event) =>{
     if (event.key === "Alt") {
        document.addEventListener('keydown',(e) =>{
@@ -48,8 +55,9 @@ document.addEventListener('keydown',(event) =>{
            }
        })
    }
-})
+});
 
+//Pasamos de negro a blanco
 document.addEventListener('keydown',(event) =>{
    if (event.key === "Alt") {
       document.addEventListener('keydown',(e) =>{
@@ -60,9 +68,12 @@ document.addEventListener('keydown',(event) =>{
           }
       })
   }
-})
+});
 
+const labes = document.querySelectorAll('label')
+//Ocultado lo que tenemos en negro
 const ocultarNegro = ()=>{
+    labes.forEach(label=>label.classList.remove('blanco'));
     const saldo = document.querySelector('#saldo')
     const saldo_p = document.querySelector('#saldo_p')
     const botonFacturar = document.querySelector('#botonFacturar')
@@ -78,7 +89,10 @@ const ocultarNegro = ()=>{
     actualizar.classList.add('none')
 }
 
+
+//mostramos lo que tenemos en negro
 const mostrarNegro = ()=>{
+    labes.forEach(label=>label.classList.add('blanco'));
     const saldo = document.querySelector('#saldo')
     const saldo_p = document.querySelector('#saldo_p')
     const botonFacturar = document.querySelector('#botonFacturar')
@@ -92,33 +106,38 @@ const mostrarNegro = ()=>{
     saldo_p.classList.remove('none')
     body.classList.add('mostrarNegro')
     actualizar.classList.remove('none')
-}
+};
 
-cliente.addEventListener('keypress', async e =>{
+//Buscamos un cliente
+codigoCliente.addEventListener('keypress', async e =>{
     if (e.key === "Enter") {
-        if (cliente.value !== "") {
-            let clienteTraido = await axios.get(`${URL}clientes/id/${cliente.value.toUpperCase( )}`)
+        if (codigoCliente.value !== "") {
+            let clienteTraido = await axios.get(`${URL}clientes/id/${codigoCliente.value.toUpperCase( )}`)
             clienteTraido = clienteTraido.data;
                 if (clienteTraido !== "") {
                     ponerDatosCliente(clienteTraido);
                 }else{
-                     alert("El cliente no existe")
-                     cliente.value = "";
-                     cliente.focus();
+                     alert("El cliente no existe");
+                     codigoCliente.value = "";
+                     codigoCliente.focus();
                 }
             }else{
-            ipcRenderer.send('abrir-ventana',"clientes")
+            ipcRenderer.send('abrir-ventana',"clientes");
          }
         }
-    })
+    });
 
+
+//Recibimos el cliente que nos mandaron desde la otra ventana
 ipcRenderer.on('mando-el-cliente',async(e,args)=>{
-    ponerDatosCliente(JSON.parse(args))
+    ponerDatosCliente(JSON.parse(args));
 })
 
-
+//si hacemos click en el tbody vamos a seleccionar una cuenta compensada o historica y pasamos a mostrar los detalles de la cuenta
 listar.addEventListener('click',e=>{
     seleccionado = e.path[0].nodeName === "TD" ?  e.path[1] : e.path[2];
+    subseleccion = e.path[0].nodeName === "TD" ? e.path[0] : e.path[1];
+    subseleccion.classList.add('subseleccionado');
     const sacarSeleccion = document.querySelector('.seleccionado')
     sacarSeleccion && sacarSeleccion.classList.remove('seleccionado')
     seleccionado.classList.toggle('seleccionado')
@@ -129,6 +148,7 @@ listar.addEventListener('click',e=>{
     }
 });
 
+//Si ponemos algo en observaciones que se nos guarde en la cuenta compensada
 listar.addEventListener('keyup', async e=>{
     const observacion = document.activeElement.value;
     const comp = (await axios.get(`${URL}cuentaComp/id/${seleccionado.id}`)).data[0];
@@ -183,7 +203,7 @@ const listarLista = (lista,situacion,tipo)=>{
     });
 }
 
-const detalle = document.querySelector('.detalle')
+
 async function mostrarDetalles(id,tipo,vendedor) {
     detalle.innerHTML = '';
     if (tipo === "Recibos_P" || tipo === "Recibos") {
@@ -309,11 +329,14 @@ document.addEventListener('keydown',e=>{
     if(e.key === "Escape"){
         window.history.go(-1)
     }
-})
+});
 
+//Ponemos los datos del cliente en los inputs y traemos las compensadas e historicas
 const ponerDatosCliente = async (Cliente)=>{
     clienteTraido = Cliente
-    cliente.value = Cliente.cliente
+    console.log(Cliente)
+    codigoCliente.value = Cliente._id
+    cliente.value = Cliente.cliente;
     saldo.value = (parseFloat(Cliente.saldo)).toFixed(2)
     saldo_p.value = (parseFloat(Cliente.saldo_p)).toFixed(2)
     listaVentas=Cliente.listaVentas
@@ -322,4 +345,4 @@ const ponerDatosCliente = async (Cliente)=>{
     listaCompensada=compensadas;
     listaHistorica = historicas;
     listarLista(compensadas,situacion,tipo)
-}
+};

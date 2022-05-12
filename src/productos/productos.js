@@ -56,9 +56,21 @@ body.addEventListener('keypress',e=>{
 //si la tecla es escape se cierra la pagina
 body.addEventListener('keydown',e=>{
     if (document.activeElement.nodeName === "BODY") {
+        const tr = document.querySelector('.seleccionado')
+        e.preventDefault(); 
+        
+        if (isHidden(tr.nextElementSibling)) {
+            e.preventDefault();    
+        }
         recorrerConFlechas(e)
     }
-}) 
+});
+
+function isHidden(el) {
+    var style = window.getComputedStyle(el);
+    console.log(style.visibility);
+    return (style.display === 'none')
+}
 
 //funcion para recorrer la tabla
 function recorrerConFlechas(e) {

@@ -1,9 +1,5 @@
 const { ipcRenderer } = require("electron");
 
-const axios = require("axios");
-require("dotenv").config;
-const URL = process.env.URL;
-
 const fecha = document.querySelector('.fecha');
         const numero = document.querySelector('.numero');
         const vendedor = document.querySelector('.vendedor');
@@ -25,34 +21,34 @@ const fecha = document.querySelector('.fecha');
 
         const listar = async (venta,cliente,valorizado,lista)=>{
             lista = lista === undefined ? venta.productos : lista;
-            if (lista.length >16){
+            if (lista.length>16){
                 const tabla = document.querySelector('.tabla');
                 tabla.classList.add('hojaGrande');
             };
 
             const tomarFecha = new Date(venta.fecha);
             const dia = tomarFecha.getDate(); 
-            const mes = tomarFecha.getMonth() + 1
+            const mes = tomarFecha.getMonth() + 1;
             const anio = tomarFecha.getFullYear();
             const hora = tomarFecha.getHours();
             const minuto = tomarFecha.getMinutes();
             const segundo = tomarFecha.getSeconds();
 
-            numero.innerHTML=venta.nro_comp
+            numero.innerHTML=venta.nro_comp;
             clientes.innerHTML = cliente.cliente;
             venta.observaciones !== "" ? clientes.innerHTML += ` (${venta.observaciones})` : "";
-            idCliente.innerHTML = cliente._id
-            vendedor.innerHTML = venta.vendedor
-            cuit.innerHTML = cliente.cuit
-            direccion.innerHTML = cliente.direccion
-            localidad.innerHTML = cliente.localidad
-            fecha.innerHTML = `${dia}/${mes}/${anio} ${hora}:${minuto}:${segundo}`
-            numeroComp.innerHTML = venta.nro_comp
-            subtotal.innerHTML =  venta.descuento ? parseFloat(venta.precioFinal)+parseFloat(venta.descuento) : 0;
+            idCliente.innerHTML = cliente._id;
+            vendedor.innerHTML = venta.vendedor;
+            cuit.innerHTML = cliente.cuit;
+            direccion.innerHTML = cliente.direccion;
+            localidad.innerHTML = cliente.localidad;
+            fecha.innerHTML = `${dia}/${mes}/${anio} ${hora}:${minuto}:${segundo}`;
+            numeroComp.innerHTML = venta.nro_comp;
+            subtotal.innerHTML =  venta.descuento ? (parseFloat(venta.precioFinal)+parseFloat(venta.descuento)).toFixed(2) : 0;
             precioFinal.innerHTML=(parseFloat(venta.precioFinal)).toFixed(2);
-            tipoPago.innerHTML= venta.tipo_pago
-            tipoFactura.innerHTML = "R"
-            descuento.innerHTML = venta.descuento
+            tipoPago.innerHTML= venta.tipo_pago;
+            tipoFactura.innerHTML = "R";
+            descuento.innerHTML = venta.descuento;
     
             if (venta.tipo_pago === "CC" && valorizado !== "valorizado") {
                 precioFinal.innerHTML = ""
@@ -67,7 +63,7 @@ const fecha = document.querySelector('.fecha');
             }
             tbody.innerHTML=""
              for await (let {objeto,cantidad} of lista) {
-                 if (venta.tipo_pago !== "CC" || (valorizado === "valorizado" && venta.tipo_pago === "CC"   )) {
+                 if (venta.tipo_pago !== "CC" || (valorizado === "valorizado" && venta.tipo_pago === "CC")) {
                         
                     tbody.innerHTML += `
                     <tr>

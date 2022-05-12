@@ -183,7 +183,7 @@ const mostrarVentas = (objeto,cantidad)=>{
         <td class="tdEnd">${(parseFloat(cantidad)).toFixed(2)}</td>
         <td>${objeto._id}</td>
         <td>${objeto.descripcion}</td>
-        <td class="tdEnd" >${(objeto.iva !== "N" ? 10.50 : 21).toFixed(2)}</td>
+        <td class="tdEnd" >${(objeto.iva === "R" ? 10.50 : 21).toFixed(2)}</td>
         <td class="tdEnd">${parseFloat(objeto.precio_venta).toFixed(2)}</td>
         <td class="tdEnd">${(parseFloat(objeto.precio_venta)*(cantidad)).toFixed(2)}</td>
         </tr>

@@ -74,12 +74,13 @@ const ventasTraidas = async (ventas)=>{
         return 0
     });
     let ultimoDia = new Date((ventas[ventas.length - 1].fecha)).getDate();
-    console.log(ultimoDia)
     let diaVentaAnterior = new Date((ventas[0].fecha)).getDate();
+    let mesDelDiaAnterior = new Date((ventas[0].fecha)).getMonth() + 1;
+    mesDelDiaAnterior = mesDelDiaAnterior === 13 ? 1 : mesDelDiaAnterior
     // diaVentaAnterior = diaVentaAnterior < 10 ? `0${diaVentaAnterior}` : diaVentaAnterior;
     let ventasHoy = [];
    for await(let venta of ventas){
-        if (new Date(venta.fecha).getDate() > diaVentaAnterior) {
+        if ((new Date(venta.fecha).getDate() > diaVentaAnterior) || (new Date(venta.fecha).getDate() < diaVentaAnterior && new Date(venta.fecha).getMonth + 1 !== mesDelDiaAnterior)) {
             ventasHoy.length !== 0 && await listar(ventasHoy,diaVentaAnterior)
             ventasHoy = [];
             diaVentaAnterior = new Date(venta.fecha).getDate();
@@ -196,7 +197,7 @@ const listar = async (ventas,diaVentaAnterior)=>{
                 <td>${day}/${month}/${year}</td>
                 <td class = "inicio">${venta.nombreCliente}</td>
                 <td class = "inicio">${cond_iva}</td>
-                <td class = "inicio">${cliente.cuit}</td>
+                <td class = "inicio">${venta.dnicuit ? venta.dnicuit : "00000000"}</td>
                 <td class = "inicio">${venta.tipo_comp}</td>
                 <td>${venta.nro_comp}</td>
                 <td class = "final">${gravado21}</td>

@@ -277,7 +277,8 @@ const hacerRecibo = async()=>{
      recibo.nombreCliente = cliente.cliente;
      recibo.vendedor = Vendedor;
      recibo.direccion = direccion.value;
-     recibo.condIva = cond_iva.value
+     recibo.condIva = cond_iva.value;
+     recibo.descuento = 0;
      recibo.precioFinal =parseFloat( parseFloat(total.value).toFixed(2));
      recibo.tipo_comp = (situacion === "blanco" ? "Recibos" : "Recibos_P" );
      const aux = (situacion === "negro") ? "saldo_p" : "saldo"

@@ -15,7 +15,6 @@ if (dia<10) {
     dia = `0${dia}`
 }
 let mes = hoy.getMonth() + 1
-console.log(mes)
 
 mes = (mes === 0) ? 1 : mes
 

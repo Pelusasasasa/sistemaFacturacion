@@ -336,18 +336,6 @@ const templateMenu = [
         }]
     },
     {
-        label: "h",
-        submenu: [
-            {
-                label: 'Show/Hide Dev Tools',
-                accelerator: process.platform == 'darwin' ? 'Comand+D' : 'Ctrl+D',
-                click(item, focusedWindow) {
-                    focusedWindow.toggleDevTools();
-                }
-            }
-        ]
-    },
-    {
         label: "Datos",
         submenu: [
             {
@@ -475,7 +463,14 @@ const templateMenu = [
                 })
             }
         }
-    }
+    },
+    {
+        label: "",
+        accelerator: process.platform == 'darwin' ? 'Comand+D' : 'Ctrl+D',
+        click(item, focusedWindow) {
+            focusedWindow.toggleDevTools();
+        }
+    },
 ]
 
 //AbrirVentanaParaBuscarUnCliente

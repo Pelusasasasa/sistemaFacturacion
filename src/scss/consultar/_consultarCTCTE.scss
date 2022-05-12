@@ -10,15 +10,33 @@
     background-color: lightgreen;
     padding: 1rem;
     padding-bottom: 2rem;
-    #buscador{
-      width: 40%;
+
+    main{
+      display: flex;
+      flex-direction: column;
+      #codigoCliente{
+        width: 40%;
+      }
+      #buscador{
+        width: 150%;
+      }
     }
+
+    .botones{
+      display: flex;
+      flex-direction: row;
+      justify-content: space-around;
+    }
+
     label {
       font-size: 2.4rem;
-      display: flex;
-      align-items: center;
       font-weight: bold;
+      &.blanco{
+        color: white;
+      }
     }
+
+
 
     button,a {
       border-radius: 7.5rem;
@@ -61,7 +79,13 @@
         }
       }
       tbody {
+        .seleccionado {
+          background-color: lightgray;
+        }      
         tr {
+          .subseleccionado{
+            background-color: gray;
+          }
           td {
             border: 0.1rem solid black;
           }
@@ -118,9 +142,6 @@
     }
   }
 
-  .seleccionado {
-    background-color: lightgray;
-  }
 
   .seccion_botones {
     background-color: lightgreen;

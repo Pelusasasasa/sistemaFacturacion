@@ -8,7 +8,14 @@
     <link rel="stylesheet" href="../../build/css/app.css" />
   </head>
   <body class="consultaCtaCte">
-    <div class="buscador">
+    <section class="buscador">
+
+      <main class="codigoCliente">
+        <label for="">Cod. Cliente</label>
+        <input type="text" autofocus placeholder="Codigo" name="codigoCliente" id="codigoCliente">
+      </main>
+
+     <main class="cliente">
       <label for="">Buscar Cliente</label>
       <input
         autofocus
@@ -17,12 +24,18 @@
         id="buscador"
         name="buscador"
       />
-      <input type="text" placeholder="Saldo" id="saldo" name="saldo" disabled />
-      <input type="text" class="none" placeholder="Saldo_p" id="saldo_p" name="saldo_p" disabled />
-      <button class="compensada disable">Compensada</button>
-      <button class="historica ">Historica</button>
-      <button class="actualizar none">Actualizar</button>
-    </div>
+     </main>
+      <main>
+        <label for="">Saldo</label>
+        <input type="text" placeholder="Saldo" id="saldo" name="saldo" disabled />
+        <input type="text" class="none" placeholder="Saldo_p" id="saldo_p" name="saldo_p" disabled />
+      </main>
+      <main class="botones">
+        <button class="compensada disable">Compensada</button>
+        <button class="historica ">Historica</button>
+        <button class="actualizar none">Actualizar</button>
+      </main>
+    </section>
 
     <div class="listarventas">
       <table>
