@@ -18,7 +18,8 @@ const resultado = document.querySelector('#resultado');
 const select = document.querySelector('#seleccion');
 const buscarProducto = document.querySelector('#buscarProducto');
 let texto = ""
-let seleccionado
+let seleccionado;
+let subseleccion;
 const body = document.querySelector('body')
 buscarProducto.focus()
 
@@ -63,19 +64,22 @@ body.addEventListener('keydown',e=>{
 
 //funcion para recorrer la tabla
 function recorrerConFlechas(e) {
-    if (e.key === "ArrowDown") {
-        const tr = document.querySelector('.seleccionado')
-        if (tr.nextElementSibling) {
-            tr.nextElementSibling.classList.add('seleccionado')
-            tr.classList.remove('seleccionado')
-        }
-    }else if(e.key === "ArrowUp"){
-        const tr = document.querySelector('.seleccionado')
-        if (tr.previousElementSibling) {
-            tr.previousElementSibling.classList.add('seleccionado')
-            tr.classList.remove('seleccionado')
-        }
+     if(e.key === "Control"){
+        document.addEventListener('keydown',e=>{
+            if (e.keyCode === 67) {
+              if (subseleccion) {
+                  let aux = document.createElement("textarea");
+                  aux.innerHTML = subseleccion.innerHTML
+                  document.body.appendChild(aux);
+                  aux.select();
+                  document.execCommand("copy");
+                  document.body.removeChild(aux);
+              }
+            }
+        });
     }
+    funcionSubSeleccion(e.keyCode);
+
 }
 
 async function filtrar(){
@@ -119,7 +123,10 @@ buscarProducto.addEventListener('keydown',e=>{
 //Hacemos que se seleccione un producto
 let seleccionarTBody = document.querySelector('tbody')
 seleccionarTBody.addEventListener('click',(e) =>{
-    seleccionado = e.path[1]
+    seleccionado = e.path[1];
+    subseleccion && subseleccion.classList.remove('subseleccionado');
+    subseleccion = e.path[0].nodeName === "TD" ? e.path[0] : e.path[1];
+    subseleccion.classList.add('subseleccionado');
     const sacarSeleccion = document.querySelector('.seleccionado')
     sacarSeleccion && sacarSeleccion.classList.remove('seleccionado')
     seleccionado.classList.toggle('seleccionado')
@@ -224,4 +231,48 @@ select.addEventListener('keydown',e=>{
     }else{
         e.preventDefault();
     }
-})
+});
+
+const funcionSubSeleccion = (codigoKey)=>{
+    if(codigoKey=== 39){
+        subseleccion.classList.remove('subseleccionado');
+        subseleccion = subseleccion.nextElementSibling;
+        subseleccion.classList.add('subseleccionado');
+      }else if(codigoKey=== 37){
+        if(subseleccion.previousElementSibling){
+            subseleccion.classList.remove('subseleccionado');
+            subseleccion = subseleccion.previousElementSibling
+            subseleccion.classList.add('subseleccionado');
+        }
+      }else if(codigoKey=== 38){
+        if (seleccionado.previousElementSibling) {
+            let aux;
+            for(let i = 0;i<seleccionado.children.length;i++){
+                if (seleccionado.children[i].className.includes("subseleccionado")) {
+                    aux = i;
+                }
+            }
+            seleccionado.classList.remove('seleccionado');
+            subseleccion.classList.remove('subseleccionado');
+            seleccionado = seleccionado.previousElementSibling;
+            subseleccion = seleccionado.children[aux]
+            subseleccion.classList.add('subseleccionado')
+            seleccionado.classList.add('seleccionado')
+        }
+      }else if(codigoKey=== 40){
+        if (seleccionado.nextElementSibling) {
+            let aux;
+            for(let i = 0;i<seleccionado.children.length;i++){
+                if (seleccionado.children[i].className.includes("subseleccionado")) {
+                    aux = i;
+                }
+            }
+            seleccionado.classList.remove('seleccionado');
+            subseleccion.classList.remove('subseleccionado');
+            seleccionado = seleccionado.nextElementSibling;
+            subseleccion = seleccionado.children[aux];
+            subseleccion.classList.add('subseleccionado');
+            seleccionado.classList.add('seleccionado');
+        }
+      }
+}

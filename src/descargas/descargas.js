@@ -1,6 +1,6 @@
 const XLSX = require('xlsx');
 
-const pedidos = (Pedidos) =>{
+const pedidos = (Pedidos,path) =>{
 let wb = XLSX.utils.book_new();
 
 wb.props = {
@@ -12,10 +12,10 @@ wb.props = {
 let newWS = XLSX.utils.json_to_sheet(Pedidos)
 
 XLSX.utils.book_append_sheet(wb, newWS,'Pedidos')
-XLSX.writeFile(wb,"Pedidos.xlsx")
+XLSX.writeFile(wb,path)
 }
 
-const ventas = (Ventas)=>{
+const ventas = (Ventas,path)=>{
 
     let wb = XLSX.utils.book_new();
 
@@ -86,7 +86,7 @@ const ventas = (Ventas)=>{
     Ventas.push(agregarVenta);
     let newWs = XLSX.utils.json_to_sheet(Ventas)
     XLSX.utils.book_append_sheet(wb,newWs,'Ventas')
-    XLSX.writeFile(wb,"Ventas.xlsx")
+    XLSX.writeFile(wb,path)
 }
 
 module.exports = [pedidos,ventas];

@@ -7,7 +7,8 @@ const resultado = document.querySelector('#resultado');
 const select = document.querySelector('#seleccion');
 const buscarProducto = document.querySelector('#buscarProducto');
 let productos = '';
-let seleccion = 'descripcion'
+let seleccion = 'descripcion';
+let subseleccion;
 let texto = ""
 let seleccionado
 const body = document.querySelector('body')
@@ -38,6 +39,12 @@ window.addEventListener('click',e=>{
 body.addEventListener('keydown',e=>{
     if (table.classList.contains('tablaFocus')) {
         recorrerConFlechas(e)
+    }else if(document.activeElement.nodeName === "INPUT" && e.keyCode === 40){
+        table.classList.add('tablaFocus') 
+        subseleccion = seleccionado.children[0];
+        document.activeElement.blur();
+        subseleccion.classList.add('subseleccionado')
+        
     }
     if (e.key === "Escape") {
         window.close()
@@ -46,26 +53,30 @@ body.addEventListener('keydown',e=>{
 
 //funcion para recorrer la tabla
 function recorrerConFlechas(e) {
-    if (e.key === "ArrowDown") {
-        const tr = document.querySelector('.seleccionado')
-        if (tr.nextElementSibling) {
-            tr.nextElementSibling.classList.add('seleccionado')
-            tr.classList.remove('seleccionado')
-        }
-    }else if(e.key === "ArrowUp"){
-        const tr = document.querySelector('.seleccionado')
-        if (tr.previousElementSibling) {
-            tr.previousElementSibling.classList.add('seleccionado')
-            tr.classList.remove('seleccionado')
-        }
+    if(e.key === "Control"){
+        document.addEventListener('keydown',e=>{
+            if (e.keyCode === 67) {
+              if (subseleccion) {
+                  let aux = document.createElement("textarea");
+                  aux.innerHTML = subseleccion.innerHTML
+                  document.body.appendChild(aux);
+                  aux.select();
+                  document.execCommand("copy");
+                  document.body.removeChild(aux);
+              }
+            }
+        });
     }
+    funcionSubSeleccion(e.keyCode);
 }
 
 function filtrar(){
-    resultado.innerHTML = '';
-    //obtenemos lo que se escribe en el input
-    texto = buscarProducto.value.toLowerCase();
-    ipcRenderer.send('get-productos',[texto,seleccion]);
+    if (buscarProducto.value !== "") {
+        resultado.innerHTML = '';
+    }
+        //obtenemos lo que se escribe en el input
+        texto = buscarProducto.value.toLowerCase();
+        ipcRenderer.send('get-productos',[texto,seleccion]);    
 }
 
 ipcRenderer.on('get-productos', (e,args) =>{
@@ -82,9 +93,10 @@ ipcRenderer.on('get-productos', (e,args) =>{
                 </tr>
             `
     }
-    // inputseleccionado(seleccionarTBody.firstElementChild)
+     seleccionado = seleccionarTBody.firstElementChild;
+     seleccionado.classList.add('seleccionado')
+});
 
-})
 
 select.addEventListener('click',(e) =>{
     seleccion = e.target.value;
@@ -94,15 +106,13 @@ buscarProducto.addEventListener('keyup',filtrar);
 
 let seleccionarTBody = document.querySelector('tbody')
 seleccionarTBody.addEventListener('click',e=>{
-    let identificador = e.path[1]
-    inputseleccionado(identificador)
+    subseleccion && (subseleccion.classList.remove('subseleccionado'));
+    subseleccion = e.path[0].nodeName === "TD" ? e.path[0] : e.path[0].children;
+    subseleccion.classList.add('subseleccionado');
+    seleccionado && (seleccionado.classList.remove('seleccionado'));
+    seleccionado = e.path[1];
+    seleccionado.classList.add('seleccionado')
 })
-
-const inputseleccionado = (e) =>{
-    const yaSeleccionado = document.querySelector('.seleccionado')
-    yaSeleccionado && yaSeleccionado.classList.remove('seleccionado')
-    e.classList.toggle('seleccionado')
-}
 
 seleccionarTBody.addEventListener('dblclick',(e) =>{
     seleccionado = document.querySelector('.seleccionado')
@@ -136,4 +146,49 @@ async function cantidad(e) {
             }
         }
     })
-}
+};
+
+const funcionSubSeleccion = (codigoKey)=>{
+    if(codigoKey=== 39){
+        subseleccion.classList.remove('subseleccionado');
+        subseleccion = subseleccion.nextElementSibling;
+        subseleccion.classList.add('subseleccionado');
+      }else if(codigoKey=== 37){
+        if(subseleccion.previousElementSibling){
+            subseleccion.classList.remove('subseleccionado');
+            subseleccion = subseleccion.previousElementSibling
+            subseleccion.classList.add('subseleccionado');
+        }
+      }else if(codigoKey=== 38){
+        if (seleccionado.previousElementSibling) {
+            let aux;
+            for(let i = 0;i<seleccionado.children.length;i++){
+                if (seleccionado.children[i].className.includes("subseleccionado")) {
+                    aux = i;
+                }
+            }
+            seleccionado.classList.remove('seleccionado');
+            subseleccion.classList.remove('subseleccionado');
+            seleccionado = seleccionado.previousElementSibling;
+            subseleccion = seleccionado.children[aux]
+            subseleccion.classList.add('subseleccionado')
+            seleccionado.classList.add('seleccionado')
+        }
+      }else if(codigoKey=== 40){
+    
+        if (seleccionado.nextElementSibling) {
+            let aux;
+            for(let i = 0;i<seleccionado.children.length;i++){
+                if (seleccionado.children[i].className.includes("subseleccionado")) {
+                    aux = i;
+                }
+            }
+            seleccionado.classList.remove('seleccionado');
+            subseleccion.classList.remove('subseleccionado');
+            seleccionado = seleccionado.nextElementSibling;
+            subseleccion = seleccionado.children[aux];
+            subseleccion.classList.add('subseleccionado');
+            seleccionado.classList.add('seleccionado');
+        }
+      }
+};

@@ -17,7 +17,9 @@ const buscarCliente = document.querySelector('#buscarCliente')
 const resultado = document.querySelector('#resultado')
 const eliminar = document.querySelector('.eliminar')
 acceso !== "0" && eliminar.classList.add('none') 
-let clientes
+let clientes;
+let seleccionado;
+let subseleccionado;
 
 const ponerClientes = (clientes) =>{
     clientes.sort((a,b)=>{
@@ -66,10 +68,13 @@ filtrar()
 buscarCliente.addEventListener('keyup',filtrar)
 
 const cliente = document.querySelector("tbody")
-let identificador
 cliente.addEventListener('click',e =>{
-   identificador = e.path[1].id
-   inputseleccionado(e.path[1]);
+    seleccionado && (seleccionado.classList.remove('seleccionado'));
+    subseleccionado && (subseleccionado.classList.remove('subseleccionado'));
+    subseleccionado = e.path[0];
+    seleccionado = e.path[1];
+    seleccionado.classList.add('seleccionado');
+    subseleccionado.classList.add('subseleccionado');
 })
 
 const agregar = document.querySelector('.agregar')
@@ -81,7 +86,7 @@ agregar.addEventListener('click',e=>{
 const modificar = document.querySelector('.modificar')
 modificar.addEventListener('click',() =>{
     if (identificador) {
-        ipcRenderer.send('abrir-ventana-modificar-cliente',[identificador,acceso])
+        ipcRenderer.send('abrir-ventana-modificar-cliente',[seleccionado._id,acceso])
     }else{
         dialogs.alert('Cliente no seleccionado')
         document.querySelector('.ok').focus()
@@ -116,5 +121,57 @@ eliminar.addEventListener('click',async e=>{
 document.addEventListener('keydown',e=>{
     if(e.key === "Escape"){
         window.history.go(-1)
+    }
+})
+
+
+//hacemos para que si el foco lo tiene el tbody recorremos con flechas
+const body = document.querySelector('body');
+body.addEventListener('keydown',e=>{
+    if (seleccionado ) {
+        if (e.keyCode === 40 && seleccionado.nextElementSibling) {
+            let aux;
+            for (let i = 0; i < seleccionado.children.length; i++) {
+                aux = seleccionado.children[i].className.includes('subseleccionado') ? i : aux;
+            }
+            seleccionado.classList.remove('seleccionado');
+            seleccionado = seleccionado.nextElementSibling;
+            seleccionado.classList.add('seleccionado');
+            subseleccionado && subseleccionado.classList.remove('subseleccionado');
+            subseleccionado = seleccionado.children[aux];
+            subseleccionado.classList.add('subseleccionado');
+        }else if(e.keyCode === 38 && seleccionado.previousElementSibling){
+            let aux;
+            for (let i = 0; i < seleccionado.children.length; i++) {
+                aux = seleccionado.children[i].className.includes('subseleccionado') ? i : aux;
+            }
+            seleccionado.classList.remove('seleccionado');
+            seleccionado = seleccionado.previousElementSibling;
+            seleccionado.classList.add('seleccionado');
+            subseleccionado && subseleccionado.classList.remove('subseleccionado');
+            subseleccionado = seleccionado.children[aux];
+            subseleccionado.classList.add('subseleccionado');
+        }else if(e.keyCode === 37 && subseleccionado.previousElementSibling){
+            subseleccionado && subseleccionado.classList.remove('subseleccionado');
+            subseleccionado = subseleccionado.previousElementSibling;
+            subseleccionado.classList.add('subseleccionado');
+        }else if(e.keyCode === 39 && subseleccionado.nextElementSibling){
+            subseleccionado && subseleccionado.classList.remove('subseleccionado');
+            subseleccionado = subseleccionado.nextElementSibling;
+            subseleccionado.classList.add('subseleccionado');
+        }else if(e.keyCode === 17){
+            document.addEventListener('keydown',e=>{
+                if (e.keyCode === 67) {
+                    if (subseleccionado) {
+                        let aux = document.createElement("textarea");
+                        aux.innerHTML = subseleccionado.innerHTML
+                        document.body.appendChild(aux);
+                        aux.select();
+                        document.execCommand("copy");
+                        document.body.removeChild(aux);
+                    }
+                }
+            })
+        }
     }
 })

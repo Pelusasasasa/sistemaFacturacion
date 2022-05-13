@@ -1,16 +1,19 @@
 const { ipcRenderer } = require("electron");
+
 const axios = require("axios");
 const { DateTime } = require("luxon");
+const XLSX = require('xlsx');
 require("dotenv").config;
 const URL = process.env.URL;
 
 const fecha = new Date()
 let dia = fecha.getDate()
 let mes = fecha.getMonth() + 1;
+const anio = fecha.getFullYear();
+
 mes = (mes === 13) ? (mes=1) : mes;
 mes = (mes < 10) ? (mes = `0${mes}`) : mes;
 dia = (dia<10) ? (dia = `0${dia}`) : dia;
-const anio = fecha.getFullYear();
 
 
 //varaibles globales del total
@@ -44,12 +47,12 @@ const desde = document.querySelector('#desde');
 const hasta = document.querySelector('#hasta');
 const tbody = document.querySelector('.tbody');
 const buscar =  document.querySelector('.buscar');
+const exportar =  document.querySelector('.exportar');
 
 desde.value = fechaAyer;
 hasta.value = fechaHoy;
 
-let listaTicketFactura = []
-let listaNotaCredito = []
+let ventasExportar = [];
 
 buscar.addEventListener('click',async e=>{
     tbody.innerHTML = "";
@@ -58,6 +61,7 @@ buscar.addEventListener('click',async e=>{
     let ventas = (await axios.get(`${URL}ventas/${desdeFecha}/${hastaFecha}`)).data;
     ventas = ventas.filter(venta=>venta.tipo_comp !== "Recibos");
     ventas = ventas.filter(venta => venta.tipo_comp !== "Recibos_P");
+    ventasExportar = ventas;
     ventasTraidas(ventas);
 })
 
@@ -257,3 +261,25 @@ const listar = async (ventas,diaVentaAnterior)=>{
         }
     };
 }
+
+exportar.addEventListener('click',e=>{
+    ipcRenderer.send('elegirPath');
+    let path = "";
+    ipcRenderer.on('mandoPath',(e,args)=>{
+        path = args
+    
+        let wb = XLSX.utils.book_new();
+
+        wb.props = {
+            Title: "LibroVentas",
+            subject: "test",
+            Author: "Electro Avenida"
+        };
+
+        let newWS = XLSX.utils.json_to_sheet(ventasExportar);
+
+        XLSX.utils.book_append_sheet(wb,newWS,'LibroVentas');
+        XLSX.writeFile(wb,path);
+    })
+    
+});

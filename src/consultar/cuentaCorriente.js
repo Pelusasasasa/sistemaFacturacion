@@ -60,7 +60,6 @@ document.addEventListener('keydown',(event) =>{
 
 //Pasamos de negro a blanco
 document.addEventListener('keydown',(event) =>{
-    console.log(event.keyCode)
    if (event.key === "Alt") {
       document.addEventListener('keydown',(e) =>{
           if (e.key === "F8" && situacion === "negro") {
@@ -81,49 +80,55 @@ document.addEventListener('keydown',(event) =>{
                 document.body.removeChild(aux);
             }
           }
-      })
-  }else if(event.keyCode === 39){
-    subseleccion.classList.remove('subseleccionado');
-    subseleccion = subseleccion.nextElementSibling;
-    subseleccion.classList.add('subseleccionado');
-  }else if(event.keyCode === 37){
-    if(subseleccion.previousElementSibling){
-        subseleccion.classList.remove('subseleccionado');
-        subseleccion = subseleccion.previousElementSibling
-        subseleccion.classList.add('subseleccionado');
-    }
-  }else if(event.keyCode === 38){
-    if (seleccionado.previousElementSibling) {
-        let aux;
-        for(let i = 0;i<seleccionado.children.length;i++){
-            if (seleccionado.children[i].className.includes("subseleccionado")) {
-                aux = i;
-            }
-        }
-        seleccionado.classList.remove('seleccionado');
-        subseleccion.classList.remove('subseleccionado');
-        seleccionado = seleccionado.previousElementSibling;
-        subseleccion = seleccionado.children[aux]
-        subseleccion.classList.add('subseleccionado')
-        seleccionado.classList.add('seleccionado')
-    }
-  }else if(event.keyCode === 40){
-    if (seleccionado.nextElementSibling) {
-        let aux;
-        for(let i = 0;i<seleccionado.children.length;i++){
-            if (seleccionado.children[i].className.includes("subseleccionado")) {
-                aux = i;
-            }
-        }
-        seleccionado.classList.remove('seleccionado');
-        subseleccion.classList.remove('subseleccionado');
-        seleccionado = seleccionado.nextElementSibling;
-        subseleccion = seleccionado.children[aux];
-        subseleccion.classList.add('subseleccionado');
-        seleccionado.classList.add('seleccionado');
-    }
-  }
+      });
+  };
+
+  funcionSubSeleccion(event.keyCode,seleccionado,subseleccion)
 });
+
+const funcionSubSeleccion = (codigoKey)=>{
+    if(codigoKey=== 39){
+        subseleccion.classList.remove('subseleccionado');
+        subseleccion = subseleccion.nextElementSibling;
+        subseleccion.classList.add('subseleccionado');
+      }else if(codigoKey=== 37){
+        if(subseleccion.previousElementSibling){
+            subseleccion.classList.remove('subseleccionado');
+            subseleccion = subseleccion.previousElementSibling
+            subseleccion.classList.add('subseleccionado');
+        }
+      }else if(codigoKey=== 38){
+        if (seleccionado.previousElementSibling) {
+            let aux;
+            for(let i = 0;i<seleccionado.children.length;i++){
+                if (seleccionado.children[i].className.includes("subseleccionado")) {
+                    aux = i;
+                }
+            }
+            seleccionado.classList.remove('seleccionado');
+            subseleccion.classList.remove('subseleccionado');
+            seleccionado = seleccionado.previousElementSibling;
+            subseleccion = seleccionado.children[aux]
+            subseleccion.classList.add('subseleccionado')
+            seleccionado.classList.add('seleccionado')
+        }
+      }else if(codigoKey=== 40){
+        if (seleccionado.nextElementSibling) {
+            let aux;
+            for(let i = 0;i<seleccionado.children.length;i++){
+                if (seleccionado.children[i].className.includes("subseleccionado")) {
+                    aux = i;
+                }
+            }
+            seleccionado.classList.remove('seleccionado');
+            subseleccion.classList.remove('subseleccionado');
+            seleccionado = seleccionado.nextElementSibling;
+            subseleccion = seleccionado.children[aux];
+            subseleccion.classList.add('subseleccionado');
+            seleccionado.classList.add('seleccionado');
+        }
+      }
+}
 
 const labes = document.querySelectorAll('label')
 //Ocultado lo que tenemos en negro

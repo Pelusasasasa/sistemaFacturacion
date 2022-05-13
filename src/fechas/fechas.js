@@ -35,6 +35,8 @@ hasta.value = `${year}-${month}-${day}`
 
 
 aceptar.addEventListener('click',async e=>{
+    ipcRenderer.send('elegirPath');
+    ipcRenderer.on('mandoPath',async(e,args)=>{
     let desdefecha = new Date(desde.value);
     let hastafecha = DateTime.fromISO(hasta.value).endOf('day');
     const tickets = (await axios.get(`${URL}ventas/${desdefecha}/${hastafecha}`)).data;
@@ -57,8 +59,9 @@ aceptar.addEventListener('click',async e=>{
         }else if(select.value === "PM"){
             arreglo = arreglo.filter(venta=>(new Date(venta.fecha)).getHours()>14);
         }
-         ipcRenderer.send('enviar-arreglo-descarga',arreglo);
+         ipcRenderer.send('enviar-arreglo-descarga',[arreglo,args]);
          window.close();
+        })
 });
 
 //cuando apretamos enter le pasamos el foco a hasta
