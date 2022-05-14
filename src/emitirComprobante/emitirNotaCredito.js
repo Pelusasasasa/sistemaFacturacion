@@ -767,12 +767,15 @@ const imprimirVenta = (arreglo)=>{
         }
         conector.feed(2);
         conector.establecerTamanioFuente(2,1);
-        conector.texto("TOTAL       $" +  Venta.precioFinal + "\n");
+        conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionDerecha);
+        conector.texto("TOTAL $" +  Venta.precioFinal + "\n");
         conector.establecerTamanioFuente(1,1);
+        conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
         conector.texto("Recibimos(mos)\n");
         conector.texto(`${venta.tipo_pago === "CD" ? `Efectivo                  ${Venta.precioFinal}`  : "Cuenta Corriente"}` + "\n");
         conector.establecerTamanioFuente(2,1);
-        conector.texto("CAMBIO        $0.00\n");
+        conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionDerecha);
+        conector.texto("CAMBIO $0.00\n");
         conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
         conector.texto("*MUCHA GRACIAS*\n")
         conector.qrComoImagen(QR);

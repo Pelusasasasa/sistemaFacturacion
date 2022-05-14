@@ -56,6 +56,16 @@ let ventasExportar = [];
 
 buscar.addEventListener('click',async e=>{
     tbody.innerHTML = "";
+    totalGlobalGravado21Nota = 0;
+    totalGlobalIva21Nota = 0;
+    totalGlobalGravado105Nota = 0;
+    totalGlobalIva105Nota = 0;
+    totalGlobalNota = 0;
+    totalGlobalGravado21Factura = 0;
+    totalGlobalIva21Factura = 0;
+    totalGlobalGravado105Factura = 0;
+    totalGlobalIva105Factura = 0;
+    totalGlobalFactura = 0;
     const desdeFecha = new Date(desde.value)
     let hastaFecha = DateTime.fromISO(hasta.value).endOf('day');
     let ventas = (await axios.get(`${URL}ventas/${desdeFecha}/${hastaFecha}`)).data;

@@ -20,7 +20,7 @@ if (a === 2) {
 const axios = require("axios")
 const path = require('path');
 const { app, BrowserWindow, ipcMain, Menu, ipcRenderer,dialog } = require('electron');
-
+const { DateTime } = require("luxon");
 const url = require('url')
 const [pedidos, ventas] = require('./descargas/descargas')
 
@@ -43,7 +43,6 @@ app.on('window-all-closed',()=>{
 function crearVentanaPrincipal() {
     ventanaPrincipal = new BrowserWindow({  
         webPreferences: {
-            enableRemoteModule: true,
             contextIsolation: false,
             nodeIntegration: true,
         }
@@ -53,10 +52,9 @@ function crearVentanaPrincipal() {
     ventanaPrincipal.maximize()
 }
 
-//elegimos el path para guardar archivos
-ipcMain.on('elegirPath',async(e)=>{
-    const path = (await dialog.showSaveDialog()).filePath;
-    e.reply('mandoPath',path);
+ipcMain.on('elegirPath',async e=>{
+     const path = (await dialog.showSaveDialog()).filePath;
+     e.reply('mandoPath',path);
 })
 
 //abrir ventana agregar cliente
@@ -320,7 +318,7 @@ ipcMain.on('abrir-ventana-info-movimiento-producto',async (e,args)=>{
 //FIN MOVIMIENTO DE PRODUCTOS
 
 
-ipcMain.on('enviar-arreglo-descarga',async (e,args)=>{
+ipcMain.on('enviar-arreglo-descarga',(e,args)=>{
     descargas('Ventas',args[0],args[1]);
 })
 
@@ -330,15 +328,14 @@ const templateMenu = [
         label: 'Convertir excel',
         submenu: [{
             label: 'Pedidos',
-            async click() {
-                const path = (await dialog.showSaveDialog()).filePath;
-                descargas("Pedidos","a",path);
+            click() {
+                descargas("Pedidos");
             }
         },
         {
             label: 'Ventas',
             click() {
-                abrirVentana('fechas/fechas.html',400,300,path);
+                abrirVentana('fechas/fechas.html',400,300);
 
             }
         }]
@@ -494,8 +491,8 @@ function abrirVentana(texto,width,height,reinicio){
             width: 800,
             height: 500,
             parent:ventanaPrincipal,
+            modal:true,
             webPreferences: {
-                enableRemoteModule: true,
                 contextIsolation: false,
                 nodeIntegration: true
             }
@@ -512,10 +509,10 @@ function abrirVentana(texto,width,height,reinicio){
     }else if(texto === "clientes"){
         nuevaVentana = new BrowserWindow({
             parent:ventanaPrincipal,
+            modal:true,
             width: 1000,
             height: 600,
             webPreferences: {
-                enableRemoteModule: true,
                 contextIsolation: false,
                 nodeIntegration: true
             }
@@ -533,10 +530,10 @@ function abrirVentana(texto,width,height,reinicio){
     }else if(texto === "productos"){
         nuevaVentana = new BrowserWindow({
             parent:ventanaPrincipal,
+            modal:true,
             width: 1200,
             height: 600,
             webPreferences: {
-                enableRemoteModule: true,
                 contextIsolation: false,
                 nodeIntegration: true
             }
@@ -559,9 +556,9 @@ function abrirVentana(texto,width,height,reinicio){
         nuevaVentana = new BrowserWindow({
             width: 500,
             parent:ventanaPrincipal,
+            modal:true,
             height: 450,
             webPreferences: {
-                enableRemoteModule: true,
                 contextIsolation: false,
                 nodeIntegration: true
             }
@@ -581,24 +578,23 @@ function abrirVentana(texto,width,height,reinicio){
     }else{
         nuevaVentana = new BrowserWindow({
             parent:ventanaPrincipal,
+            modal:true,
             width: width,
             height: height,
             webPreferences: {
-                enableRemoteModule: true,
                 contextIsolation: false,
                 nodeIntegration: true
             }
         })
-        
         nuevaVentana.loadURL(url.format({
             pathname: path.join(__dirname, `./${texto}`),
             protocol: 'file',
             slashes: true
         }));
-
         nuevaVentana.setMenuBarVisibility(false)
         nuevaVentana.on('close',e=>{
             nuevaVentana = null;
+
             reinicio !== "noReinician" && ventanaPrincipal.reload()
         })
     }
@@ -610,9 +606,8 @@ function abrirVentana(texto,width,height,reinicio){
 
 async function descargas(nombreFuncion,ventasTraidas,path) {
     if(nombreFuncion === "Pedidos"){
-        pedidos((await axios.get(`${URL}pedidos`)).data,path)
+        pedidos((await axios.get(`${URL}pedidos`)).data)
     }else if(nombreFuncion === "Ventas"){
-        console.log(path)
         ventas(ventasTraidas,path);
     }
 }

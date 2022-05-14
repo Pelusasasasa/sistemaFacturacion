@@ -575,12 +575,15 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae,numero},arregloConTic
     })
     conector.feed(2);
     conector.establecerTamanioFuente(2,1);
-    conector.texto("TOTAL      $" +  (Venta.precioFinal).toFixed(2) + "\n");
+    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionDerecha);
+    conector.texto("TOTAL $" +  (Venta.precioFinal).toFixed(2) + "\n");
     conector.establecerTamanioFuente(1,1);
+    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
     conector.texto("Recibimos(mos)\n");
     conector.texto(`${Venta.tipo_pago !== "CC" ? `Contado                  ${(Venta.precioFinal).toFixed(2)}`  : "Cuenta Corriente"}` + "\n");0
     conector.establecerTamanioFuente(2,1);
-    conector.texto("CAMBIO         $0.00\n");
+    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionDerecha);
+    conector.texto("CAMBIO $0.00\n");
     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
     conector.texto("*MUCHA GRACIAS*\n")
     conector.qrComoImagen(QR);

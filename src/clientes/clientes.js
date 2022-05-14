@@ -85,8 +85,8 @@ agregar.addEventListener('click',e=>{
 
 const modificar = document.querySelector('.modificar')
 modificar.addEventListener('click',() =>{
-    if (identificador) {
-        ipcRenderer.send('abrir-ventana-modificar-cliente',[seleccionado._id,acceso])
+    if (seleccionado) {
+        ipcRenderer.send('abrir-ventana-modificar-cliente',[seleccionado.id,acceso])
     }else{
         dialogs.alert('Cliente no seleccionado')
         document.querySelector('.ok').focus()
