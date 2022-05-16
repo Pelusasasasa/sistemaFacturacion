@@ -1,12 +1,16 @@
 const {ipcRenderer,remote} = require('electron');
-const buscarCliente = document.querySelector('#buscarCliente')
-const resultado = document.querySelector('#resultado')
-let clientes = ''
-let texto
+const buscarCliente = document.querySelector('#buscarCliente');
+const resultado = document.querySelector('#resultado');
+const body = document.querySelector('body');
+const tbody = document.querySelector("tbody");
 
-const body = document.querySelector('body')
+let clientes = '';
+let texto;
+let seleccionado;
+let subseleccion;
+
 body.addEventListener('keypress',e=>{
-    const seleccionado = document.querySelector('.seleccionado')
+    seleccionado = document.querySelector('.seleccionado')
     if (e.key === 'Enter') {
         ipcRenderer.send('mando-el-cliente',seleccionado.id);
         window.close()
@@ -50,24 +54,67 @@ ipcRenderer.on('get-clientes',(e,args) =>{
 
     }
 
-    const primerCliente = resultado.firstElementChild.id
-    let tr = document.getElementById(primerCliente)
-    tr.classList.add('seleccionado')
+    seleccionado = resultado.firstElementChild;
+    seleccionado.classList.add('seleccionado');
+    subseleccion = resultado.firstElementChild.children[0];
+    subseleccion.classList.add('subseleccionado');
 
 })
 
 function recorrerConFlechas(e) {
-        if (e.key === "ArrowDown") {
-            const tr = document.querySelector('.seleccionado')
-            if (tr.nextElementSibling) {
-                tr.nextElementSibling.classList.add('seleccionado')
-                tr.classList.remove('seleccionado')
+        if(e.key === "Control"){
+            document.addEventListener('keydown',e=>{
+                if (e.keyCode === 67) {
+                if (subseleccion) {
+                    let aux = document.createElement("textarea");
+                    aux.innerHTML = subseleccion.innerHTML
+                    document.body.appendChild(aux);
+                    aux.select();
+                    document.execCommand("copy");
+                    document.body.removeChild(aux);
+                }
+                }
+            });
+        }else if (e.keyCode === 40) {
+            if (seleccionado.nextElementSibling) {
+                let aux
+                for(let i = 0;i<seleccionado.children.length;i++){
+                    aux = seleccionado.children[i].className.includes('subseleccionado') ? i : aux;
+                }
+
+                seleccionado && seleccionado.classList.remove('seleccionado');
+                seleccionado = seleccionado.nextElementSibling;
+                seleccionado.classList.add('seleccionado');
+
+                subseleccion && subseleccion.classList.remove('subseleccionado');
+                subseleccion = seleccionado.children[aux];
+                subseleccion.classList.add('subseleccionado');
             }
-        }else if(e.key === "ArrowUp"){
-            const tr = document.querySelector('.seleccionado')
-            if (tr.previousElementSibling) {
-                tr.previousElementSibling.classList.add('seleccionado')
-                tr.classList.remove('seleccionado')
+        }else if(e.keyCode === 38){
+            if (seleccionado.previousElementSibling) {
+                let aux
+                for(let i = 0;i<seleccionado.children.length;i++){
+                    aux = seleccionado.children[i].className.includes('subseleccionado') ? i : aux;
+                }
+                seleccionado && seleccionado.classList.remove('seleccionado');
+                seleccionado = seleccionado.previousElementSibling;
+                seleccionado.classList.add('seleccionado');
+
+                subseleccion && subseleccion.classList.remove('subseleccionado');
+                subseleccion = seleccionado.children[aux];
+                subseleccion.classList.add('subseleccionado');
+            }
+        }else if(e.keyCode === 37){
+            if (subseleccion.previousElementSibling) {
+                subseleccion && subseleccion.classList.remove('subseleccionado');
+                subseleccion = subseleccion.previousElementSibling;
+                subseleccion.classList.add('subseleccionado')
+            }
+        }else if(e.keyCode === 39){
+            if (subseleccion.nextElementSibling) {
+                subseleccion && subseleccion.classList.remove('subseleccionado');
+                subseleccion = subseleccion.nextElementSibling;
+                subseleccion.classList.add('subseleccionado')
             }
         }
     }
@@ -107,21 +154,20 @@ seleccionarTBody.addEventListener('dblclick',  (e) =>{
 
 buscarCliente.addEventListener('keyup',filtrar)
 
-const cliente = document.querySelector("tbody")
-let identificador
-cliente.addEventListener('click',e =>{
-   identificador = e.path[1].className
-   inputseleccionado(e.path[1]);
-})
 
-const inputseleccionado = (e) =>{
-    const yaSeleccionado = document.querySelector('.seleccionado')
-    yaSeleccionado && yaSeleccionado.classList.remove('seleccionado')
-   e.classList.toggle('seleccionado')
-}
+tbody.addEventListener('click',e =>{
+   seleccionado && seleccionado.classList.remove('seleccionado');
+   console.log(e.path[0])
+   seleccionado = (e.path[0].nodeName === "TD" || e.path[0].nodeName === "TH" )? e.path[1] : e.path[0];
+   seleccionado.classList.add('seleccionado');
+
+   subseleccion && subseleccion.classList.remove('subseleccionado');
+   subseleccion = e.path[0];
+   subseleccion.classList.add('subseleccionado')
+});
 
 document.addEventListener('keydown',e=>{
     if (e.key === "Escape") {
-        window.close()
+        window.close();
     }
-})
+});

@@ -1,6 +1,17 @@
 const a = require('./config')
-const fs = require('fs')
+const fs = require('fs');
+const os = require('os')
 require('dotenv').config();
+
+const axios = require("axios")
+const path = require('path');
+const { app, BrowserWindow, ipcMain, Menu, ipcRenderer,dialog } = require('electron');
+const { DateTime } = require("luxon");
+const url = require('url')
+const [pedidos, ventas] = require('./descargas/descargas')
+
+
+
 let URL
 if (a === 1) {
     URL = process.env.URLPUBLICANEGOCIO;
@@ -16,13 +27,6 @@ if (a === 2) {
     conexion = "Publica"
 }
 
-
-const axios = require("axios")
-const path = require('path');
-const { app, BrowserWindow, ipcMain, Menu, ipcRenderer,dialog } = require('electron');
-const { DateTime } = require("luxon");
-const url = require('url')
-const [pedidos, ventas] = require('./descargas/descargas')
 
 
 if (process.env.NODE_ENV !== 'production') {

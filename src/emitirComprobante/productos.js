@@ -94,7 +94,9 @@ ipcRenderer.on('get-productos', (e,args) =>{
             `
     }
      seleccionado = seleccionarTBody.firstElementChild;
-     seleccionado.classList.add('seleccionado')
+     seleccionado.classList.add('seleccionado');
+     subseleccion = seleccionado.children[0];
+     subseleccion.classList.add('subseleccionado');
 });
 
 
@@ -115,7 +117,7 @@ seleccionarTBody.addEventListener('click',e=>{
 })
 
 seleccionarTBody.addEventListener('dblclick',(e) =>{
-    seleccionado = document.querySelector('.seleccionado')
+    seleccionado = document.querySelector('.seleccionado');
     seleccionado ? cantidad(seleccionado) : alert("Producto no seleccionado");
 })
 
@@ -139,8 +141,10 @@ async function cantidad(e) {
                    _id: e.id
                     ,cantidad: valor
                 })
-                await seleccionado.classList.remove('seleccionado')
+                await seleccionado.classList.remove('seleccionado');
+                await subseleccion.classList.remove('subseleccionado');
                 seleccionado = "";
+                subseleccion = "";
                 buscarProducto.value = "";
                 buscarProducto.focus();
             }

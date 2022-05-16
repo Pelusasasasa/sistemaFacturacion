@@ -56,12 +56,13 @@
   }
 
   .seleccionado {
-    background-color: lightgrey;
-    td,
-    th {
-      border-color: blue;
-    }
+    background-color: rgb(0, 238, 255) !important;
   }
+  
+  .subseleccionado{
+    background-color: rgb(47, 120, 129);
+  }
+
   .titulo-modificar-cliente {
     text-align: center;
     font-size: 4rem;

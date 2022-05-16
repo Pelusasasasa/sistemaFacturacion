@@ -1,16 +1,20 @@
 
-const tbody = document.querySelector('.tbody')
+
 let situacion = "blanco";
 let Clientes = {}
 const axios = require("axios");
+const { ipcRenderer } = require("electron");
 require("dotenv").config;
 const URL = process.env.URL;
 
+const tbody = document.querySelector('.tbody')
 const fecha = document.querySelector('.fecha');
 const fechaHoy = new Date();
+
 let hoy = fechaHoy.getDate();
 let month = fechaHoy.getMonth() + 1;
 let year = fechaHoy.getFullYear();
+let clientes = []
 
 hoy = hoy < 10 ? `0${hoy}` : hoy;
 month = month < 10 ? `0${month}` : month;
@@ -59,14 +63,15 @@ const traerSaldo = async()=>{
         }
         return 0;
     })
+    clientes = Clientes;
     mostrarLista(Clientes)
 }
-traerSaldo()
+traerSaldo();
 
 const descargar = document.querySelector('.descargar')
-const tabla = document.querySelector('#tabla')
 
 descargar.addEventListener('click',e=>{
+    ipcRenderer.send('listaSaldoPDF',clientes);
     descargar.classList.add('none')
     window.print()
     descargar.classList.remove('none')

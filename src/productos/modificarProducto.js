@@ -83,8 +83,8 @@ if (costoPesos.focus) {
     }
 
 costoTotal.addEventListener('focus',()=>{
-    (parseFloat(costoDolares.value) !== 0) ? (ivaImp.value = parseFloat((costoDolares.value * valorTasaIva / 100).toFixed(3))) : ivaImp.value = costo.toFixed(3)
-    selecciona_value(costoTotal.id);
+    ivaImp.value = (parseFloat(costoDolares.value) !== 0) ? (parseFloat((costoDolares.value * valorTasaIva / 100).toFixed(3))) :  costo.toFixed(3)
+    
     costoT = parseFloat(ivaImp.value)
     let costoP = 0
     
@@ -93,12 +93,14 @@ costoTotal.addEventListener('focus',()=>{
         costoTotal.value = ((parseFloat(ivaImp.value)+parseFloat(costoDolares.value))*dolar).toFixed(2)
     }else{
         costoP = parseFloat(costoPesos.value)
+        console.log(costo)
+        console.log(costoP)
         costoTotal.value = ((costo+costoP).toFixed(2))
     }
 })
 
 precioVenta.addEventListener('focus',e=>{
-    selecciona_value(precioVenta.id);
+    
     const aux = (parseFloat(utilidad.value)*parseFloat(costoTotal.value)/100).toFixed(2)
     console.log(costoTotal.value)
     precioVenta.value = parseFloat((parseFloat(aux) + parseFloat(costoTotal.value)).toFixed(2))
@@ -161,24 +163,6 @@ function resultado(numero1,numero2,dolar=1) {
     return numero1*numero2*dolar/100;
 }
 
-function selecciona_value(idInput) {
-    valor_input = document.getElementById(idInput).value;
-    longitud = valor_input.length;
-    var selectionEnd = 0 + 1;
-    if (document.getElementById(idInput).setSelectionRange) {
-    document.getElementById(idInput).focus();
-    document.getElementById(idInput).setSelectionRange (0, longitud);
-    }
-    else if (input.createTextRange) {
-    var range = document.getElementById(idInput).createTextRange() ;
-    range.collapse(true);
-    range.moveEnd('character', 0);
-    range.moveStart('character', longitud);
-    range.select();
-    }
-    }
-
-
     function tasaIvas(palabra) {
         if (palabra === "N") {
             return 26;
@@ -232,12 +216,14 @@ function selecciona_value(idInput) {
         e.preventDefault();
         if (e.key === "Enter") {
             costoPesos.focus()
+            costoPesos.select()
         }
     })
     
     costoPesos.addEventListener('keypress',e=>{
         if (e.key === "Enter") {
             costoDolares.focus()
+            costoDolares.select()
         }
     })
     
@@ -278,53 +264,53 @@ function selecciona_value(idInput) {
     })
 
     utilidad.addEventListener('focus',e=>{
-        selecciona_value(utilidad.id)
+        utilidad.select();
     })
 
     costoPesos.addEventListener('focus',e=>{
-        selecciona_value(costoPesos.id)
+        costoPesos.select();
     })
 
     costoDolares.addEventListener('focus',e=>{
-        selecciona_value(costoDolares.id)
+        costoDolares.select();
     })
 
     marca.addEventListener('focus',e=>{
-        selecciona_value(marca.id)
+        marca.select();
     })
 
     stock.addEventListener('focus',e=>{
-        selecciona_value(stock.id)
+        stock.select();
     })
 
     provedor.addEventListener('focus',e=>{
-        selecciona_value(provedor.id)
+        provedor.select();
     })
 
     descripcion.addEventListener('focus',e=>{
-        selecciona_value(descripcion.id)
+        descripcion.select();
     })
 
     codigo.addEventListener('focus',e=>{
-        selecciona_value(codigo.id)
+        codigo.select();
     })
 
     codFabrica.addEventListener('focus',e=>{
-        selecciona_value(codFabrica.id)
+        codFabrica.select();
     })
 
     ivaImp.addEventListener('focus',e=>{
-        selecciona_value(ivaImp.id)
+        ivaImp.select();
     })
 
     costoTotal.addEventListener('focus',e=>{
-        selecciona_value(costoTotal.id)
+        costoTotal.select();
     })
 
     observaciones.addEventListener('focus',e=>{
-        selecciona_value(observaciones.id)
+        observaciones.select();
     })
 
     precioVenta.addEventListener('focus',e=>{
-        selecciona_value(precioVenta.id)
+        precioVenta.select();
     })
