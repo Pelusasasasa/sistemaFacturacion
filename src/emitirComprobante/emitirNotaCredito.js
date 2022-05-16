@@ -769,6 +769,9 @@ const imprimirVenta = (arreglo)=>{
         conector.establecerTamanioFuente(2,1);
         conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionDerecha);
         conector.texto("TOTAL $" +  Venta.precioFinal + "\n");
+        conector.feed(1);
+        conector.texto("DESCUENTO $" +  Venta.descuento + "\n");
+        conector.feed(2);
         conector.establecerTamanioFuente(1,1);
         conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
         conector.texto("Recibimos(mos)\n");
@@ -776,6 +779,7 @@ const imprimirVenta = (arreglo)=>{
         conector.establecerTamanioFuente(2,1);
         conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionDerecha);
         conector.texto("CAMBIO $0.00\n");
+        conector.feed(1);
         conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
         conector.texto("*MUCHA GRACIAS*\n")
         conector.qrComoImagen(QR);
