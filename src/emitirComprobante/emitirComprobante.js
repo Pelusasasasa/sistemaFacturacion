@@ -1316,15 +1316,13 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae,numero},listaProducto
         }
     }
     conector.feed(2);
-    conector.establecerTamanioFuente(2,1);
     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionDerecha);
+    conector.texto("DESCUENTO $" + (parseFloat(Venta.descuento)).toFixed(2) + "\n");
+    conector.establecerTamanioFuente(2,1);
     conector.texto("TOTAL $" +  (Venta.precioFinal).toFixed(2) + "\n");
     conector.feed(1);
-    conector.texto("DESCUENTO $" + (Venta.descuento).toFixed(2) + "\n");
-    conector.feed(2);
     conector.establecerTamanioFuente(1,1);
     conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
-    conector.feed(2);
     conector.texto("Recibimos(mos)\n");
     conector.texto(`${(Venta.tipo_pago !== "CC" || Venta.cliente === "M122") ? `Contado: $${(Venta.precioFinal).toFixed(2)}`  : "Cuenta Corriente"}` + "\n");0
     conector.establecerTamanioFuente(2,1);

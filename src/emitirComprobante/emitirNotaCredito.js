@@ -766,12 +766,11 @@ const imprimirVenta = (arreglo)=>{
             }
         }
         conector.feed(2);
-        conector.establecerTamanioFuente(2,1);
         conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionDerecha);
+        conector.texto("DESCUENTO $" +  parseFloat(Venta.descuento).toFixed(2) + "\n");
+        conector.establecerTamanioFuente(2,1);
         conector.texto("TOTAL $" +  Venta.precioFinal + "\n");
         conector.feed(1);
-        conector.texto("DESCUENTO $" +  Venta.descuento + "\n");
-        conector.feed(2);
         conector.establecerTamanioFuente(1,1);
         conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
         conector.texto("Recibimos(mos)\n");
