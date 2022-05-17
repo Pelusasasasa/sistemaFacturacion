@@ -25,6 +25,25 @@ if (mes<10) {
 }
 const fechaDeHoy = (`${hoy.getFullYear()}-${mes}-${dia}`)
 
+primerNumero.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        segundoNumero.focus();
+    }
+});
+
+segundoNumero.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        buscar.focus();
+    }
+});
+
+primerNumero.addEventListener('focus',e=>{
+    primerNumero.select();
+});
+
+segundoNumero.addEventListener('focus',e=>{
+    segundoNumero.select();
+});
 
 seleccionar.addEventListener('click',e=>{
     seleccion.forEach(e=>{
@@ -56,13 +75,11 @@ buscar.addEventListener('click',async e=>{
          let idVenta
         primerNumero.value === "0000" 
         ? idVenta = (segundoNumero.value).padStart(8,"0")
-        : idVenta = (primerNumero.value + "-" + (segundoNumero.value).padStart(8,"0"));
-        let venta = await axios.get(`${URL}ventas/${idVenta}`)
-        venta = venta.data
-        if (venta.length === 0) {
-            venta = await axios.get(`${URL}presupuesto/${idVenta}`);
-            venta = venta.data;
-        }
+        : idVenta = (primerNumero.value.padStart(4,"0") + "-" + (segundoNumero.value).padStart(8,"0"));
+        let venta = (await axios.get(`${URL}ventas/venta/ventaUnica/${idVenta}/Ticket Factura`)).data;
+        venta = venta === "" ? (await axios.get(`${URL}ventas/venta/ventaUnica/${idVenta}/Recibos`)).data : venta;
+        venta = venta === "" ? (await axios.get(`${URL}ventas/venta/ventaUnica/${idVenta}/Recibos_P`)).data : venta;
+        venta = venta === "" ? (await axios.get(`${URL}presupuesto/${idVenta}`)).data : venta;
         traerVenta(venta);
      }else{
         let texto = razon.value === "" ? "A Consumidor Final" : razon.value;
@@ -74,10 +91,10 @@ buscar.addEventListener('click',async e=>{
 
 let cliente
 const traerVenta = async(venta)=>{
-    if (venta.length !== 0) {
+    if (venta !== "") {
         cliente = await buscarCliente(venta.cliente);
         tbody.innerHTML = ``;
-        listarVentas(venta[0]) ;
+        listarVentas(venta) ;
     }else{
         alert("No se encontro ninguna Venta");
     }
@@ -87,7 +104,6 @@ const traerVenta = async(venta)=>{
 function listarVentas(venta) {
         tbody.innerHTML += `<tr class="titulo"><td>${cliente.cliente}</td></tr>`
         let total = 0;
-        console.log(venta)
         venta.productos.forEach(({objeto,cantidad})=>{
             const fecha = mostrarFecha(venta.fecha)
             tbody.innerHTML += `

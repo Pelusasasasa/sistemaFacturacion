@@ -27,6 +27,7 @@
 
   .numeros {
     display: flex;
+    width: 150%;
     #primerNumero {
       width: 4%;
       padding: 0;
@@ -36,6 +37,10 @@
       width: 7%;
       padding: 0;
       height: 65%;
+    }
+    input{
+      font-size: 2rem;
+      padding: 1rem;
     }
   }
 

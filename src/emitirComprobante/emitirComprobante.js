@@ -24,6 +24,8 @@ const usuario = document.querySelector(".usuario")
 const textoUsuario = document.createElement("P")
 textoUsuario.innerHTML = vendedor
 usuario.appendChild(textoUsuario)
+
+const body = document.querySelector('body');
 const resultado = document.querySelector('#resultado');
 const codigoC = document.querySelector('#codigoC')
 const buscarCliente = document.querySelector('#nombre');
@@ -49,7 +51,8 @@ inputEmpresa.value = empresa;
 
 let situacion = "blanco"//para teclas alt y F9
 let totalPrecioProducos = 0;
-let yaSeleccionado;
+let seleccionado = "";
+let subseleccionado = ""
 let tipoVenta;
 let borraNegro = false;
 let ventaDeCtaCte = "";
@@ -79,6 +82,56 @@ codigoC.focus()
            }
        })
    }
+});
+
+body.addEventListener('keyup',e=>{
+    if (e.keyCode === 40 && seleccionado.nextElementSibling) {
+        let aux;
+        for (let i = 0; i < seleccionado.children.length; i++) {
+            aux = seleccionado.children[i].className.includes("subseleccionado") ? i : aux;
+        }
+        seleccionado && seleccionado.classList.remove('seleccionado');
+        seleccionado = seleccionado.nextElementSibling;
+        seleccionado.classList.add('seleccionado');
+
+        subseleccionado && subseleccionado.classList.remove('subseleccionado');
+        subseleccionado = seleccionado.children[aux];
+        subseleccionado.classList.add('subseleccionado');
+    }else if(e.keyCode === 38 && seleccionado.previousElementSibling){
+        let aux;
+        for (let i = 0; i < seleccionado.children.length; i++) {
+            aux = seleccionado.children[i].className.includes("subseleccionado") ? i : aux;
+        }
+
+        seleccionado && seleccionado.classList.remove('seleccionado');
+        seleccionado = seleccionado.previousElementSibling;
+        seleccionado.classList.add('seleccionado');
+
+        subseleccionado && subseleccionado.classList.remove('subseleccionado');
+        subseleccionado = seleccionado.children[aux];
+        subseleccionado.classList.add('subseleccionado');
+    }else if(e.keyCode === 37 && subseleccionado.previousElementSibling){
+        subseleccionado.classList.remove('subseleccionado');
+        subseleccionado = subseleccionado.previousElementSibling
+        subseleccionado.classList.add('subseleccionado');
+    }else if(e.keyCode === 39 && subseleccionado.nextElementSibling){
+        subseleccionado.classList.remove('subseleccionado');
+        subseleccionado = subseleccionado.nextElementSibling
+        subseleccionado.classList.add('subseleccionado');
+    }else if(e.key === "Control"){
+        document.addEventListener('keydown',e=>{
+            if (e.keyCode === 67) {
+              if (subseleccionado) {
+                  let aux = document.createElement("textarea");
+                  aux.innerHTML = subseleccionado.innerHTML
+                  document.body.appendChild(aux);
+                  aux.select();
+                  document.execCommand("copy");
+                  document.body.removeChild(aux);
+              }
+            }
+        });
+    }
 })
 
 
@@ -306,12 +359,19 @@ function mostrarVentas(objeto,cantidad) {
 const cambioPrecio = document.querySelector('.parte-producto_cambioPrecio')
 const nuevaCantidadDiv = document.querySelector('.parte-producto_cantidad')
 
+body
+
 resultado.addEventListener('click',e=>{
-    inputseleccionado(e.path[1])
-    if (yaSeleccionado) {
-        borrarProducto.classList.remove('none')
-        cambioPrecio.classList.remove('none')
-        nuevaCantidadDiv.classList.remove('none')
+    seleccionado && seleccionado.classList.remove('seleccionado');
+    subseleccionado && subseleccionado.classList.remove('subseleccionado');
+    seleccionado = e.path[0].nodeName === "TD" ? e.path[1] : e.path[0];
+    subseleccionado = e.path[0];
+    seleccionado.classList.add('seleccionado');
+    subseleccionado.classList.add('subseleccionado');
+    if (seleccionado) {
+        borrarProducto.classList.remove('none');
+        cambioPrecio.classList.remove('none');
+        nuevaCantidadDiv.classList.remove('none');
     }
 })
 
@@ -319,17 +379,17 @@ resultado.addEventListener('click',e=>{
 //Para Cambiar el precio de un producto
 cambioPrecio.children[1].addEventListener('keypress',(e)=>{
     if (e.key === "Enter") {
-        const  producto = listaProductos.find(({objeto,cantidad})=> objeto.identificadorTabla === yaSeleccionado.id);
-        borrarUnProductoDeLaLista(yaSeleccionado)
+        const  producto = listaProductos.find(({objeto,cantidad})=> objeto.identificadorTabla === seleccionado.id);
+        borrarUnProductoDeLaLista(seleccionado)
         producto.objeto.precio_venta = cambioPrecio.children[1].value !== "" ? parseFloat(cambioPrecio.children[1].value) : producto.objeto.precio_venta;
         producto.cantidad = nuevaCantidad.value !== "" ? nuevaCantidad.value : producto.cantidad;
         mostrarVentas(producto.objeto,producto.cantidad);
         cambioPrecio.children[1].value = "";
-        cambioPrecio.classList.add('none');
         nuevaCantidad.value = "";
+        cambioPrecio.classList.add('none');
+        borrarProducto.classList.add('none');
         nuevaCantidadDiv.classList.add('none');
         codigo.focus()
-        
     }
 })
 
@@ -341,11 +401,6 @@ nuevaCantidad.addEventListener('keypress',e=>{
     }
 })
 
-const inputseleccionado = (e) =>{
-    yaSeleccionado && yaSeleccionado.classList.remove('seleccionado')
-   e.classList.toggle('seleccionado')
-   yaSeleccionado = document.querySelector('.seleccionado')
-}
 
 //FIN TABLA PRODUCTOS
 
@@ -480,8 +535,6 @@ function codDoc(dniocuit) {
 //Vamos a descontar el stock 
 async function sacarStock(cantidad,objeto) {
     let producto = (await axios.get(`${URL}productos/${objeto._id}`)).data;
-    console.log(producto.stock);
-    console.log(cantidad)
     const descontar = parseInt(producto.stock) - parseFloat(cantidad);
     producto.stock = descontar.toFixed(2);
     arregloProductosDescontarStock.push(producto);
@@ -652,7 +705,6 @@ presupuesto.addEventListener('click',async (e)=>{
                          if (venta.tipo_pago === "CC") {
                             ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion,listaSinDescuento])
                          }else{
-                            console.log(listaSinDescuento)
                              ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion,listaSinDescuento])
                          }
                      }
@@ -821,7 +873,6 @@ async function generarQR(texto) {
  const buscarAfip = document.querySelector('.buscarAfip')
  buscarAfip.addEventListener('click',  async (e)=>{
     let cliente = (await axios.get(`${URL}clientes/cuit/${dnicuit.value}`)).data;
-    console.log(cliente);
         if (cliente !== "") {
             ponerInputsClientes(cliente)
         }else{
@@ -849,7 +900,6 @@ async function generarQR(texto) {
         Https.open("GET", url);
         Https.send()
         Https.onreadystatechange = (e) => {
-            console.log(Https.responseText)
             if (Https.responseText !== "") {
                 const persona = JSON.parse(Https.responseText)
                 if (persona!=="") {
@@ -882,7 +932,7 @@ async function generarQR(texto) {
 
  //lo usamos para borrar un producto de la tabla
 borrarProducto.addEventListener('click',e=>{
-    borrarUnProductoDeLaLista(yaSeleccionado);
+    borrarUnProductoDeLaLista(seleccionado);
 })
 
 const cancelar = document.querySelector('.cancelar')
@@ -1187,7 +1237,8 @@ function selecciona_value(idInput) {
             nuevoTotal += (objeto.precio_venta * cantidad);
         })
         total.value = parseFloat(descuento.value) !== 0 ? (nuevoTotal - (nuevoTotal*parseFloat(descuento.value)/100)).toFixed(2) : nuevoTotal.toFixed(2);
-        descuentoN.value = (nuevoTotal*parseFloat(descuento.value)/100).toFixed(2)
+        descuentoN.value = (nuevoTotal*parseFloat(descuento.value)/100).toFixed(2);
+        borrarProducto.classList.add('none');
         codigo.focus()
     }
 
