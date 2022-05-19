@@ -24,6 +24,9 @@ const fecha = document.querySelector('.fecha');
             if (lista.length>16){
                 const tabla = document.querySelector('.tabla');
                 tabla.classList.add('hojaGrande');
+            }else if(lista.length>51){
+                const tabla = document.querySelector('.tabla');
+                tabla.classList.add("hojaMuyGrande");
             };
 
             const tomarFecha = new Date(venta.fecha);

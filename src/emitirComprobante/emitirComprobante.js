@@ -1008,7 +1008,7 @@ ipcRenderer.once('venta',async (e,args)=>{
     inputEmpresa.value = empresaS;
     ventaDeCtaCte = numero;
     textoUsuario.innerHTML = usuario;
-    ventaAnterior = (await axios.get(`${URL}presupuesto/${numero}`)).data[0];
+    ventaAnterior = (await axios.get(`${URL}presupuesto/${numero}`)).data;
     let cliente = (await axios.get(`${URL}clientes/id/${ventaAnterior.cliente}`)).data;
     ponerInputsClientes(cliente)
     ventaAnterior.productos.forEach(producto =>{

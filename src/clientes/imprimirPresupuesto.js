@@ -22,7 +22,8 @@ aceptar.addEventListener('click',async e=>{
         tipoVenta = "Ticket Factura";
     }
 
-    let venta = (await axios.get(`${URL}presupuesto/${comprobante}`)).data[0];
+    let venta = (await axios.get(`${URL}presupuesto/${comprobante}`)).data;
+    console.log(venta)
     if (!venta) {
          venta = (await axios.get(`${URL}ventas/venta/ventaUnica/${comprobante}/${tipoVenta}`)).data[0];
     }

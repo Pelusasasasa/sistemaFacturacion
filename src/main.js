@@ -152,8 +152,7 @@ ipcMain.on('borrarVentaACliente',async (e,args)=>{
 
     let cliente = await axios.get(`${URL}clientes/id/${id}`)
     cliente = cliente.data;
-    let venta = await axios.get(`${URL}presupuesto/${numero}`)
-    venta = venta.data[0]
+    let venta = (await axios.get(`${URL}presupuesto/${numero}`)).data;
 
     cliente.saldo_p = (parseFloat(cliente.saldo_p)-venta.precioFinal).toFixed(2);
 
@@ -236,7 +235,7 @@ ipcMain.on('ventaModificada',async (e,[args,id])=>{
      let venta = await axios.get(`${URL}ventas/${id}`)
     if(venta.data.length === 0){
         venta = await axios.get(`${URL}presupuesto/${id}`)
-        venta = venta.data[0];
+        venta = venta.data;
     }else{
         venta = venta.data[0]
     }

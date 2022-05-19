@@ -301,7 +301,7 @@ let saldoABorrar = 0
 
     actualizar.addEventListener('click',async e=>{
         if (seleccionado) {
-                venta = (await axios.get(`${URL}presupuesto/${seleccionado.id}`)).data[0];
+                venta = (await axios.get(`${URL}presupuesto/${seleccionado.id}`)).data;
                 let cuentaCompensada = (await axios.get(`${URL}cuentaComp/id/${seleccionado.id}`)).data[0];
                 let cuentaHistorica = (await axios.get(`${URL}cuentaHisto/id/${seleccionado.id}`)).data[0];
                 let cliente = (await axios.get(`${URL}clientes/id/${cuentaCompensada.codigo}`)).data;
