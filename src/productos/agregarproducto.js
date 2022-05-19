@@ -1,6 +1,8 @@
 const axios = require('axios');
 require('dotenv').config();
 const URL = process.env.URL;
+const formData = require('form-data');
+let data = new FormData();
 
 const codigo = document.querySelector('#codigo');
 const codFabrica = document.querySelector('#cod-fabrica');
@@ -11,24 +13,22 @@ const stock = document.querySelector('#stock');
 const tasaIva = document.querySelector('#tasaIva');
 const costoPesos = document.querySelector('#costoPesos');
 const costoDolares = document.querySelector('#costoDolares');
-const ivaImp = document.querySelector('#ivaImp')
+const ivaImp = document.querySelector('#ivaImp');
 const costoTotal = document.querySelector('#costoTotal');
 const observaciones = document.querySelector('#observaciones'); 
 const utilidad = document.querySelector('#utilidad');
 const precioVenta = document.querySelector('#precioVenta');
-const imgs = document.querySelector('#imgs')
-const unidad = document.querySelector('#unidad')
-const salir = document.querySelector('.salir')
+const imagen = document.querySelector('#imagen');
+const unidad = document.querySelector('#unidad');
+const salir = document.querySelector('.salir');
+const agregar = document.querySelector('.agregar');
 
-const agregar = document.querySelector('.agregar')
 
 let valorTasaIva = 26
 let letraIva = "N"
 let costoT = 0 //costo total
 let precioV = 0 //Precio Venta
 let dolar = 0
-
-const {ipcRenderer} = require('electron');
 
 //No enviar el formulario al apretar enter
 document.addEventListener('DOMContentLoaded', () => {
@@ -114,7 +114,16 @@ agregar.addEventListener('click' ,async  (e) =>{
     }
 
     //Enviamos el producto al servidor
-    await axios.post(`${URL}productos`,producto)
+    await axios.post(`${URL}productos`,producto);
+    //enviamos la imagen si es que tiene
+    if (imagen.files[0]) {
+        data.append('imagen',imagen.files[0]);
+        await axios.put(`${URL}productos/${producto._id}/image`,data,{
+            headers:{
+                'Content-Type': `multipart/form-data`,
+            }
+        });
+    }
     window.close();
 })
 

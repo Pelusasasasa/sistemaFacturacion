@@ -35,7 +35,7 @@
           </div>
         </div>
 
-        <div class="descripcionStock">
+        <div class="descripcion">
           <div class="formulario__campo">
             <label class="" for="descripcion">Descripcion</label>
             <input
@@ -46,28 +46,36 @@
               placeholder="descripcion"
             />
           </div>
-
-          <div class="unidad formulario__campo">
-            <label for="unidad">Unidad</label>
-            <select name="unidad" id="unidad">
-              <option value="U">Unidad</option>
-              <option value="M">Metro</option>
-            </select>
-          </div>
-
-          <div class="formulario__campo">
-            <label class="" for="stock">Stock</label>
-            <input
-              class=""
-              type="text"
-              name="stock"
-              id="stock"
-              placeholder="stock"
-              value="0"
-              disabled
-            />
-          </div>
         </div>
+
+         <main class="unidad">
+            <div class="unidad formulario__campo">
+              <label for="unidad">Unidad</label>
+              <select name="unidad" id="unidad">
+                <option value="U">Unidad</option>
+                <option value="M">Metro</option>
+              </select>
+            </div>
+
+            <main class="formulario__campo">
+              <label for="imagen">Imagen</label>
+              <input type="file" name="imagen" id="imagen">
+            </main>
+
+            <div class="formulario__campo">
+              <label class="" for="stock">Stock</label>
+              <input
+                class=""
+                type="text"
+                name="stock"
+                id="stock"
+                placeholder="stock"
+                value="0"
+                disabled
+              />
+            </div>
+         </main>
+        
 
         <div class="marcaProvedor">
           <div class="formulario__campo">
@@ -139,7 +147,7 @@
           </div>
 
           <div class="formulario__campo">
-            <label class="" for="costoTotal">Costo Total</label>
+            <label class="" for="costoTotal">Costo To</label>
             <input
               class=""
               type="text"
@@ -183,10 +191,6 @@
               id="precioVenta"
               placeholder="precioVenta"
             />
-          </div>
-
-          <div>
-            <input type="file" id="imgs" name="imgs">
           </div>
         </div>
       </form>

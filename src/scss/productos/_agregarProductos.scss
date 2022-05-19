@@ -16,15 +16,17 @@
       justify-content: space-around;
     }
 
-    .descripcionStock {
+    .descripcion {
+      display: flex;
+      justify-content: center;
+      .formulario__campo{
+        width: 80%; 
+      }
+    }
+
+    .unidad{
       display: flex;
       justify-content: space-around;
-      input {
-        width: 100%;
-      }
-      .unidad{
-        width: 10%;
-      }
     }
 
     .marcaProvedor {

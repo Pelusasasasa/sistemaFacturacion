@@ -1,13 +1,16 @@
 const { ipcRenderer } = require("electron");
 require('dotenv').config();
 const URL = process.env.URL;
-const axios = require("axios")
+const axios = require("axios");
+const formData = require('form-data');
+let data = new FormData();
 
 
 const codigo = document.querySelector('#codigo');
 const codFabrica = document.querySelector('#cod-fabrica');
 const descripcion = document.querySelector('#descripcion');
 const provedor = document.querySelector('#provedor');
+const imagen = document.querySelector('#imagen');
 const marca = document.querySelector('#marca');
 const stock = document.querySelector('#stock');
 const tasaIva = document.querySelector('#tasaIva');
@@ -142,8 +145,17 @@ guardar.addEventListener('click',async e=>{
     producto.utilidad = utilidad.value
     producto.precio_venta = precioVenta.value
     producto.unidad = unidad.value
-    producto.impuestos = ivaImp.value
+    producto.impuestos = ivaImp.value;
+    
     await axios.put(`${URL}productos/${producto._id}`,producto);
+    if (imagen.files[0]) {
+        data.append('imagen',imagen.files[0]);
+        await axios.put(`${URL}productos/${producto._id}/image`,data,{
+            headers:{
+                'Content-Type': `multipart/form-data`,
+            }
+        });
+    }
     ipcRenderer.send('productoModificado',producto);
     window.close()
 })

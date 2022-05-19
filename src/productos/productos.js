@@ -136,14 +136,12 @@ seleccionarTBody.addEventListener('click',(e) =>{
 
 
 const imagen = document.querySelector('.imagen')
-function mostrarImagen(id) {
-    ipcRenderer.send('traerImagen',id)
-    ipcRenderer.on('traerImagen',(e,args)=>{
-        const path = JSON.parse(args)
+async function mostrarImagen(id) {
+    const producto = (await axios.get(`${URL}productos/${id}`)).data;
+        const path = `http://192.168.0.41:4000/api/productos/${id}/image`
+        console.log(path)
         imagen.innerHTML = `
-        <img class="imagenProducto" src=../Fotos/${path}.jpg>`
-    })
-   
+        <img class="imagenProducto" src=${path}>`
 }
 
 ipcRenderer.once('Historial',async(e,args)=>{
