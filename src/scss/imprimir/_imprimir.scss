@@ -92,10 +92,8 @@
       width: 100%;
       border-collapse: collapse;
 
-      thead {
-        tr {
+      .thead  {
           border: 0.1rem solid black;
-        }
       }
       tbody {
         tr {

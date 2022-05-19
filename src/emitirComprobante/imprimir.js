@@ -21,13 +21,13 @@ const fecha = document.querySelector('.fecha');
 
         const listar = async (venta,cliente,valorizado,lista)=>{
             lista = lista === undefined ? venta.productos : lista;
-            if (lista.length>16){
-                const tabla = document.querySelector('.tabla');
-                tabla.classList.add('hojaGrande');
-            }else if(lista.length>51){
+            if(lista.length>51){
                 const tabla = document.querySelector('.tabla');
                 tabla.classList.add("hojaMuyGrande");
-            };
+            }else if (lista.length>16){
+                const tabla = document.querySelector('.tabla');
+                tabla.classList.add('hojaGrande');
+            } 
 
             const tomarFecha = new Date(venta.fecha);
             const dia = tomarFecha.getDate(); 
