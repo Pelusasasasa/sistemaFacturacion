@@ -451,6 +451,11 @@ const templateMenu = [
                 click(){
                     abrirVentana("utilidad/verRegistros.html",1500,1000)
                 }
+            },{
+                label:"Cargar Factura",
+                click(){
+                    abrirVentana("utilidad/cargarFactura.html",800,900);
+                }
             }
         ]
     },

@@ -1,0 +1,26 @@
+.cargarFactura{
+    h1{
+        text-align: center;
+    }
+    section{
+        display: flex;
+        flex-direction: column;
+    }
+    .dos{
+        width: 100%;
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+    }
+    main div{
+        label{
+            display: inline-block;
+            width: 80%;
+        }
+        #nombre{
+            width: 80%;
+        }
+    }
+    main{
+        margin: .2rem 0;
+    }
+}
