@@ -1,4 +1,4 @@
-const { ipcRenderer } = require("electron/renderer");
+
 const axios = require("axios");
 const { DateTime } = require("luxon");
 require("dotenv").config;

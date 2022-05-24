@@ -97,11 +97,11 @@ function listarVentas(lista) {
 
         const fecha = new Date(venta.fecha);
         let hoy = fecha.getDate();
-        let mes = fecha.getMonth();
+        let mes = fecha.getMonth() + 1;
         let hours = fecha.getHours();
         let minutes = fecha.getMinutes();
         let seconds = fecha.getSeconds();
-        mes = (mes===0) ? mes + 1 : mes;
+        mes = (mes===13) ? 1 : mes;
         mes = (mes<10) ? `0${mes}` : mes;
         hoy = (hoy<10) ? `0${hoy}` : hoy;
         hours = (hours<10) ? `0${hours}` : hours;

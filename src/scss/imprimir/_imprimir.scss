@@ -14,6 +14,12 @@
   height: 100%;
 
 .imprimir {
+
+  .img{
+    svg{
+      width: 1rem;
+    }
+  }
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -144,15 +150,6 @@
       width: 75%;
       display: flex;
       justify-content: flex-end;
-    }
-  }
-
-  .seccionQR{
-    display: flex;
-    justify-content: space-between;
-
-    img{
-      width: 10rem;
     }
   }
 

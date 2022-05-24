@@ -4,25 +4,26 @@ const { DateTime } = require("luxon");
 require("dotenv").config;
 const URL = process.env.URL;
 
-const seleccion = document.querySelectorAll('input[name="seleccionar"]')
-const seleccionar = document.querySelector('.seleccionar')
-let seleccionado = document.querySelector('#porNumero')
-const primerNumero =  document.querySelector('#primerNumero')
-const segundoNumero =  document.querySelector('#segundoNumero')
-const nombre = document.querySelector('.nombre')
-const razon = document.querySelector('#razon')
-const tbody = document.querySelector('.tbody')
+const seleccion = document.querySelectorAll('input[name="seleccionar"]');
+const seleccionar = document.querySelector('.seleccionar');
+const primerNumero =  document.querySelector('#primerNumero');
+const segundoNumero =  document.querySelector('#segundoNumero');
+const nombre = document.querySelector('.nombre');
+const razon = document.querySelector('#razon');
+const tbody = document.querySelector('.tbody');
+let seleccionado = document.querySelector('#porNumero');
 
 const hoy = new Date()
-
 let dia = hoy.getDate()
+let mes = hoy.getMonth() + 1;
+
 if (dia<10) {
     dia = `0${dia}`
-}
-let mes = hoy.getMonth() +1
+};
 if (mes<10) {
     mes = `0${mes}`
-}
+};
+
 const fechaDeHoy = (`${hoy.getFullYear()}-${mes}-${dia}`)
 
 primerNumero.addEventListener('keypress',e=>{

@@ -16,69 +16,44 @@
                 <label for="fecha">Fecha</label>
                 <input type="date" id="fecha" autofocus name="fecha">
             </div>
-            <div class="codigo">
-                <label for="codigo">Codigo</label>
-                <input type="text" name="codigo" id="codigo">
-            </div>
         </main>
-        <main class="dos">
+        <main class="nombre">
             <div>
                 <label for="nombre">Nombre</label>
                 <input type="text" name="nombre" id="nombre">
-            </div>
-            <div class="empresa">
-                <label for="empresa">Empresa</label>
-                <input type="text" name="empresa" id="empresa">
             </div>
         </main>
         <main class="dos">
             <div class="codComp">
                 <label for="codComp">Cod_comp</label>
-                <input type="texto" id="codComp" name="codComp">
+                <select name="codComp" id="codComp">
+                    <option value="1">01-Factura A</option>
+                    <option value="3">03-Nota de Credito A</option>
+                    <option value="4">04-Recibo A</option>
+                    <option value="6">06-Fabtura B</option>
+                    <option value="8">08-Nota de Credito B</option>
+                    <option value="9">09-Recibo B</option>
+                </select>
             </div>
-            <div class="tipoComp">
-                <label for="tipoComp">Tipo_Comp</label>
-                <input type="texto" id="tipoComp" name="tipoComp">
-            </div>            
         </main>
         <main class="dos">
             <div class="nroComp">
                 <label for="nroComp">Nro_comp</label>
                 <input type="text" name="nroComp" id="nroComp">
             </div>
-            <div class="comprob">
-                <label for="comprob">Comprob</label>
-                <input type="text" name="comprob" id="comprob">
-            </div>
         </main>
-        <main class="dos">
+        <main class="tres">
             <div class="gravado">
                 <label for="gravado">Gravado</label>
                 <input type="text" name="gravado" id="gravado">
             </div>
-            <div class="ivaNormal">
-                <label for="ivaNormal">Iva Normal</label>
-                <input type="text" name="ivaNormal" id="ivaNormal">
-            </div>
-        </main>
-        <main class="dos">
-            <div class="ivaReducido">
-                <label for="ivaReducido">Iva Reducido</label>
-                <input type="text" name="ivaReducido" id="ivaReducido">
+            <div class="totalIva">
+                <label for="totalIva">Total IVA</label>
+                <input type="number" name="totalIva" id="totalIva">
             </div>
             <div class="total">
                 <label for="total">Total</label>
                 <input type="text" name="total" id="total">
-            </div>
-        </main>
-        <main class="dos">
-            <div class="tipoFactura">
-                <label for="tipoFactura">Tipo Factura</label>
-                <input type="text" name="tipoFactura" id="tipoFactura">
-            </div>
-            <div class="tipoPago">
-                <label for="tipoPago">Tipo Pago</label>
-                <input type="text" name="tipoPago" id="tipoPago">
             </div>
         </main>
         <main class="dos">
@@ -98,40 +73,24 @@
             </div>
             <div class="cantIva">
                 <label for="cantIva">Cant_iva</label>
-                <input type="text" name="cantIva" id="cantIva">
+                <input type="number" name="cantIva" id="cantIva">
             </div>
         </main>
         <main class="dos">
-            <div class="pago">
-                <label for="pago">Pago</label>
-                <input type="text" name="pago" id="pago">
-            </div>
-            <div class="facturado">
-                <label for="facturado">Facturado</label>
-                <input type="text" name="facturado" id="facturado">
-            </div>
-        </main>
-        <main class="dos">
-            <div class="hora">
-                <label for="hora">Hora</label>
-                <input type="datetime" id="hora" name="hora">
-            </div>
             <div class="gravado21">
                 <label for="gravado21">Gravado21</label>
                 <input type="number" name="gravado21" id="gravado21">
             </div>
-        </main>
-        <main class="dos">
             <div class="iva21">
                 <label for="iva21">Iva21</label>
                 <input type="number" name="iva21" id="iva21">
             </div>
+        </main>
+        <main class="tres">
             <div class="gravado105">
                 <label for="gravado105">Gravado105</label>
-                <input type="text" name="gravado105" id="gravado105">
+                <input type="number" name="gravado105" id="gravado105">
             </div>
-        </main>
-        <main class="dos">
             <div class="iva105">
                 <label for="iva105">Iva105</label>
                 <input type="number" name="iva105" id="iva105">
@@ -139,6 +98,15 @@
             <div class="diferencia">
                 <label for="diferencia">Diferencia</label>
                 <input type="number" name="diferencia" id="diferencia">
+            </div>
+        </main>
+        <main class="dos">
+            <div class="empresa">
+                <label for="empresa">Empresa</label>
+                <select name="empresa" id="empresa">
+                    <option value="Electro Avenida">ELECTRO AVENIDA</option>
+                    <option value="Seguridad">SEGURIDAD</option>
+                </select>
             </div>
         </main>
     </section>
