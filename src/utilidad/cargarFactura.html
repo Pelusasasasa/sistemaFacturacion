@@ -39,27 +39,33 @@
         <main class="dos">
             <div class="nroComp">
                 <label for="nroComp">Nro_comp</label>
-                <input type="text" name="nroComp" id="nroComp">
+                <div class="puntoYNumero">
+                    <input class="textoFinal" type="text" name="puntoVenta" value="0005" id="puntoVenta">
+                    <input class="textoFinal" type="text" name="nroComp" id="nroComp">
+                </div>
             </div>
         </main>
         <main class="tres">
             <div class="gravado">
                 <label for="gravado">Gravado</label>
-                <input type="text" name="gravado" id="gravado">
+                <input class="textoFinal" type="text" name="gravado" id="gravado">
             </div>
             <div class="totalIva">
                 <label for="totalIva">Total IVA</label>
-                <input type="number" name="totalIva" id="totalIva">
+                <input class="textoFinal" type="number" name="totalIva" id="totalIva">
             </div>
             <div class="total">
                 <label for="total">Total</label>
-                <input type="text" name="total" id="total">
+                <input class="textoFinal" disabled type="text" name="total" id="total">
             </div>
         </main>
         <main class="dos">
             <div class="codDoc">
                 <label for="codDoc">Cod_doc</label>
-                <input type="text" name="codDoc" id="codDoc">
+                <select name="codDoc" id="codDoc">
+                    <option value="96">DNI</option>
+                    <option value="80">CUIT</option>
+                </select>
             </div>
             <div class="nroCuit">
                 <label for="nroCuit">Nro_cuit</label>
@@ -69,7 +75,12 @@
         <main class="dos">
             <div class="condIva">
                 <label for="condIva">Cond_Iva</label>
-                <input type="text" name="condIva" id="condIva">
+                <select name="condIva" id="condIva">
+                    <option value="Inscripto">Inscripto</option>
+                    <option value="Monotributo">Monotributo</option>
+                    <option value="Consumidor Final">Consumidor Final</option>
+                    <option value="Excento">Excento</option>
+                </select>
             </div>
             <div class="cantIva">
                 <label for="cantIva">Cant_iva</label>
@@ -109,6 +120,10 @@
                 </select>
             </div>
         </main>
+    </section>
+    <section class="botones">
+        <button class="guardar">Guardar</button>
+        <button class="cancelar">Cancelar</button>
     </section>
 </body>
 <script src="./cargaFactura.js"></script>

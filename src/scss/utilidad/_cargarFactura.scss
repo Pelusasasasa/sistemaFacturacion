@@ -1,8 +1,11 @@
 .cargarFactura{
+    .textoFinal{
+        text-align: end;
+    }
     h1{
         text-align: center;
     }
-    section{
+    section:not(.botones){
         display: flex;
         flex-direction: column;
     }
@@ -22,8 +25,30 @@
         #nombre{
             width: 80%;
         }
+        &.puntoYNumero{
+            display: flex;
+        }
     }
     main{
         margin: .2rem 0;
     }
+
+    .botones{
+        margin-top: 2rem;
+        display: flex;
+        justify-content: space-around;
+    
+        button{
+            border-radius: 7.5rem;
+            border: none;
+            font-size: 2rem;
+            padding: 1rem;
+    
+            &:hover{
+                cursor: pointer;
+                transform: scale(1.2);
+            }
+        }
+    }
 }
+

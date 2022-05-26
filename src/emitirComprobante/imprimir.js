@@ -14,7 +14,7 @@ const fecha = document.querySelector('.fecha');
         const precioFinal = document.querySelector('.precioFinal');
         const tipoPago = document.querySelector('.tipoPago');
         const tbody = document.querySelector('.tbody');
-        const seccionQR = document.querySelector('.seccionQR');
+        const presupuesto = document.querySelector('.presupuesto');
         const tipoFactura = document.querySelector('.tipoFactura');
         const descuento = document.querySelector('.descuento');
 
@@ -50,7 +50,9 @@ const fecha = document.querySelector('.fecha');
             subtotal.innerHTML =  venta.descuento ? (parseFloat(venta.precioFinal)+parseFloat(venta.descuento)).toFixed(2) : 0;
             precioFinal.innerHTML=(parseFloat(venta.precioFinal)).toFixed(2);
             tipoPago.innerHTML= venta.tipo_pago;
-            tipoFactura.innerHTML = "R";
+            tipoFactura.innerHTML = venta.tipo_pago === "PP" ? "X" : "R";
+            presupuesto.innerHTML = venta.tipo_pago === "PP" ? "Comprobante no valido como Factura" : "";    
+
             descuento.innerHTML = venta.descuento;
     
             if (venta.tipo_pago === "CC" && valorizado !== "valorizado") {
@@ -72,7 +74,7 @@ const fecha = document.querySelector('.fecha');
                     <tr>
                         <td>${(parseFloat(cantidad)).toFixed(2)}</td>
                         <td>${objeto._id}</td>
-                        <td class="descripcion">${objeto.descripcion}</td>
+                        <td class="descripcion">${objeto.descripcion} ${objeto.marca}</td>
                         <td>${parseFloat(objeto.precio_venta).toFixed(2)}</td>
                         <td>${(parseFloat(objeto.precio_venta)*cantidad).toFixed(2)}</td>
                     </tr>
