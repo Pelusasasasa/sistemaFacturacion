@@ -228,6 +228,16 @@ const listarLista = (lista,situacion,tipo)=>{
             return (e.tipo_comp === aux) || e.tipo_comp === "Recibos" ||  e.tipo_comp === "Nota Credito"
         }
     })
+
+    listaGlobal.sort((a,b)=>{
+        if (a.fecha > b.fecha) {
+            return 1;
+        }else if(a.fecha < b.fecha){
+            return -1;
+        }
+        return 0
+    });
+
     listar.innerHTML = '';
     listaGlobal.forEach(venta => {
         vendedor = venta.vendedor

@@ -3,6 +3,10 @@ const XLSX = require('xlsx');
 const pedidos = (Pedidos,path) =>{
 let wb = XLSX.utils.book_new();
 
+let extencion = "xlsx";
+extencion = path.split('.')[1] ? path.split('.')[1] : extencion;
+path = path.split('.')[0];
+
 wb.props = {
     Title: "Pedidos",
     subject: "Test",
@@ -11,8 +15,8 @@ wb.props = {
 
 let newWS = XLSX.utils.json_to_sheet(Pedidos)
 
-XLSX.utils.book_append_sheet(wb, newWS,'Pedidos')
-XLSX.writeFile(wb,path)
+XLSX.utils.book_append_sheet(wb, newWS,'Pedidos');
+XLSX.writeFile(wb,path + "." + extencion );
 }
 
 const ventas = (Ventas,path)=>{
@@ -85,8 +89,11 @@ const ventas = (Ventas,path)=>{
     agregarVenta.presupuesto = presupuesto;
     Ventas.push(agregarVenta);
     let newWs = XLSX.utils.json_to_sheet(Ventas)
-    XLSX.utils.book_append_sheet(wb,newWs,'Ventas')
-    XLSX.writeFile(wb,path)
+    XLSX.utils.book_append_sheet(wb,newWs,'Ventas');
+    let extencion = "xlsx"
+    extencion = path.split('.')[1] ? path.split('.')[1] : extencion;
+        path = path.split('.')[0];
+    XLSX.writeFile(wb,path + "." + extencion)
 }
 
 module.exports = [pedidos,ventas];

@@ -35,16 +35,8 @@ ipcRenderer.on('datos-movimiento-producto', (e,args)=>{
     };
 })
 
-
-const salir = document.querySelector('.salir')
-salir.addEventListener('click',()=>{
-    window.close();
-
-})
-
 document.addEventListener('keydown',e=>{
-    console.log(e)
     if(e.key === "Escape"){
-        window.close()
+        window.close();
     }
 })

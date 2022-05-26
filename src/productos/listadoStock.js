@@ -1,4 +1,5 @@
 const axios  = require("axios");
+const { ipcRenderer } = require("electron");
 require("dotenv").config;
 const URL = process.env.URL;
 
@@ -62,11 +63,13 @@ imprimir.addEventListener('click',e=>{
 const excel = document.querySelector('.excel')
 excel.addEventListener('click',e=>{
     let listado = []
-    productos.forEach(({_id,descripcion,stock})=>{
+    productos.forEach(({_id,descripcion,stock,cod_fabrica,marca})=>{
         let objeto = {}
-            objeto.codigo=_id
-            objeto.descripcion=descripcion
-            objeto.stock=stock
+            objeto.codigo=_id;
+            objeto.descripcion=descripcion;
+            objeto.stock=stock;
+            objeto.fabrica = cod_fabrica;
+            objeto.marca = marca
             listado.push(objeto)
     })
     listadoStock(listado)
@@ -74,19 +77,27 @@ excel.addEventListener('click',e=>{
 
 
 const listadoStock = (listado)=>{
-    let wb = XLSX.utils.book_new();
-    wb.props = {
-        Title: "Listado Stock",
-        subject: "Test",
-        Author: "Electro Avenida"
-    }
-    let newWs = XLSX.utils.json_to_sheet(listado)
-    
-    XLSX.utils.book_append_sheet(wb,newWs,'Listado Stock')
-    XLSX.writeFile(wb,"listadoStock.xlsx")
+    ipcRenderer.send('elegirPath');
+    let path = "";
+    let extencion = "xlsx";
+    ipcRenderer.on('mandoPath',(e,args)=>{
+        path = args;
+        extencion = path.split('.')[1] ? path.split('.')[1] : extencion;
+        path = path.split('.')[0];
+        let wb = XLSX.utils.book_new();
+        wb.props = {
+            Title: "Listado Stock",
+            subject: "Test",
+            Author: "Electro Avenida"
+        }
+        let newWs = XLSX.utils.json_to_sheet(listado)
+        
+        XLSX.utils.book_append_sheet(wb,newWs,'Listado Stock')
+        XLSX.writeFile(wb,path + "." + extencion)
+    });
 }
 
-
+//si apretamos escape se cieera la pagina
 document.addEventListener('keydown',e=>{
     if (e.key === "Escape") {
         window.close()

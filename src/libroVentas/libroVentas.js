@@ -275,8 +275,11 @@ const listar = async (ventas,diaVentaAnterior)=>{
 exportar.addEventListener('click',e=>{
     ipcRenderer.send('elegirPath');
     let path = "";
+    let extencion = "xlsx";
     ipcRenderer.on('mandoPath',(e,args)=>{
-        path = args
+        path = args;
+        extencion = path.split('.')[1] ? path.split('.')[1] : extencion;
+        path = path.split('.')[0];
     
         let wb = XLSX.utils.book_new();
 
@@ -289,7 +292,21 @@ exportar.addEventListener('click',e=>{
         let newWS = XLSX.utils.json_to_sheet(ventasExportar);
 
         XLSX.utils.book_append_sheet(wb,newWS,'LibroVentas');
-        XLSX.writeFile(wb,path);
+        XLSX.writeFile(wb,path + "." + extencion);
     })
     
+});
+
+
+//cuando hacemos enter en desde o hasta que se pase al siguiente, en el caso de hasta que pase a buscar
+desde.addEventListener('keypress',e=>{
+    if(e.key === "Enter"){
+        hasta.focus();
+    };
+});
+
+hasta.addEventListener('keypress',e=>{
+    if(e.key === "Enter"){
+        buscar.focus();
+    };
 });
