@@ -693,7 +693,7 @@ const ponerEnCuentaCorrienteHistorica = async(venta,valorizado,saldo)=>{
     cuenta.tipo_comp = venta.tipo_comp;
     cuenta.nro_comp = venta.nro_comp;
     cuenta.debe = valorizado ? parseFloat(venta.precioFinal) : 0.1;
-    cuenta.saldo = parseFloat(saldo) + cuenta.debe;
+    cuenta.saldo = parseFloat(saldo) - cuenta.debe;
     await axios.post(`${URL}cuentaHisto`,cuenta);
 }
 

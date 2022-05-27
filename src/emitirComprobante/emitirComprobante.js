@@ -768,6 +768,7 @@ ticketFactura.addEventListener('click',async (e) =>{
             venta.cod_comp = verCodComprobante(tipoVenta);
             if (venta.precioFinal >=10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" || dnicuit.value === "00000000")) {
                 alert("Factura mayor a 10000, poner datos cliente");
+                alerta.classList.add('none');
             }else{
                 try {
                     for(let producto of venta.productos){
@@ -1349,8 +1350,6 @@ const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae,numero},listaProducto
             }
         });
    }
-
-
 
 const verTipoComp = (codigoComprobante)=>{
     if (codigoComprobante === 6) {

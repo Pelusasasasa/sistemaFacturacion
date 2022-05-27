@@ -309,7 +309,7 @@ ipcMain.on('abrir-ventana-movimiento-producto',async (e,arreglo)=>{
 
 //Abrir ventana de Informacion de producto
 ipcMain.on('abrir-ventana-info-movimiento-producto',async (e,args)=>{
-    abrirVentana('movProductos/infoMovProductos.html',1200,500,"noReinician")
+    abrirVentana('movProductos/infoMovProductos.html',1200,600,"noReinician")
 
 //informacion de movimiento de producto
     nuevaVentana.on('ready-to-show',async()=>{
