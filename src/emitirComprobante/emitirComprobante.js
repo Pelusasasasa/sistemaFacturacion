@@ -1356,7 +1356,7 @@ const verTipoComp = (codigoComprobante)=>{
     if (codigoComprobante === 6) {
         return "Cod: 006 - Factura B"
     }else if(codigoComprobante === 1){
-        return "Cod: 002 - Factura A"
+        return "Cod: 001 - Factura A"
     }else if(codigoComprobante === 3){
         return "Cod: 003 - Nota Credito A"
     }else if(codigoComprobante === 4){
