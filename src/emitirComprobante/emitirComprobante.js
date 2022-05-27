@@ -246,7 +246,7 @@ const descripcionAgregar = document.querySelector('.parte-producto_descripcion')
 const precioAgregar = document.querySelector('.parte-producto_precio');
 
 precioAgregar.addEventListener('keypress',e=>{
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && codigo.value !== "888-888") {
         const product = {
             descripcion: descripcionAgregar.children[0].value,
             precio_venta: parseFloat(precioAgregar.children[0].value),
@@ -286,9 +286,9 @@ codigo.addEventListener('keypress',async (e) => {
                 descripcion.classList.remove('none')
                 let producto = (await axios.get(`${URL}productos/888-888`)).data;
                 descripcion.children[0].value = producto.descripcion;
-                precio.classList.remove('none')
-                precio.children[0].focus()
-                precio.addEventListener('keypress',e=>{
+                precio.classList.remove('none');
+                precio.children[0].focus();
+                precio.addEventListener('keypress',async e=>{
                     if (e.key === "Enter") {
                         const product = {
                             descripcion: descripcion.children[0].value,
@@ -296,11 +296,12 @@ codigo.addEventListener('keypress',async (e) => {
                             _id:codigo.value
                         }
                         dialogs.prompt("Cantidad",async valor =>{
-                            await mostrarVentas(product,valor)
+                            console.log(valor)
+                            await mostrarVentas(product,valor);
                             codigo.value = "";
                             precio.children[0].value = "";
                             descripcion.children[0].value = "";
-                            codigo.focus()
+                            await codigo.focus();
                             precio.classList.add('none')
                             descripcion.classList.add('none')
                         })
