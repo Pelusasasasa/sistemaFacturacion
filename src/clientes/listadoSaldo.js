@@ -1,11 +1,12 @@
+const XLSX = require('xlsx');
+const { ipcRenderer } = require("electron");
 
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
 
 let situacion = "blanco";
 let Clientes = {}
-const axios = require("axios");
-const { ipcRenderer } = require("electron");
-require("dotenv").config;
-const URL = process.env.URL;
 
 const tbody = document.querySelector('.tbody')
 const fecha = document.querySelector('.fecha');
@@ -71,10 +72,26 @@ traerSaldo();
 const descargar = document.querySelector('.descargar')
 
 descargar.addEventListener('click',e=>{
-    ipcRenderer.send('listaSaldoPDF',clientes);
-    descargar.classList.add('none')
-    window.print()
-    descargar.classList.remove('none')
+    const listado = Clientes.filter(cliente => parseFloat(cliente.saldo) !== 0 || parseFloat(cliente.saldo_P) !== 0)
+    console.log(listado)
+    ipcRenderer.send('elegirPath');
+    let path;
+    let extencion = "xlsx";
+    ipcRenderer.on('mandoPath',async(e,args)=>{
+        let wb = XLSX.utils.book_new();
+        path = args;
+        extencion = path.split('.')[1] ? path.split('.')[1] : extencion;
+        wb.props = {
+            Title: "Listado Saldo",
+            subject: "test",
+            Author: "Electro Avenida"
+        };
+
+        let newWS = XLSX.utils.json_to_sheet(listado);
+
+        XLSX.utils.book_append_sheet(wb,newWS,'LibroVentas');
+        XLSX.writeFile(wb,path + "." + extencion);
+    })
 })
 
 document.addEventListener('keyup',e=>{
