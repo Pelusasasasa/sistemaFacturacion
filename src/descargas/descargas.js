@@ -2,7 +2,7 @@ const XLSX = require('xlsx');
 
 const pedidos = (Pedidos,path) =>{
 let wb = XLSX.utils.book_new();
-
+console.log(path)
 let extencion = "xlsx";
 extencion = path.split('.')[1] ? path.split('.')[1] : extencion;
 path = path.split('.')[0];

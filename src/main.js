@@ -331,8 +331,9 @@ const templateMenu = [
         label: 'Convertir excel',
         submenu: [{
             label: 'Pedidos',
-            click() {
-                descargas("Pedidos");
+            async click() {
+                const path = (await dialog.showSaveDialog()).filePath;
+                descargas("Pedidos","s",path);
             }
         },
         {
@@ -614,7 +615,7 @@ function abrirVentana(texto,width,height,reinicio){
 
 async function descargas(nombreFuncion,ventasTraidas,path) {
     if(nombreFuncion === "Pedidos"){
-        pedidos((await axios.get(`${URL}pedidos`)).data)
+        pedidos((await axios.get(`${URL}pedidos`)).data,path)
     }else if(nombreFuncion === "Ventas"){
         ventas(ventasTraidas,path);
     }
