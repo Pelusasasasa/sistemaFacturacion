@@ -86,7 +86,7 @@ eliminarPedido.addEventListener("click", async e =>{
                 location.reload();
             }
         }else{
-            dialogs.alert('Pedido no seleccionado')
+            alert('Pedido no seleccionado');
         }
 
 

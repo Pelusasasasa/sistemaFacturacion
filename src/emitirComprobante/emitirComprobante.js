@@ -618,20 +618,25 @@ async function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
 }
 
 //pasamos el saldo en negro
-async function sumarSaldoAlClienteEnNegro(precio,codigo,valorizado){
+async function sumarSaldoAlClienteEnNegro(precio,codigo,valorizado,venta){
     !valorizado ? precio = "0.1" : precio;
-    let cliente = await axios.get(`${URL}clientes/id/${codigo}`)
-    cliente = cliente.data;
+    let cliente = (await axios.get(`${URL}clientes/id/${codigo}`)).data
     let saldo_p = (parseFloat(precio) + parseFloat(cliente.saldo_p)).toFixed(2);
     cliente.saldo_p = saldo_p;
+    let lista = cliente.listaVentas;
+    lista.push(venta);
+    cliente.listaVentas = lista;
     await axios.put(`${URL}clientes/${codigo}`,cliente);
 }
 
-async function sumarSaldoAlCliente(precio,codigo) {
+async function sumarSaldoAlCliente(precio,codigo,venta) {
     let cliente = await axios.get(`${URL}clientes/id/${codigo}`)
     cliente = cliente.data;
-    let saldo = (parseFloat(precio)+parseFloat(cliente.saldo)).toFixed(2)
+    cliente.listaVentas.push(venta);
+    let saldo = (parseFloat(precio)+parseFloat(cliente.saldo)).toFixed(2);
     cliente.saldo = saldo;
+    console.log(cliente);
+    console.log(venta)
     await axios.put(`${URL}clientes/${codigo}`,cliente)
 }
 const sacarIdentificadorTabla = (arreglo)=>{
@@ -686,11 +691,11 @@ presupuesto.addEventListener('click',async (e)=>{
                             }
                         }
 
-                     ipcRenderer.send('nueva-venta',venta);
-                     await actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+                    await axios.post(`${URL}presupuesto`,venta)
+                    await actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
                      //si la venta es CC Sumamos un saldo al cliente y ponemos en cuenta corriente compensada y historica
                      if (venta.tipo_pago === "CC") {
-                        await sumarSaldoAlClienteEnNegro(venta.precioFinal,venta.cliente,valorizado.checked);
+                        await sumarSaldoAlClienteEnNegro(venta.precioFinal,venta.cliente,valorizado.checked,venta.nro_comp);
                         await  ponerEnCuentaCorrienteCompensada(venta,valorizado.checked);
                         await ponerEnCuentaCorrienteHistorica(venta,valorizado.checked,saldo_p.value);
                     }
@@ -721,7 +726,7 @@ presupuesto.addEventListener('click',async (e)=>{
                          arregloProductosDescontarStock = [];
                      }
     
-                     window.location = "../index.html";
+                     //window.location = "../index.html";
                      
                 } catch (error) {
                     console.log(error)
@@ -789,12 +794,12 @@ ticketFactura.addEventListener('click',async (e) =>{
                     const afip = await subirAAfip(venta);
                     venta.nro_comp = `0005-${(afip.numero).toString().padStart(8,'0')}`;
                     venta.comprob = venta.nro_comp;
-                    venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente);
+                    venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente,venta.nro_comp);
                     venta.tipo_pago === "CC" && ponerEnCuentaCorrienteCompensada(venta,true);
                     venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
                     actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp);
                     
-                    await ipcRenderer.send('nueva-venta',venta);
+                    nuevaVenta = await axios.post(`${URL}ventas`,venta)
                     const cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
 
                     alerta.children[1].children[0].innerHTML = "Imprimiendo Venta";
@@ -813,7 +818,7 @@ ticketFactura.addEventListener('click',async (e) =>{
                     }
         
                     if (borraNegro) {
-
+                        console.log("BORRAR")
                         //traemos los movimientos de productos de la venta anterior y lo modificamos a la nueva venta
                         const movimientosViejos = (await axios.get(`${URL}movProductos/${ventaAnterior.nro_comp}/Presupuesto`)).data;
                         for await (let mov of movimientosViejos){
@@ -825,7 +830,7 @@ ticketFactura.addEventListener('click',async (e) =>{
                         //borramos la cuenta compensada
                         await borrrarCuentaCompensada(ventaDeCtaCte);
                         //descontamos el saldo del cliente y le borramos la venta de la lista
-                        await descontarSaldo(ventaAnterior.cliente,ventaAnterior.precioFinal,ventaAnterior.nro_comp);
+                        await descontarSaldo(ventaAnterior.cliente,ventaAnterior.precioFinal,ventaAnterior.nro_comp,venta.nro_comp);
                         await borrarCuentaHistorica(ventaAnterior.nro_comp,ventaAnterior.cliente,ventaAnterior.tipo_comp);
                         await borrarVenta(ventaAnterior.nro_comp)
                     };
@@ -896,15 +901,15 @@ async function generarQR(texto) {
  })
 
  //Funcion para buscar una persona directamente por el cuit
- function buscarPersonaPorCuit(cuit) {
+ async function buscarPersonaPorCuit(cuit) {
         const Https = new XMLHttpRequest();
         const url=`https://afip.tangofactura.com/REST/GetContribuyente?cuit=${cuit}`;
-        Https.open("GET", url);
-        Https.send()
+        await Https.open("GET", url);
+        await Https.send()
         Https.onreadystatechange = (e) => {
             if (Https.responseText !== "") {
                 const persona = JSON.parse(Https.responseText)
-                if (persona!=="") {
+                if (persona.errorGetData === false) {
                     const {nombre,domicilioFiscal,EsRI,EsMonotributo,EsExento,EsConsumidorFinal} = persona.Contribuyente;
                     const cliente = {};
                     cliente.cliente=nombre;
@@ -927,10 +932,12 @@ async function generarQR(texto) {
                     cliente.cuit = dnicuit.value;
                     cliente._id = "9999";
                     ponerInputsClientes(cliente);
+                }else{
+                    alert("Persona no encontrada");
                 }
             }
         }
-         alert("Persona no encontrada");
+         
  }
 
  //lo usamos para borrar un producto de la tabla
@@ -1025,10 +1032,12 @@ const borrrarCuentaCompensada = async(numero)=>{
 }
 
 //descontamos el saldo del cliente
-const descontarSaldo = async(codigo,precio,numero)=>{
+const descontarSaldo = async(codigo,precio,numero,venta)=>{
+    console.log("a")
     const cliente = (await axios.get(`${URL}clientes/id/${codigo}`)).data;
     const index = cliente.listaVentas.indexOf(numero);
     cliente.listaVentas.splice(index);
+    cliente.listaVentas = venta;
     cliente.saldo_p = parseFloat(cliente.saldo_p) - precio;
     await axios.put(`${URL}clientes/${codigo}`,cliente);
 }

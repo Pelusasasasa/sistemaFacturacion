@@ -78,7 +78,7 @@ ipcMain.on('recargar-Ventana',(e,args)=>{
 
 ipcMain.on('abrir-menu',()=>{
     ventanaPrincipal.setClosable(true);
-ventanaPrincipal.setMenuBarVisibility(true)
+ventanaPrincipal.setMenuBarVisibility(true);
 });
 
 ipcMain.on('cerrar-menu',()=>{
@@ -172,32 +172,6 @@ ipcMain.on('abrir-ventana-clientesConSaldo',async(e,args)=>{
 //FIN CLIENTES
 
 //INICIO VENTAS
-
-//Obtenemos la venta
-ipcMain.on('nueva-venta', async (e, args) => {
-    let nuevaVenta;
-    if (args.tipo_comp === "Presupuesto") {
-       nuevaVenta = await axios.post(`${URL}presupuesto`,args)
-    }else{
-       nuevaVenta = await axios.post(`${URL}ventas`,args)
-    }
-    nuevaVenta = nuevaVenta.data
-    let cliente 
-    if (nuevaVenta.tipo_pago == "CC" || nuevaVenta.tipo_comp === "Recibos" || nuevaVenta.tipo_comp === "Recibos_P") {    
-        const _id = nuevaVenta.cliente;
-        cliente = await axios.get(`${URL}clientes/id/${_id}`);
-        cliente = cliente.data;
-        let listaVentas = cliente.listaVentas;
-        listaVentas[0] === "" ? (listaVentas[0] = nuevaVenta.nro_comp) : (listaVentas.push(nuevaVenta.nro_comp));
-        cliente.listaVentas = listaVentas;
-        let clienteModificado = await axios.put(`${URL}clientes/${_id}`,cliente);
-        clienteModificado = clienteModificado.data;
-        e.reply('clienteModificado',JSON.stringify(clienteModificado))
-    }else{
-        e.reply('clienteModificado',JSON.stringify(cliente))
-    }
-})
-
 //imprivimos una venta ya sea presupuesto o ticket factura
 ipcMain.on('imprimir-venta',async(e,args)=>{
     const [,,condicion,cantidad,tipo,,,] = args;
@@ -225,6 +199,10 @@ const imprimir = (opciones,args)=>{
                     if (success) {
                          ventanaPrincipal.focus()
                          nuevaVentana.close();
+                    }else{
+                        console.log("No se imprimio");
+                        ventanaPrincipal.focus();
+                        nuevaVentana.close();
                     }
         })
     });

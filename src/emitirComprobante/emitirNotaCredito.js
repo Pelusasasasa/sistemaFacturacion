@@ -297,7 +297,7 @@ factura.addEventListener('click',async e=>{
             venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
             
             //mandamos la venta
-            ipcRenderer.send('nueva-venta',venta)
+            nuevaVenta = await axios.post(`${URL}ventas`,venta)
             //Imprimos el ticket
             imprimirVenta([venta,cliente,afip]);
             

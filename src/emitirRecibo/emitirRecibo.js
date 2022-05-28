@@ -11,7 +11,6 @@ const axios = require("axios");
 require("dotenv").config;
 const URL = process.env.URL;
 
-const Dialogs = require("dialogs");
 const Vendedor = getParameterByName('vendedor')
 
 const hoy = new Date();
