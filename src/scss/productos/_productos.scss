@@ -98,15 +98,17 @@
     display: flex;
     justify-content: space-around;
     padding: 2.5rem 0;
-    .boton-producto {
+    
+    button{
+      border: none;
       border-radius: 7.5rem;
-      background-color: lightgray;
-      padding: 2rem;
-
-      &:hover {
+      font-size: 2rem;
+      padding: 1rem;
+      &:hover{
         cursor: pointer;
         transform: scale(1.2);
       }
+
     }
   }
 }

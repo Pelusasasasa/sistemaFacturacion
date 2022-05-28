@@ -17,6 +17,13 @@ const acceso = getParameterByName('acceso')
 const resultado = document.querySelector('#resultado');
 const select = document.querySelector('#seleccion');
 const buscarProducto = document.querySelector('#buscarProducto');
+const modificar = document.querySelector('.modificar');
+const movimiento = document.querySelector('.movimiento');
+const ingresarMov = document.querySelector('.ingresar')
+const agregarProducto = document.querySelector('.agregarProducto');
+const eliminar = document.querySelector('.eliminar');
+const volver = document.querySelector('.volver');
+
 let texto = ""
 let seleccionado;
 let subseleccion;
@@ -155,23 +162,22 @@ ipcRenderer.once('Historial',async(e,args)=>{
 
 
 //modificar el producto
-const modificar = document.querySelector('.modificar')
+
 modificar.addEventListener('click',e=>{
     if(seleccionado){
-        ipcRenderer.send('abrir-ventana-modificar-producto',[seleccionado.id,acceso,texto,select.value])
+        ipcRenderer.send('abrir-ventana-modificar-producto',[seleccionado.id,acceso,texto,select.value]);
     }else{
-            alert('Producto no seleccionado')
+            alert('Producto no seleccionado');
     }
-})
+});
+
 //Agregar producto
-const agregarProducto = document.querySelector('.agregarProducto')
 agregarProducto.addEventListener('click',e=>{
-    ipcRenderer.send('abrir-ventana-agregar-producto')
+    ipcRenderer.send('abrir-ventana-agregar-producto');
 })
 
 
 //Info Movimiento de producto
-const movimiento = document.querySelector('.movimiento')
 movimiento.addEventListener('click',()=>{
     if (seleccionado) {
         ipcRenderer.send('abrir-ventana-info-movimiento-producto',seleccionado.id)
@@ -181,7 +187,6 @@ movimiento.addEventListener('click',()=>{
 })
 
 //Ingresar movimientoProducto
-const ingresarMov = document.querySelector('.ingresar')
 ingresarMov.addEventListener('click', e => {
    if (seleccionado) {
         let vendedor = getParameterByName('vendedor');
@@ -193,7 +198,7 @@ ingresarMov.addEventListener('click', e => {
 })
 
 //Eliminar un producto
-const eliminar = document.querySelector('.eliminar')
+
 eliminar.addEventListener('click',async e=>{
     if (seleccionado) {
        if ( confirm('Quieres eliminar producto')) {
@@ -276,3 +281,14 @@ const funcionSubSeleccion = (codigoKey)=>{
         }
       }
 }
+
+
+volver.addEventListener('click',e=>{
+    location.href = "../index.html";
+});
+
+document.addEventListener('keydown',e=>{
+    if (e.key === "Escape") {
+        location.href = "../index.html";
+    }
+})
