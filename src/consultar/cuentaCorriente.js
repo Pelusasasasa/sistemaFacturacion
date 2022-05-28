@@ -5,6 +5,7 @@ const dialogs = Dialogs()
 const axios = require("axios");
 require("dotenv").config;
 const URL = process.env.URL;
+console.log(URL)
 
 const codigoCliente = document.querySelector('#codigoCliente');
 const cliente = document.querySelector('#buscador');
