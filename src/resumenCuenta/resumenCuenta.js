@@ -136,11 +136,11 @@ function listarVentas(ventas,situacion,saldoAnterior,saldoAnterior_P) {
             let comprobante = venta.tipo_comp;
 
             if (venta.tipo_comp === "Ticket Factura") {
-                comprobante = venta.cod_comp === 1 ? "Factura A" : "Factura B";
+                comprobante = cliente.cond_iva === "Inscripto" ? "Factura A" : "Factura B";
             }else if(venta.tipo_comp === "Nota Credito"){
-                comprobante = venta.cod_comp === 3 ? "Nota Credito A" : "Nota Credito B";
+                comprobante = cliente.cond_iva === "Inscripto" ? "Nota Credito A" : "Nota Credito B";
             }else if(venta.tipo_comp === "Recibos"){
-                comprobante = venta.cod_comp === 4 ? "Recibos A" : "Recibos B"
+                comprobante = cliente.cond_iva === "Inscripto" ? "Recibos A" : "Recibos B"
             }
 
             tbody.innerHTML += `

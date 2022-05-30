@@ -147,19 +147,31 @@
           <fieldset>
             <legend>Producto</legend>
             <div class="productos-inputs">
-              <input type="text" placeholder="codigo" id="codigo" name="codigo" />
+              <div class="parteInfo">
+                <div class="buscadorCodigo parte-producto_codigo">
+                  <input type="text" placeholder="codigo" id="codigo" name="codigo" />
+                </div>
 
-              <div class="nuevaCantidad none">
-                <label for="nuevaCantidad">Nueva Cantidad</label>
-                <input type="text" placeholder="nuevaCantidad" id="nuevaCantidad" name="nuevaCantidad" />
+                <div class="nuevaCantidad none">
+                  <label for="nuevaCantidad">Nueva Cantidad</label>
+                  <input type="text" placeholder="nuevaCantidad" id="nuevaCantidad" name="nuevaCantidad" />
+                </div>
+
+                <div class="nuevoPrecio none">
+                  <label for="nuevoPrecio">Nuevo Precio</label>
+                  <input type="text" placeholder="nuevoPrecio" id="nuevoPrecio" name="nuevoPrecio" />
+                </div>
+
+                <div class="parte-producto_descripcion none">
+                  <input type="text" placeholder="descripcion" name="descripcion" id="descripcion">
+                </div>
+
+                <div class="parte-producto_precio none">
+                  <input type="number" placeholder="precio" name="precio" id="precio">
+                </div>
               </div>
 
-              <div class="nuevoPrecio none">
-                <label for="nuevoPrecio">Nuevo Precio</label>
-                <input type="text" placeholder="nuevoPrecio" id="nuevoPrecio" name="nuevoPrecio" />
-              </div>
-
-              <div>
+              <div class="empresa">
                 <label for="">Empresa</label>
                 <select name="empresa" id="empresa">
                   <option value="Electro Avenida">Electro Avenida</option>
@@ -187,7 +199,7 @@
         </table>
       </div>
 
-      <div class="contenedor total formulario-verde">
+      <div class=" total formulario-verde">
           <div class="descuento">
             <label for="descuento">Descuento</label>
             <input type="Number" name="descuento" id="descuento" value="0.00" />

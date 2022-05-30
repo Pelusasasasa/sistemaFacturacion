@@ -295,7 +295,7 @@ const hacerRecibo = async()=>{
      try {
         const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
         //modificamos las ventas en cuentas compensada
-        modificarVentas(nuevaLista);
+        await modificarVentas(nuevaLista);
         
         //modificamos el  numero del recibo
         recibo.nro_comp = recibo.tipo_comp === "Recibos" ? `0005-${(afip.numero).toString().padStart(8,'0')}` : await traerUltimoNroRecibo();

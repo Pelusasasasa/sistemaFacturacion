@@ -42,29 +42,51 @@
         }
 
         .productos-inputs{
-            display: flex;
-            justify-content: space-between;
-            div{    
+            display: grid;
+            grid-template-columns: 3fr 1fr;
+            .parteInfo{
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                #codigo,#descripcion,#precio{
+                    padding: 1rem;
+                    font-size: 2rem;
+                }
+                div{
+                    display: flex;
+                    flex-direction: column;
+                }
+                .buscadorCodigo{
+                    display: flex;
+                    flex-direction: column;
+                    width: 12%;
+                }
+
+                .parte-producto_codigo,.parte-producto_precio{
+                    width: 10%;
+                }
+                  .parte-producto_descripcion{
+                    width: 60%;
+                }
+            }
+            .empresa{
                 display: flex;
                 flex-direction: column;
+                align-items: center;
+            }
+            select{
+                font-size: 2rem;
+                padding: 1rem;
             }
         }
 
         .listaProductos{
+            .seleccionado{
+                background-color: aqua;
+            }
             overflow: scroll;
-            height: 25rem;
-            @include Chico(){
-                height: 35rem;
-            }
-            @include Comun(){
-                height: 45rem;
-            }
-            @include P900(){
-                height: 55rem;
-            }
-            @include P950(){
-                height: 55rem;
-            }
+            height: 40vh;
             border: .1rem solid black;
             background-color: white;
             .table{
@@ -80,63 +102,76 @@
                     }
                 }
                 tbody{
+                    tr:hover{
+                        background-color: lightgray;
+                        cursor: pointer;
+                    }
                     td{
                         border: .1rem solid black;
                     }
                 }
             }
         }
-        #codigo{
-            padding: 1rem;
-        }
         .total{
-            display: flex;
-            justify-content: space-around;
+            padding: .5rem 0;
+            display: grid;
+            width: 100%;
+            grid-template-columns: 2fr 1fr 1fr ;
 
             input{
                 padding: .5rem;
                 font-size: 1.5rem;
+            }
+            .total__input{
+                display: flex;
+                justify-content: flex-end;
             }
             #descuento{
                 width: 15%;
             }
         }
         .radioYtotal{
-            padding: 0 5rem;
-            display: flex;
-            justify-content: space-evenly;
+            display: grid;
+            grid-template-columns: 1fr 3fr 1fr;
             width: 100%;
             .vendedor{
+                text-align: center;
                 border: .1rem solid black;
+                width: 50%;
+            }
+
+            .radios{
+                border: .1rem solid black;
+                font-size: 2rem;
+                display: flex;
+                justify-content: space-evenly;
+                margin-bottom: 1rem;
+                .radio{
+                    input{
+                        width: 100%;
+                        height: 1em;
+                    }
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                }
             }
 
             .cobrado{
+                display: flex;
+                justify-content: flex-end;
+                align-items: center;
                 padding: 1rem;
                 font-size: 2rem;
             }
         }
-        .radios{
-            border: .1rem solid black;
-            width: 50%;
-            font-size: 2rem;
-            display: flex;
-            justify-content: space-evenly;
-            margin-bottom: 1rem;
-            .radio{
-                input{
-                    width: 100%;
-                    height: 1em;
-                }
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-            }
-        }
+        
         .botones{
             width: 100%;
             display: flex;
             justify-content: space-around;
             padding-bottom: 1rem;
+            padding-top: 2rem;
 
             button{
                 background-color: lightgreen;

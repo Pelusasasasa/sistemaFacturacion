@@ -71,20 +71,17 @@ tbody.addEventListener("click" , e=>{
 //Eliminar un pedido
 const eliminarPedido = document.querySelector('.eliminarPedido');
 eliminarPedido.addEventListener("click", async e =>{
-        if (id) {
+        if (seleccionado) {
             if (confirm("Seguro quiere Eliminar el Pedido")) {
-                await axios.delete(`${URL}pedidos/${id.id}`);
+                await axios.delete(`${URL}pedidos/${seleccionado.id}`);
                 location.reload();
             }
         }else{
             alert('Pedido no seleccionado');
         }
-
-
-})
-
-    document.addEventListener('keydown',e=>{
-        if(e.key === "Escape"){
-            location.href = "../index.html";
-        }
-    })
+});
+document.addEventListener('keydown',e=>{
+    if(e.key === "Escape"){
+        location.href = "../index.html";
+    }
+});

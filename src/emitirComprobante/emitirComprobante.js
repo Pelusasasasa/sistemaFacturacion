@@ -47,6 +47,7 @@ const tiposVentas = document.querySelectorAll('input[name="tipoVenta"]')
 const borrarProducto = document.querySelector('.borrarProducto')
 const inputEmpresa = document.querySelector('#empresa');
 const alerta = document.querySelector('.alerta');
+const cancelar = document.querySelector('.cancelar')
 inputEmpresa.value = empresa;
 
 let situacion = "blanco"//para teclas alt y F9
@@ -254,7 +255,9 @@ precioAgregar.addEventListener('keypress',e=>{
             marca:""
         }
         dialogs.prompt("Cantidad",async valor =>{
-            await mostrarVentas(product,valor)
+            if (valor !== "" || parseFloat(valor) !== 0) {
+                await mostrarVentas(product,parseFloat(valor));
+            }
             codigo.value = await "";
             codigo.focus()
             precioAgregar.children[0].value = await "";
@@ -296,8 +299,7 @@ codigo.addEventListener('keypress',async (e) => {
                             _id:codigo.value
                         }
                         dialogs.prompt("Cantidad",async valor =>{
-                            console.log(valor)
-                            await mostrarVentas(product,valor);
+                            await mostrarVentas(product,parseFloat(valor));
                             codigo.value = "";
                             precio.children[0].value = "";
                             descripcion.children[0].value = "";
@@ -325,7 +327,7 @@ codigo.addEventListener('keypress',async (e) => {
                             }else{
                                 producto.stock<0 && alert("Stock En Negativo");
                                (parseFloat(producto.precio_venta) === 0 && alert("Precio del producto en 0"))
-                                await mostrarVentas(producto,valor);
+                                await mostrarVentas(producto,parseFloat(valor));
                                 e.target.value="";
                                 codigo.focus();
                             }}})}}
@@ -335,7 +337,7 @@ codigo.addEventListener('keypress',async (e) => {
 
 ipcRenderer.on('mando-el-producto',(e,args) => {
     const {producto,cantidad} = JSON.parse(args);
-    mostrarVentas(producto,cantidad)
+    mostrarVentas(producto,parseFloat(cantidad))
 })
 let id = 1 //id de la tabla de ventas
 function mostrarVentas(objeto,cantidad) {
@@ -343,7 +345,7 @@ function mostrarVentas(objeto,cantidad) {
     total.value = (parseFloat(Preciofinal)).toFixed(2)
     resultado.innerHTML += `
         <tr id=${id}>
-        <td class="tdEnd">${(parseFloat(cantidad)).toFixed(2)}</td>
+        <td class="tdEnd">${(cantidad).toFixed(2)}</td>
         <td>${objeto._id}</td>
         <td>${objeto.descripcion} ${objeto.marca}</td>
         <td class="tdEnd">${(objeto.iva === "R" ? 10.50 : 21).toFixed(2)}</td>
@@ -841,14 +843,13 @@ ticketFactura.addEventListener('click',async (e) =>{
                 }finally{
                     alerta.classList.add('none')
                 }
-           
         }
     }
     }
    }
  })
 
- //sacamos el gravado y el iva
+ //sacamos el gravado y el iva de una venta
  const gravadoMasIva = (ventas)=>{
     let totalIva105 = 0
     let totalIva21=0
@@ -942,10 +943,38 @@ async function generarQR(texto) {
 
  //lo usamos para borrar un producto de la tabla
 borrarProducto.addEventListener('click',e=>{
+    nuevaCantidadDiv.classList.add('none');
+    cambioPrecio.classList.add('none');
     borrarUnProductoDeLaLista(seleccionado);
-})
+});
 
-const cancelar = document.querySelector('.cancelar')
+
+    const borrarUnProductoDeLaLista = (productoSeleccionado)=>{
+        if (productoSeleccionado) {
+            producto = listaProductos.find(e=>e.objeto.identificadorTabla === productoSeleccionado.id);
+            total.value = (parseFloat(total.value)-(parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta))).toFixed(2)
+            Preciofinal = (Preciofinal - (parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)).toFixed(2)) 
+            listaProductos.forEach(e=>{
+                if (productoSeleccionado.id === e.objeto.identificadorTabla) {
+                        listaProductos = listaProductos.filter(e=>e.objeto.identificadorTabla !== productoSeleccionado.id);
+                        totalPrecioProducos -= (e.objeto.precio_venta*e.cantidad);
+                }
+            })
+            const a = productoSeleccionado
+            a.parentNode.removeChild(a)
+        }
+        let nuevoTotal = 0;
+        listaProductos.forEach(({objeto,cantidad})=>{
+            nuevoTotal += (objeto.precio_venta * cantidad);
+        })
+        total.value = parseFloat(descuento.value) !== 0 ? (nuevoTotal - (nuevoTotal*parseFloat(descuento.value)/100)).toFixed(2) : nuevoTotal.toFixed(2);
+        descuentoN.value = (nuevoTotal*parseFloat(descuento.value)/100).toFixed(2);
+        borrarProducto.classList.add('none');
+        codigo.focus()
+    }
+
+    
+//Cuando se hace un click en cancelar y se confirma, vemos si hay productos para que se guarde en una base de datos
 cancelar.addEventListener('click',async e=>{
     e.preventDefault()
     if (confirm("Desea cancelar el Presupuesto")) {
@@ -969,8 +998,6 @@ const tamanioCancelados = async() =>{
     let tamanio = (await axios.get(`${URL}cancelados/tamanio`)).data;
     return `${tamanio + 1}`;
 }
-
-const fs = require('fs');
 
  //Ponemos valores a los inputs
 function ponerInputsClientes(cliente) {
@@ -1230,29 +1257,6 @@ function selecciona_value(idInput) {
     }
     }
 
-    const borrarUnProductoDeLaLista = (productoSeleccionado)=>{
-        if (productoSeleccionado) {
-            producto = listaProductos.find(e=>e.objeto.identificadorTabla === productoSeleccionado.id);
-            total.value = (parseFloat(total.value)-(parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta))).toFixed(2)
-            Preciofinal = (Preciofinal - (parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)).toFixed(2)) 
-            listaProductos.forEach(e=>{
-                if (productoSeleccionado.id === e.objeto.identificadorTabla) {
-                        listaProductos = listaProductos.filter(e=>e.objeto.identificadorTabla !== productoSeleccionado.id);
-                        totalPrecioProducos -= (e.objeto.precio_venta*e.cantidad);
-                }
-            })
-            const a = productoSeleccionado
-            a.parentNode.removeChild(a)
-        }
-        let nuevoTotal = 0;
-        listaProductos.forEach(({objeto,cantidad})=>{
-            nuevoTotal += (objeto.precio_venta * cantidad);
-        })
-        total.value = parseFloat(descuento.value) !== 0 ? (nuevoTotal - (nuevoTotal*parseFloat(descuento.value)/100)).toFixed(2) : nuevoTotal.toFixed(2);
-        descuentoN.value = (nuevoTotal*parseFloat(descuento.value)/100).toFixed(2);
-        borrarProducto.classList.add('none');
-        codigo.focus()
-    }
 
 const imprimirVenta = (arreglo)=>{
 

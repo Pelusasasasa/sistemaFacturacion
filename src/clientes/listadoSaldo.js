@@ -64,7 +64,7 @@ const traerSaldo = async()=>{
         }
         return 0;
     })
-    clientes = Clientes;
+    clientes = Clientes.filter(cliente => parseFloat(cliente.saldo) !== 0 || parseFloat(cliente.saldo_p) !== 0);
     mostrarLista(Clientes)
 }
 traerSaldo();
@@ -72,8 +72,6 @@ traerSaldo();
 const descargar = document.querySelector('.descargar')
 
 descargar.addEventListener('click',e=>{
-    const listado = Clientes.filter(cliente => parseFloat(cliente.saldo) !== 0 || parseFloat(cliente.saldo_P) !== 0)
-    console.log(listado)
     ipcRenderer.send('elegirPath');
     let path;
     let extencion = "xlsx";
@@ -87,7 +85,7 @@ descargar.addEventListener('click',e=>{
             Author: "Electro Avenida"
         };
 
-        let newWS = XLSX.utils.json_to_sheet(listado);
+        let newWS = XLSX.utils.json_to_sheet(clientes);
 
         XLSX.utils.book_append_sheet(wb,newWS,'LibroVentas');
         XLSX.writeFile(wb,path + "." + extencion);
@@ -96,7 +94,7 @@ descargar.addEventListener('click',e=>{
 
 document.addEventListener('keyup',e=>{
     if (e.key === "Escape") {
-        window.close()
+        window.close();
     }
 })
 
