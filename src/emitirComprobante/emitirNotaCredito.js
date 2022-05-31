@@ -12,7 +12,7 @@ const axios = require("axios");
 require("dotenv").config;
 const URL = process.env.URL;
 
-const vendedor = getParameterByName('vendedor')
+const vendedor = getParameterByName('vendedor');
 
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
@@ -43,6 +43,8 @@ const divNuevoPrecio = document.querySelector('.nuevoPrecio');
 const cobrado = document.querySelector('#cobrado');
 const descripcionAgregar = document.querySelector('.parte-producto_descripcion');
 const precioAgregar = document.querySelector('.parte-producto_precio');
+const divVendedor = document.querySelector('.vendedor');
+divVendedor.children[0].innerHTML = vendedor
 
 let cliente = {};
 let venta = {};
@@ -211,7 +213,7 @@ ipcRenderer.on('mando-el-producto',async(e,args)=>{
 let id = 1
 const mostrarVentas = (objeto,cantidad)=>{
     totalPrecioProductos += (parseFloat(objeto.precio_venta)*parseFloat(cantidad));
-    total.value = parseFloat(totalPrecioProductos.toFixed(2));
+    total.value = totalPrecioProductos.toFixed(2);
     resultado.innerHTML += `
         <tr id=${id}>
         <td class="tdEnd">${(parseFloat(cantidad)).toFixed(2)}</td>
@@ -435,7 +437,7 @@ cancelar.addEventListener('click',e=>{
 
 
 resultado.addEventListener('click',e=>{
-    seleccionado && seleccionado.classList.rmove('seleccionado')
+    seleccionado && seleccionado.classList.remove('seleccionado')
     seleccionado = e.path[1];
     seleccionado.classList.add('seleccionado');
     if (seleccionado) {
@@ -445,7 +447,7 @@ resultado.addEventListener('click',e=>{
     }
 })
 
-//modificamos la cantidad
+//modificamos la cantidad del producto
 divNuevaCantidad.children[1].addEventListener('keypress',e=>{
     if (e.key === "Enter") {
         divNuevoPrecio.children[1].focus();
@@ -455,11 +457,11 @@ divNuevaCantidad.children[1].addEventListener('keypress',e=>{
 divNuevoPrecio.children[1].addEventListener('keypress',e=>{
     if(e.key === "Enter"){
         let nuevoTotal = parseFloat(total.value);
-        const producto = listaProductos.find(({objeto,cantidad})=>objeto.identificadorTabla === yaSeleccionado.id);
+        const producto = listaProductos.find(({objeto,cantidad})=>objeto.identificadorTabla === seleccionado.id);
         nuevoTotal -= parseFloat(producto.cantidad) * parseFloat(producto.objeto.precio_venta);
         producto.cantidad = divNuevaCantidad.children[1].value !== "" ? divNuevaCantidad.children[1].value : producto.cantidad;
         producto.objeto.precio_venta = divNuevoPrecio.children[1].value !== "" ? divNuevoPrecio.children[1].value : producto.objeto.precio_venta;
-        const tr = document.getElementById(`${yaSeleccionado.id}`);
+        const tr = document.getElementById(`${seleccionado.id}`);
         tr.children[0].innerHTML = parseFloat(producto.cantidad).toFixed(2);
         tr.children[4].innerHTML = parseFloat(producto.objeto.precio_venta).toFixed(2);
         tr.children[5].innerHTML = (parseFloat(producto.cantidad) * parseFloat(producto.objeto.precio_venta)).toFixed(2);
@@ -472,25 +474,20 @@ divNuevoPrecio.children[1].addEventListener('keypress',e=>{
     }
 })
 
-const inputseleccionado = (e) =>{
-    yaSeleccionado && yaSeleccionado.classList.remove('seleccionado')
-   e.classList.toggle('seleccionado')
-   yaSeleccionado = document.querySelector('.seleccionado')
-}
 
  //lo usamos para borrar un producto de la tabla
  borrarProducto.addEventListener('click',e=>{
-    if (yaSeleccionado) {
+    if (seleccionado) {
         divNuevaCantidad.classList.add('none')
         divNuevoPrecio.classList.add('none')
-        producto = listaProductos.find(e=>e.objeto.identificadorTabla === yaSeleccionado.id);
+        producto = listaProductos.find(e=>e.objeto.identificadorTabla === seleccionado.id);
         total.value = (parseFloat(total.value)-(parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta))).toFixed(2)
         listaProductos.forEach(e=>{
-            if (yaSeleccionado.id === e.objeto.identificadorTabla) {
-                    listaProductos = listaProductos.filter(e=>e.objeto.identificadorTabla !== yaSeleccionado.id)
+            if (seleccionado.id === e.objeto.identificadorTabla) {
+                    listaProductos = listaProductos.filter(e=>e.objeto.identificadorTabla !== seleccionado.id)
             }
         })
-        const a = yaSeleccionado
+        const a = seleccionado
         a.parentNode.removeChild(a)
     }
     let nuevoTotal = 0;
