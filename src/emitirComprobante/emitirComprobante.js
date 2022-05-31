@@ -728,7 +728,7 @@ presupuesto.addEventListener('click',async (e)=>{
                          arregloProductosDescontarStock = [];
                      }
     
-                     //window.location = "../index.html";
+                    window.location = "../index.html";
                      
                 } catch (error) {
                     console.log(error)
@@ -836,7 +836,7 @@ ticketFactura.addEventListener('click',async (e) =>{
                         await borrarCuentaHistorica(ventaAnterior.nro_comp,ventaAnterior.cliente,ventaAnterior.tipo_comp);
                         await borrarVenta(ventaAnterior.nro_comp)
                     };
-                    //!borraNegro ? (window.location = '../index.html') : window.close();
+                    !borraNegro ? (window.location = '../index.html') : window.close();
                 } catch (error) {
                     alert("No se puedo generar la Venta")
                     console.log(error)
