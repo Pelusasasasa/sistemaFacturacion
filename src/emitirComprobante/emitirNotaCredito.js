@@ -319,7 +319,7 @@ factura.addEventListener('click',async e=>{
 
             
             //Traemos la venta relacionada con la nota de credito
-            let ventaRelacionada = (await axios.get(`${URL}ventas/venta/ventaUnica/${venta.numeroAsociado}/${"Ticket Factura"}`)).data;
+            let ventaRelacionada = (await axios.get(`${URL}ventas/factura/${venta.numeroAsociado}/${"Ticket Factura"}/${venta.condIva}`)).data;
             //subimos a la afip la factura electronica
             let afip = await subirAAfip(venta,ventaRelacionada);
             venta.nro_comp = `0005-${(afip.numero).toString().padStart(8,'0')}`;
