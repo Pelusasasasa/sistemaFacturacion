@@ -386,7 +386,7 @@ cambioPrecio.children[1].addEventListener('keypress',(e)=>{
         borrarUnProductoDeLaLista(seleccionado)
         producto.objeto.precio_venta = cambioPrecio.children[1].value !== "" ? parseFloat(cambioPrecio.children[1].value) : producto.objeto.precio_venta;
         producto.cantidad = nuevaCantidad.value !== "" ? nuevaCantidad.value : producto.cantidad;
-        mostrarVentas(producto.objeto,producto.cantidad);
+        mostrarVentas(producto.objeto,parseFloat(producto.cantidad));
         cambioPrecio.children[1].value = "";
         nuevaCantidad.value = "";
         cambioPrecio.classList.add('none');
