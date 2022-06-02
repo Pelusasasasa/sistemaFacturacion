@@ -200,9 +200,8 @@ const imprimir = (opciones,args)=>{
                          ventanaPrincipal.focus()
                          nuevaVentana.close();
                     }else{
-                        console.log("No se imprimio");
                         ventanaPrincipal.focus();
-                        nuevaVentana.close();
+                        nuevaVentana && nuevaVentana.close();
                     }
         })
     });
