@@ -169,8 +169,9 @@ const listarLista = (lista,situacion)=>{
 let a;
 //Vemos que tr se selecciono y lo guardamos en una varaible
     listar.addEventListener('click',e=>{
-        trSeleccionado = e.path[2]
-        inputSeleccionado = e.path[0]
+        trSeleccionado = e.path[2];
+        inputSeleccionado = e.path[0];
+        inputSeleccionado.select();
     })
 
 inputSeleccionado.addEventListener('keydown',(e)=>{

@@ -33,13 +33,15 @@ hasta.addEventListener('keypress',e=>{
 buscar.addEventListener('click',async e=>{
         productos = await axios.get(`${URL}productos/productosEntreRangos/${desde.value}/${hasta.value}`)
         productos = productos.data;
+        console.log(productos)
         listarProductos();
 })
 
-    function listarProductos() {
-        tbody.innerHTML = ""
-        productos.forEach(({_id,descripcion,cod_fabrica,stock}) => {
-            tbody.innerHTML += `
+    async function listarProductos() {
+        tbody.innerHTML = "";
+        console.log("a")
+        for await(let {_id,descripcion,cod_fabrica,stock} of productos){
+            tbody.innerHTML += await  `
                 <tr>
                 <td>${_id}</td>
                 <td>${descripcion}</td>
@@ -47,17 +49,17 @@ buscar.addEventListener('click',async e=>{
                 <td>${parseFloat(stock).toFixed(2)}</td>
                 </tr>
             `
-        });
+        };
     }
 
 
 const imprimir = document.querySelector('.imprimir')
-imprimir.addEventListener('click',e=>{
+imprimir.addEventListener('click',async e=>{
     let printContents = document.querySelector('.listar')
     let originalContents = document.body.innerHTML;
     document.body.innerHTML = printContents.innerHTML;
-    window.print();
-    document.body.innerHTML = originalContents;
+    await window.print();
+    location.reload()
 })
 
 const excel = document.querySelector('.excel')
