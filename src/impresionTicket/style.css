@@ -1,0 +1,102 @@
+@page{
+    margin: 0;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
+      Arial, sans-serif;
+  
+  }
+  
+  html {
+    box-sizing: border-box;
+    font-size: 62.5%;
+  }
+  *,
+  *:before,
+  *:after {
+    box-sizing: inherit;
+  }
+  body {
+    font-size: 1.3rem;
+  }
+
+.w-10{
+    width: 20rem;
+}
+.logo{
+    display: flex;
+    justify-content: center;
+}
+
+.infoFactura{
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: flex-start;
+}
+
+.factura,.fecha{
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+}
+
+.infoProducto div{
+    display: flex;
+    justify-content: space-between;
+}
+
+.afip{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+}
+
+.afipCae{
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+}
+
+.cae,.venciCae{
+    display: flex;
+    flex-direction: column;
+}
+
+.texto-final{
+    text-align: end;
+}
+.texto-grande{
+    font-size: 1.5rem;
+}
+.texto-bold{
+    font-weight: bold;
+}
+
+.texto-center{
+    text-align: center  ;
+}
+
+p{
+    margin: 0;
+}
+
+.discriminadorIva{
+    margin: 2rem 0;
+}
+
+.discriminadorIva .margin-1-t{
+    margin-top: 1rem;
+}
+
+.cantidad,.descripcionProducto,.discriminadorIva div{
+    display: flex;
+    justify-content: space-between;
+}
+
+.afip{
+    padding-bottom: 4rem;
+}

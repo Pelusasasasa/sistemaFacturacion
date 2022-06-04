@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Imprimir</title>
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body class="imprimir">
+    <section class="">
+        <main class="logo">
+            <img class="w-10" src="../imagenes/Logo.jpg" alt="">
+        </main>
+       <main class="infoPrincipal">
+            <p>GIANOVI MARINA ISABEL</p>
+            <p>INGRESO BRUTOS: 27165767433</p>
+            <p>C.U.I.T Nro: 27165767433</p>
+            <p>AV.9 DE JULIO-3380 (3228</p>CHAJARI E.R.</p>
+            <p>INICIO DE ACTIVIDADES: 02-03-07</p>
+            <p>IVA RESPONSABLE INSCRIPTO</p>
+            <p>---------------------------------------------</p>
+       </main>
+       <main class="infoFactura">
+           <div class="factura">
+                <p>Cod: <span class="codFactura"></span></p>
+                <p class="tipo">Factura A</p>
+                <p class="numeroFactura"></p>
+           </div>
+           <div class="fecha">
+                <p>Fecha: <span class="dia"></span></p>
+                <p>Hora: <span class="hora"></span></p>
+           </div>
+           <p>---------------------------------------------</p>
+       </main>
+       <main class="cliente">
+           <p class="nombre"></p>
+           <p>Dni o Cuit: <span class="cuit"></span></p>
+           <p class="condIva"></p>
+           <p class="direccion"></p>
+           <p>---------------------------------------------</p>
+       </main>
+       <main class="infoProducto">
+        <div class="cantidad">
+            <p>CANTIDAD/PRECIO UNIT</p>
+            <p>(%IVA)</p>
+        </div>
+        <div class="descripcion">
+            <p>DESCRIPCION</p>
+            <p>(%B.I)</p>
+            <p>IMPORTE</p>
+        </div>
+        <p>---------------------------------------------</p>
+       </main>
+       <main class="listaProductos"></main>
+       <main class="discriminadorIva"></main>
+       <main>
+           <p class="texto-final ">DESCUENTO $<span class="descuento"></span></p>
+           <p class="texto-final texto-grande texto-bold">TOTAL: $<span class="total"></span></p>
+           <p>Recibi(mos)</p>
+           <p class="tipoVenta"></p>
+           <p class="texto-final texto-grande texto-bold">CAMBIO $0.00</p>
+           <p class="texto-center texto-bold texto-grande">*MUCHAS GRACIAS*</p>
+       </main>
+
+       <main class="afip">
+           <div class="qr">
+               <img class="w-10" src="" alt="">
+           </div>
+           <div class="afipCae">
+               <p>CAE: <span class="cae"></span></p>
+               <p>Vencimiento CAE: <span class="venciCae"></span></p>
+           </div>
+       </main>
+    </section>
+</body>
+<script src="./index.js"></script>
+</html>

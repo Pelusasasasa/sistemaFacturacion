@@ -380,10 +380,10 @@ resultado.addEventListener('click',e=>{
 
 
 //Para Cambiar el precio de un producto
-cambioPrecio.children[1].addEventListener('keypress',(e)=>{
+cambioPrecio.children[1].addEventListener('keypress',async (e)=>{
     if (e.key === "Enter") {
         const  producto = listaProductos.find(({objeto,cantidad})=> objeto.identificadorTabla === seleccionado.id);
-        borrarUnProductoDeLaLista(seleccionado)
+        await borrarUnProductoDeLaLista(seleccionado);
         producto.objeto.precio_venta = cambioPrecio.children[1].value !== "" ? parseFloat(cambioPrecio.children[1].value) : producto.objeto.precio_venta;
         producto.cantidad = nuevaCantidad.value !== "" ? nuevaCantidad.value : producto.cantidad;
         mostrarVentas(producto.objeto,parseFloat(producto.cantidad));
@@ -804,8 +804,11 @@ ticketFactura.addEventListener('click',async (e) =>{
                     nuevaVenta = await axios.post(`${URL}ventas`,venta)
                     const cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
 
-                    alerta.children[1].children[0].innerHTML = "Imprimiendo Venta";
-                    await imprimirVenta([venta,cliente,afip,listaSinDescuento]);
+                    alerta.children[1].children[0].innerHTML = "Imprimiendo Venta";//cartel de que se esta imprimiendo la venta
+
+                    //mandamos a imprimir el ticket
+                    ipcRenderer.send('imprimir-venta',[venta,afip,true,1,'Ticket Factura']);
+                    //Le mandamos al servidor que cree un pdf con los datos
                     await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
                     
                     if(venta.tipo_pago !== "PP" && !borraNegro){
@@ -873,8 +876,10 @@ ticketFactura.addEventListener('click',async (e) =>{
 
 //Generamos el qr
 async function generarQR(texto) {
+    const qrCode = require('qrcode');
     const url = `https://www.afip.gob.ar/fe/qr/?p=${texto}`;
-    return url
+    const QR = await qrCode.toDataURL(url);
+    return QR;
 }
 
 //funcion que busca en la afip a una persona
@@ -949,28 +954,37 @@ borrarProducto.addEventListener('click',e=>{
 });
 
 
-    const borrarUnProductoDeLaLista = (productoSeleccionado)=>{
+    const borrarUnProductoDeLaLista =async  (productoSeleccionado)=>{
         if (productoSeleccionado) {
+            
             producto = listaProductos.find(e=>e.objeto.identificadorTabla === productoSeleccionado.id);
-            total.value = (parseFloat(total.value)-(parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta))).toFixed(2)
-            Preciofinal = (Preciofinal - (parseFloat(producto.cantidad)*parseFloat(producto.objeto.precio_venta)).toFixed(2)) 
-            listaProductos.forEach(e=>{
+            
+            //tomamos el precio del producto que borramos
+            const aDescontar = parseFloat(productoSeleccionado.children[5].innerHTML);
+            //si hay un descuento ya prehecho tomamos ese descuento
+            const descuentoProducto = parseFloat((aDescontar*parseFloat((descuento.value)/100).toFixed(2)).toFixed(2));
+
+            total.value = (parseFloat(total.value)-(aDescontar - descuentoProducto)).toFixed(2);
+            
+            Preciofinal = (Preciofinal - (parseFloat(productoSeleccionado.children[5].innerHTML)).toFixed(2)) 
+            for await(let e of listaProductos){
                 if (productoSeleccionado.id === e.objeto.identificadorTabla) {
                         listaProductos = listaProductos.filter(e=>e.objeto.identificadorTabla !== productoSeleccionado.id);
                         totalPrecioProducos -= (e.objeto.precio_venta*e.cantidad);
                 }
-            })
-            const a = productoSeleccionado
-            a.parentNode.removeChild(a)
+            };
+            console.log(productoSeleccionado)
+            productoSeleccionado.parentNode.removeChild(productoSeleccionado);
+            seleccionado = "";
+            subseleccionado = "";
         }
         let nuevoTotal = 0;
         listaProductos.forEach(({objeto,cantidad})=>{
             nuevoTotal += (objeto.precio_venta * cantidad);
         })
-        total.value = parseFloat(descuento.value) !== 0 ? (nuevoTotal - (nuevoTotal*parseFloat(descuento.value)/100)).toFixed(2) : nuevoTotal.toFixed(2);
         descuentoN.value = (nuevoTotal*parseFloat(descuento.value)/100).toFixed(2);
         borrarProducto.classList.add('none');
-        codigo.focus()
+        codigo.focus();
     }
 
     
@@ -1161,32 +1175,31 @@ const subirAAfip = async(venta)=>{
 }
 
 telefono.addEventListener('focus',e=>{
-    selecciona_value(telefono.id)
-})
-
-
+    telefono.select()
+});
 buscarCliente.addEventListener('focus',e=>{
-    selecciona_value(buscarCliente.id)
+    buscarCliente.select()
 })
 localidad.addEventListener('focus',e=>{
-    selecciona_value(localidad.id)
+    localidad.select()
 })
 provincia.addEventListener('focus',e=>{
-    selecciona_value(provincia.id)
+    provincia.select()
 })
 direccion.addEventListener('focus',e=>{
-    selecciona_value(direccion.id)
+    direccion.select()
 })
 dnicuit.addEventListener('focus',e=>{
-    selecciona_value(dnicuit.id)
+    
+    dnicuit.select()
 })
 
 descuento.addEventListener('focus',e=>{
-    selecciona_value(descuento.id)
+    descuento.select()
 })
 
 cobrado.addEventListener('focus',e=>{
-    selecciona_value(cobrado.id)
+    cobrado.select()
 })
 
 buscarCliente.addEventListener('keypress',e=>{
@@ -1230,7 +1243,7 @@ dnicuit.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
         observaciones.focus()
     }
-})
+});
 
 descuento.addEventListener('keypress',e=>{
     if (e.key === "Enter" && situacion==="blanco") {
@@ -1238,153 +1251,7 @@ descuento.addEventListener('keypress',e=>{
     }else if(e.key === "Enter" && situacion==="negro"){
         presupuesto.focus()
     }
-})
-
-function selecciona_value(idInput) {
-    valor_input = document.getElementById(idInput).value;
-    longitud = valor_input.length;
-    var selectionEnd = 0 + 1;
-    if (document.getElementById(idInput).setSelectionRange) {
-    document.getElementById(idInput).focus();
-    document.getElementById(idInput).setSelectionRange (0, longitud);
-    }
-    else if (input.createTextRange) {
-    var range = document.getElementById(idInput).createTextRange() ;
-    range.collapse(true);
-    range.moveEnd('character', 0);
-    range.moveStart('character', longitud);
-    range.select();
-    }
-    }
-
-
-const imprimirVenta = (arreglo)=>{
-
-const conector = new ConectorPlugin();
-const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae,numero},listaProductos)=>{
-    const fechaVenta = new Date(Venta.fecha)
-    let dia = fechaVenta.getDate()
-    let mes = fechaVenta.getMonth()+1;
-    let horas = fechaVenta.getHours();
-    let minutos = fechaVenta.getMinutes();
-    let segundos = fechaVenta.getSeconds();
-    dia = dia<10 ? `0${dia}` : dia;
-    mes = mes<10 ? `0${mes}` : mes;
-    horas = horas<10 ? `0${horas}` : horas;
-    let anio = fechaVenta.getFullYear()
-    const comprobante = verTipoComp(Venta.cod_comp)
-    conector.cortar()
-    conector.establecerTamanioFuente(2,2);
-    conector.establecerFuente(ConectorPlugin.Constantes.FuenteC)
-    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-    const ruta = __dirname + "\\..\\imagenes\\Logo.jpg";
-    conector.imagenLocal(ruta)
-    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
-    conector.establecerTamanioFuente(1,1);
-    conector.texto("GIANOVI MARINA ISABEL\n");
-    conector.texto("INGRESO BRUTOS: 27165767433\n")
-    conector.texto("C.U.I.T Nro: 27165767433\n");
-    conector.texto("AV.9 DE JULIO-3380 (3228);CHAJARI E.R.\n");
-    conector.texto("INICIO DE ACTIVIDADES: 02-03-07\n");
-    conector.texto("IVA RESPONSABLE INSCRIPTO\n");
-    conector.texto("------------------------------------------\n");
-    conector.texto(`${comprobante}   0005-${numero.toString().padStart(8,'0')}\n`);
-    conector.texto(`FECHA: ${dia}-${mes}-${anio}    Hora:${horas}:${minutos}:${segundos}\n`);
-    conector.texto("------------------------------------------\n");
-    conector.texto(`${buscarCliente.value}\n`);
-    conector.texto(`Dni O Cuit: ${dnicuit.value}\n`);
-    conector.texto(`${Venta.condIva}\n`);
-    conector.texto(`${direccion.value}   ${localidad.value}\n`);
-    venta.numeroAsociado && conector.texto(`${venta.numeroAsociado}\n`);
-    conector.texto("------------------------------------------\n");
-    conector.texto("CANTIDAD/PRECIO UNIT (%IVA)\n")
-    conector.texto("DESCRIPCION           (%B.I)       IMPORTE\n")  
-    conector.texto("------------------------------------------\n");
-    listaProductos && listaProductos.forEach(({cantidad,objeto})=>{
-        const descripcion = objeto.descripcion;
-        const primeraParte = objeto.descripcion.slice(0,23)
-        const segundaParte = objeto.descripcion.slice(24)
-        if (Venta.vendedor === "CARLA") {
-            
-        }
-        if (conIva.value === "Inscripto") {
-            conector.texto(`${cantidad}/${objeto.iva === "N" ? (parseFloat(objeto.precio_venta)/1.21).toFixed(2) : (parseFloat(objeto.precio_venta)/1.105).toFixed(2)}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
-            conector.texto(`${Venta.vendedor === "CARLA" ? primeraParte + "\n" + segundaParte : objeto.descripcion.slice(0,30)}    ${(parseFloat(cantidad)*parseFloat(objeto.iva === "N" ? parseFloat(objeto.precio_venta)/1.21 : parseFloat(objeto.precio_venta)/1.105)).toFixed(2)}\n`);
-        }else{
-            conector.texto(`${cantidad}/${objeto.precio_venta}              ${objeto.iva === "N" ? "(21.00)" : "(10.50)"}\n`);
-            conector.texto(`${Venta.vendedor === "CARLA" ? primeraParte + "\n" + segundaParte : objeto.descripcion.slice(0,30)}    ${(parseFloat(cantidad)*parseFloat(objeto.precio_venta)).toFixed(2)}\n`);
-        }
-
-    })
-
-    if (conIva.value === "Inscripto") {
-        if (venta.gravado21 !== 0) {
-            conector.feed(2);
-            conector.texto("NETO SIN IVA              " + Venta.gravado21.toFixed(2) + "\n" );
-            conector.texto("IVA 21.00/                  " +  Venta.iva21.toFixed(2) + "\n" );
-            conector.texto("NETO SIN IVA              0.00" + "\n" );
-        }
-        if (venta.gravado105 !== 0) {
-            conector.feed(2);
-            conector.texto("NETO SIN IVA              " + Venta.gravado105.toFixed(2) + "\n");
-            conector.texto("IVA 10.50/                  " + Venta.iva105.toFixed(2) + "\n");
-            conector.texto("NETO SIN IVA              0.00"  + "\n");
-        }
-    }
-    conector.feed(2);
-    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionDerecha);
-    conector.texto("DESCUENTO $" + (parseFloat(Venta.descuento)).toFixed(2) + "\n");
-    conector.establecerTamanioFuente(2,1);
-    conector.texto("TOTAL $" +  (Venta.precioFinal).toFixed(2) + "\n");
-    conector.feed(1);
-    conector.establecerTamanioFuente(1,1);
-    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
-    conector.texto("Recibimos(mos)\n");
-    conector.texto(`${(Venta.tipo_pago !== "CC" || Venta.cliente === "M122") ? `Contado: $${(Venta.precioFinal).toFixed(2)}`  : "Cuenta Corriente"}` + "\n");0
-    conector.establecerTamanioFuente(2,1);
-    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionDerecha);
-    conector.texto("CAMBIO $0.00\n");
-    conector.feed(1);
-    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-    conector.texto("*MUCHA GRACIAS*\n")
-    conector.qrComoImagen(QR);
-    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
-    conector.establecerTamanioFuente(1,1);
-    conector.texto("CAE:" + "                  " + "Vencimiento CAE:" + "\n")
-    conector.texto(cae + "           " + vencimientoCae + "\n")
-    conector.feed(3)
-    conector.cortar()
-
-    conector.imprimirEn("SAM4S GIANT-100")
-        .then(respuestaAlImprimir => {
-            if (respuestaAlImprimir === true) {
-                console.log("Impreso correctamente");
-            } else {
-                console.log("Error. La respuesta es: " + respuestaAlImprimir);
-                imprimirVenta(arreglo);
-            }
-        });
-   }
-
-const verTipoComp = (codigoComprobante)=>{
-    if (codigoComprobante === 6) {
-        return "Cod: 006 - Factura B"
-    }else if(codigoComprobante === 1){
-        return "Cod: 001 - Factura A"
-    }else if(codigoComprobante === 3){
-        return "Cod: 003 - Nota Credito A"
-    }else if(codigoComprobante === 4){
-        return "Cod: 004 - Recibos A"
-    }else if(codigoComprobante === 8){
-        return "Cod: 008 - Nota Credito B"
-    }else if(codigoComprobante === 9){
-        return "Cod: 009 - Recibos B"
-    }
-}
-
-const [Venta,Cliente,valoresQR,listaSinDescuento] = arreglo;
-ponerValores(Cliente,Venta,valoresQR,listaSinDescuento)
-}
+});
 
 //Inicio Compensada
 const ponerEnCuentaCorrienteCompensada = async(venta,valorizado)=>{

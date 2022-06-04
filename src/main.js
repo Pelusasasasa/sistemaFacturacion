@@ -181,12 +181,13 @@ ipcMain.on('imprimir-venta',async(e,args)=>{
     };
     if (tipo === "Recibos_P") {
         abrirVentana("emitirRecibo/imprimirRecibo.html",1000,900,"noReinician");
-
     }else if(tipo === "Recibos"){
         abrirVentana("emitirComprobante/imprimirTicket.html",800,200,"noReinician");
+    }else if(tipo === "Ticket Factura"){
+        abrirVentana("impresionTicket/index.html",1000,900,"noReinician")
+        console.log(cantidad)
     }else{
         abrirVentana("emitirComprobante/imprimir.html",1000,500,"noReinician");
-
     }
     await imprimir(options,args);
 })
@@ -198,10 +199,10 @@ const imprimir = (opciones,args)=>{
             nuevaVentana.webContents.print(opciones,(success, errorType) => {
                     if (success) {
                          ventanaPrincipal.focus()
-                         nuevaVentana.close();
+                        //  nuevaVentana.close();
                     }else{
                         ventanaPrincipal.focus();
-                        nuevaVentana && nuevaVentana.close();
+                        // nuevaVentana && nuevaVentana.close();
                     }
         })
     });
@@ -580,7 +581,6 @@ function abrirVentana(texto,width,height,reinicio){
         nuevaVentana.setMenuBarVisibility(false)
         nuevaVentana.on('close',e=>{
             nuevaVentana = null;
-
             reinicio !== "noReinician" && ventanaPrincipal.reload()
         })
     }
