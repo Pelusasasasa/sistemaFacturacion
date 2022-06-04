@@ -12,6 +12,7 @@ const nombre = document.querySelector('.nombre');
 const cuit = document.querySelector('.cuit');
 const condIva = document.querySelector('.condIva');
 const direccion = document.querySelector('.direccion');
+const numeroAsociado = document.querySelector('.numeroAsociado');
 
 const listaProductos = document.querySelector('.listaProductos');
 const discriminadorIva = document.querySelector('.discriminadorIva');
@@ -63,7 +64,7 @@ const venciCae = document.querySelector('.venciCae');
     cuit.innerHTML = venta.dnicuit;
     condIva.innerHTML = venta.condIva;
     direccion.innerHTML = venta.direccion;
-
+    venta.numeroAsociado && (numeroAsociado.innerHTML = venta.numeroAsociado);
     for await(let {objeto,cantidad} of venta.productos){
         const iva = objeto.iva === "N" ? 1.21 : 1.105;
         listaProductos.innerHTML += `
