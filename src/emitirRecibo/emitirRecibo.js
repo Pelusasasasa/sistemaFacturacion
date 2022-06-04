@@ -183,7 +183,7 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
             trSeleccionado.children[6].innerHTML = (parseFloat(trSeleccionado.children[3].innerHTML)-parseFloat(trSeleccionado.children[4].innerHTML) - parseFloat(inputSeleccionado.value)).toFixed(2)
         }
     
-            if ((trSeleccionado.children[6].innerHTML < 0)) {
+            if ((trSeleccionado.children[6].innerHTML < 0 && trSeleccionado.children[1].innerHTML === "Ticket Factura") || ((trSeleccionado.children[6].innerHTML > 0 && trSeleccionado.children[1].innerHTML === "Nota Credito"))) {
                 alert("El monto abonado es mayor al de la venta")
                 trSeleccionado.children[6].innerHTML = aux;
                 trSeleccionado.children[5].children[0].value = "";
@@ -298,7 +298,6 @@ const hacerRecibo = async()=>{
         const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
         //modificamos las ventas en cuentas compensada
         await modificarVentas(nuevaLista);
-        
         //modificamos el  numero del recibo
         recibo.nro_comp = recibo.tipo_comp === "Recibos" ? `0005-${(afip.numero).toString().padStart(8,'0')}` : await traerUltimoNroRecibo();
         const numeroAModificar = recibo.tipo_comp === "Recibos" ? afip.numero : parseFloat(recibo.nro_comp.split('-')[1])
@@ -409,9 +408,9 @@ const modificarVentas = (lista)=>{
         nuevaLista.forEach(async venta=>{
             if(tr.id === venta.nro_comp){
                 venta.pagado = (tr.children[5].children[0].value !== "") ? parseFloat((parseFloat(tr.children[4].innerHTML) + parseFloat(tr.children[5].children[0].value)).toFixed(2)) : parseFloat(venta.pagado);
-                venta.saldo = parseFloat(tr.children[6].innerHTML);
-                console.log(venta)
-                    await axios.put(`${URL}cuentaComp/id/${venta.nro_comp}`,venta);
+                venta.pagado = venta.tipo_comp === "Nota Credito" ? parseFloat((venta.pagado * -1).toFixed(2)) : venta.pagado;
+                venta.saldo = venta.tipo_comp === "Nota Credito" ? parseFloat(tr.children[6].innerHTML) * -1 : parseFloat(tr.children[6].innerHTML);
+                await axios.put(`${URL}cuentaComp/id/${venta.nro_comp}`,venta);
             }
         })
     })

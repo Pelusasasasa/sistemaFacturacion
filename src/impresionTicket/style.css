@@ -97,6 +97,7 @@ p{
     justify-content: space-between;
 }
 
-.afip{
-    padding-bottom: 4rem;
+.version{
+    font-size: 1rem;
+    padding: 2rem 0;
 }
