@@ -226,7 +226,6 @@ const mostrarVentas = (objeto,cantidad)=>{
     `
     objeto.identificadorTabla = `${id}`
     id++;
-    totalPrecioProductos += parseFloat((parseFloat(objeto.precio_venta) * cantidad).toFixed(2));
     listaProductos.push({objeto,cantidad});
 }
 

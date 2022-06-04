@@ -128,7 +128,8 @@ const listarLista = (lista,situacion)=>{
     (situacion === "negro") ? (aux = "Presupuesto") : (aux = "Ticket Factura");
     const listaRecibo = lista.filter(e=>e.tipo_comp === auxRecibo);
     const listaVenta = lista.filter(e=>e.tipo_comp === aux );
-    listaGlobal = [...listaRecibo,...listaVenta];
+    const listaNota = situacion === "blanco" ? lista.filter(e=>e.tipo_comp === "Nota Credito") : [];
+    listaGlobal = [...listaRecibo,...listaVenta,...listaNota];
     listaGlobal.sort((a,b)=>{
         if (a.fecha>b.fecha) {
             return 1;
@@ -155,10 +156,10 @@ const listarLista = (lista,situacion)=>{
                 <td>${dia}/${mes}/${anio}</td>
                 <td>${ venta.tipo_comp }</td>
                 <td>${ venta.nro_comp }</td>
-                <td>${ ( venta.importe ).toFixed ( 2 ) }</td>
+                <td>${ ( venta.tipo_comp === "Nota Credito" ? venta.importe * -1 : venta.importe ).toFixed ( 2 ) }</td>
                 <td>${ parseFloat ( ( venta.pagado ) ).toFixed ( 2 ) } </td>
                 <td> <input type="text" id = ${ venta.nro_comp } name = "pagadoActual"> </td>
-                <td class = "saldop"> ${ saldo.toFixed( 2 ) } </td>
+                <td class = "saldop"> ${ venta.tipo_comp === "Nota Credito" ? (saldo*-1).toFixed(2) : saldo.toFixed( 2 ) } </td>
                 <td> ${ venta.observaciones } </td>
                 </tr>
             `
@@ -314,12 +315,12 @@ const hacerRecibo = async()=>{
         
         await axios.put(`${URL}clientes/${_id}`,clienteTraido);
         await axios.post(`${URL}ventas`,recibo);
-
+        //Hacemos que los producos sean las cuentas conpensadas
+        recibo.productos = arregloParaImprimir;
         // arregloParaImprimir contiene todos las ventas que tiene pagadas y total contiene el total del recibo
         alerta.children[1].children[0].innerHTML = "Imprimiendo Recibo";
-        recibo.tipo_comp === "Recibos_P" ? ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,arregloParaImprimir,total.value]) : imprimirVenta([recibo,clienteTraido,afip,arregloParaImprimir]);
+        recibo.tipo_comp === "Recibos_P" ? ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,arregloParaImprimir,total.value]) : ipcRenderer.send('imprimir-venta',[recibo,afip,true,1,"Ticket Factura"]);
         //Mandar Recibo para que se guarde como pdf
-        recibo.productos = arregloParaImprimir
         recibo.tipo_comp === "Recibos" && (alerta.children[1].children[0].innerHTML = "Guardando Recibo Como PDF");
         recibo.tipo_comp === "Recibos" && await axios.post(`${URL}crearPdf`,[recibo,cliente,afip]);
         location.href = "../index.html";
@@ -493,9 +494,10 @@ const subirAAfip = async(venta)=>{
 
 //Generamos el qr
 async function generarQR(texto) {
-    const fs = require('fs')
+    const qrCode = require('qrcode')
     const url = `https://www.afip.gob.ar/fe/qr/?p=${texto}`;
-    return url
+    const QR = await qrCode.toDataURL(url);
+    return QR
 }
 
 const verCodComp = (condicionIva) =>{
@@ -530,94 +532,4 @@ const ponerEnCuentaCorrienteHistorica = async(recibo)=>{
     cuenta.haber = parseFloat(recibo.precioFinal);
     cuenta.saldo = cuenta.tipo_comp === "Recibos" ? parseFloat((parseFloat(cliente.saldo) - cuenta.haber).toFixed(2))  : parseFloat((parseFloat(cliente.saldo_p) - cuenta.haber).toFixed(2));
     await axios.post(`${URL}cuentaHisto`,cuenta)
-}
-
-const imprimirVenta = async(arreglo)=>{
-const conector = new ConectorPlugin();
-const ponerValores = (Cliente,Venta,{QR,cae,vencimientoCae,numero},arregloConTickets)=>{
-    const fechaVenta = new Date(Venta.fecha);
-    let dia = fechaVenta.getDate()
-    let mes = fechaVenta.getMonth()+1;
-    let horas = fechaVenta.getHours();
-    let minutos = fechaVenta.getMinutes();
-    let segundos = fechaVenta.getSeconds();
-    dia = dia<10 ? `0${dia}` : dia;
-    mes = mes<10 ? `0${mes}` : mes;
-    horas = horas<10 ? `0${horas}` : horas;
-    let anio = fechaVenta.getFullYear()
-    const comprobante = verTipoComp(Venta.cod_comp)
-    conector.cortar()
-    conector.establecerTamanioFuente(2,2);
-    conector.establecerFuente(ConectorPlugin.Constantes.FuenteC)
-    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-    const ruta = __dirname + "\\..\\imagenes\\Logo.jpg";
-    conector.imagenLocal(ruta)
-    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
-    conector.establecerTamanioFuente(1,1);
-    conector.texto("GIANOVI MARINA ISABEL\n");
-    conector.texto("INGRESO BRUTOS: 27165767433\n")
-    conector.texto("C.U.I.T Nro: 27165767433\n");
-    conector.texto("AV.9 DE JULIO-3380 (3228);CHAJARI E.R.\n");
-    conector.texto("INICIO DE ACTIVIDADES: 02-03-07\n");
-    conector.texto("IVA RESPONSABLE INSCRIPTO\n");
-    conector.texto("------------------------------------------\n");
-    conector.texto(`${comprobante}   0005-${numero.toString().padStart(8,'0')}\n`);
-    conector.texto(`FECHA: ${dia}-${mes}-${anio}    Hora:${horas}:${minutos}:${segundos}\n`);
-    conector.texto("------------------------------------------\n");
-    conector.texto(`${nombre.value}\n`);
-    conector.texto(`Dni O Cuit: ${cuit.value}\n`);
-    conector.texto(`${cond_iva.value !== "" ? cond_iva.value : "Consumidor Final"}\n`);
-    conector.texto(`${direccion.value}   ${localidad.value}\n`);
-    conector.texto("------------------------------------------\n");
-    conector.texto("Fecha         Numero            Pagado\n")
-    arregloConTickets.forEach(ticket=>{
-        conector.texto(`${ticket.fecha}    ${ticket.numero}     ${ticket.pagado} \n` )
-    })
-    conector.feed(2);
-    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionDerecha);
-    conector.texto("DESCUENTO $" +  (Venta.descuento).toFixed(2) + "\n");
-    conector.establecerTamanioFuente(2,1);
-    conector.texto("TOTAL $" +  (Venta.precioFinal).toFixed(2) + "\n");
-    conector.feed(1);
-    conector.establecerTamanioFuente(1,1);
-    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
-    conector.texto("Recibimos(mos)\n");
-    conector.texto(`${Venta.tipo_pago !== "CC" ? `Contado                  ${(Venta.precioFinal).toFixed(2)}`  : "Cuenta Corriente"}` + "\n");0
-    conector.establecerTamanioFuente(2,1);
-    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionDerecha);
-    conector.texto("CAMBIO $0.00\n");
-    conector.feed(1);
-    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionCentro);
-    conector.texto("*MUCHA GRACIAS*\n")
-    conector.qrComoImagen(QR);
-    conector.establecerJustificacion(ConectorPlugin.Constantes.AlineacionIzquierda);
-    conector.establecerTamanioFuente(1,1);
-    conector.texto("CAE:" + "                  " + "Vencimiento CAE:" + "\n")
-    conector.texto(cae + "           " + vencimientoCae + "\n")
-    conector.feed(3)
-    conector.cortar()
-
-    conector.imprimirEn("SAM4S GIANT-100")
-        .then(respuestaAlImprimir => {
-            if (respuestaAlImprimir === true) {
-                console.log("Impreso correctamente");
-            } else {
-                console.log("Error. La respuesta es: " + respuestaAlImprimir);
-                imprimirVenta(arreglo);
-            }
-        });
-   }
-
-
-
-const verTipoComp = (codigoComprobante)=>{
-   if(codigoComprobante === 4){
-        return "Cod: 004 - Recibos A"
-    }else if(codigoComprobante === 9){
-        return "Cod: 009 - Recibos B"
-    }
-}
-
-const [Venta,Cliente,valoresQR,arregloParaImprimir] = arreglo;
-ponerValores(Cliente,Venta,valoresQR,arregloParaImprimir)
 }

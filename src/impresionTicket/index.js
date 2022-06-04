@@ -18,6 +18,13 @@ const listaProductos = document.querySelector('.listaProductos');
 const discriminadorIva = document.querySelector('.discriminadorIva');
 
 
+//En caso de recibo
+const cantidadPrecio = document.querySelector('.cantidadPrecio');
+const iva = document.querySelector('.iva');
+const descri = document.querySelector('.descri');
+const BI = document.querySelector('.BI');
+const importe = document.querySelector('.importe');
+
 //total
 const descuento = document.querySelector('.descuento');
 const total = document.querySelector('.total');
@@ -64,21 +71,40 @@ const venciCae = document.querySelector('.venciCae');
     cuit.innerHTML = venta.dnicuit;
     condIva.innerHTML = venta.condIva;
     direccion.innerHTML = venta.direccion;
-    venta.numeroAsociado && (numeroAsociado.innerHTML = venta.numeroAsociado);
-    for await(let {objeto,cantidad} of venta.productos){
-        const iva = objeto.iva === "N" ? 1.21 : 1.105;
-        listaProductos.innerHTML += `
-            <div class="cantidad">
-                <p>${cantidad}/${venta.condIva === "Inscripto" ? (objeto.precio_venta/iva).toFixed(2)  : objeto.precio_venta}</p>
-                <p>${objeto.iva === "N" ? "(21.00)" : "(10.50)"}</p>
-                <p></p>
-            </div>
-            <div class="descripcionProducto">
-                <p>${objeto.descripcion}</p>
-                <p>${venta.condIva === "Inscripto" ? ((objeto.precio_venta/iva)*cantidad).toFixed(2) : (objeto.precio_venta * cantidad).toFixed(2)}</p>
-            </div>
-        `
-    };
+    venta.numeroAsociado && (numeroAsociado.innerHTML = "Comp Original Nº:" + venta.numeroAsociado);
+    
+    if (venta.tipo_comp !== "Recibos") {
+        for await(let {objeto,cantidad} of venta.productos){
+            const iva = objeto.iva === "N" ? 1.21 : 1.105;
+            listaProductos.innerHTML += `
+                <div class="cantidad">
+                    <p>${cantidad}/${venta.condIva === "Inscripto" ? (objeto.precio_venta/iva).toFixed(2)  : objeto.precio_venta}</p>
+                    <p>${objeto.iva === "N" ? "(21.00)" : "(10.50)"}</p>
+                    <p></p>
+                </div>
+                <div class="descripcionProducto">
+                    <p>${objeto.descripcion}</p>
+                    <p>${venta.condIva === "Inscripto" ? ((objeto.precio_venta/iva)*cantidad).toFixed(2) : (objeto.precio_venta * cantidad).toFixed(2)}</p>
+                </div>
+            `
+        };
+    }else{
+        cantidadPrecio.innerHTML = "";
+        iva.innerHTML = "";
+        descri.innerHTML = "Fecha";
+        BI.innerHTML = "Numero";
+        importe.innerHTML = "Pagado";
+
+        for await(let producto of venta.productos){
+            listaProductos.innerHTML += `
+                <div class=cantidad>
+                    <p>${producto.fecha}</p>
+                    <p>${producto.numero}</p>
+                    <p>${producto.pagado}</p>
+                </div>
+            `
+        }
+    }
     console.log(venta)
     if (venta.condIva === "Inscripto") {
         if (venta.gravado21 !== 0) {
@@ -110,7 +136,6 @@ const venciCae = document.querySelector('.venciCae');
     descuento.innerHTML = parseFloat(venta.descuento).toFixed(2);
     total.innerHTML = venta.precioFinal.toFixed(2);
     tipoVenta.innerHTML = (venta.tipo_venta !== "CC" || venta.cliente === "M122") ? `Contado: ${venta.precioFinal.toFixed(2)}` : "Cuenta Corriente";
-
     qr.children[0].src = afip.QR;
     cae.innerHTML = afip.cae;
     venciCae.innerHTML = afip.vencimientoCae;

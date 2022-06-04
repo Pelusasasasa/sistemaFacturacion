@@ -185,7 +185,7 @@ ipcMain.on('imprimir-venta',async(e,args)=>{
         abrirVentana("emitirComprobante/imprimirTicket.html",800,200,"noReinician");
     }else if(tipo === "Ticket Factura"){
         abrirVentana("impresionTicket/index.html",1000,900,"noReinician")
-        console.log(cantidad)
+        options.deviceName = "SAM4S GIANT-100";
     }else{
         abrirVentana("emitirComprobante/imprimir.html",1000,500,"noReinician");
     }
@@ -198,11 +198,11 @@ const imprimir = (opciones,args)=>{
         nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
             nuevaVentana.webContents.print(opciones,(success, errorType) => {
                     if (success) {
-                         ventanaPrincipal.focus()
-                        //  nuevaVentana.close();
+                        ventanaPrincipal.focus()
+                        nuevaVentana.close();
                     }else{
                         ventanaPrincipal.focus();
-                        // nuevaVentana && nuevaVentana.close();
+                        nuevaVentana && nuevaVentana.close();
                     }
         })
     });
