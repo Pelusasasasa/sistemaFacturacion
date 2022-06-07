@@ -467,7 +467,7 @@ const subirAAfip = async(venta)=>{
         alerta.children[1].children[0].innerHTML = "Recibo Confirmado Por la AFIP";
         const qr = {
             ver: 1,
-            fecha: data.CbteFch,
+            fecha: fecga,
             cuit: 27165767433,
             ptoVta: 5 ,
             tipoCmp: venta.cod_comp,
@@ -480,7 +480,7 @@ const subirAAfip = async(venta)=>{
             tipoCodAut: "E",
             codAut: parseFloat(res.CAE)
         }
-        const textoQR = btoa(unescape(encodeURIComponent(qr)));//codificamos lo que va en el QR
+        const textoQR = btoa(JSON.stringify(qr));//codificamos lo que va en el QR
         const QR = await generarQR(textoQR,res.CAE,res.CAEFchVto)
         return {
             QR,
