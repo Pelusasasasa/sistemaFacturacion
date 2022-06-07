@@ -22,7 +22,10 @@ body {
   }
 
 .w-10{
-    width: 20rem;
+    width: 18rem;
+}
+.w-15{  
+    width: 158rem;
 }
 .logo{
     display: flex;
