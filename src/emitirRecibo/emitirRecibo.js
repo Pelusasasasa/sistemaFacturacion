@@ -1,5 +1,3 @@
-const Afip = require('@afipsdk/afip.js');
-const afip = new Afip({ CUIT: 27165767433 });
 
 function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
@@ -295,12 +293,11 @@ const hacerRecibo = async()=>{
      clienteTraido[aux] = saldoNuevo.toFixed(2);
 
      try {
-        const afip =  recibo.tipo_comp === "Recibos" ? await subirAAfip(recibo) : {};
         //modificamos las ventas en cuentas compensada
         await modificarVentas(nuevaLista);
         //modificamos el  numero del recibo
-        recibo.nro_comp = recibo.tipo_comp === "Recibos" ? `0005-${(afip.numero).toString().padStart(8,'0')}` : await traerUltimoNroRecibo();
-        const numeroAModificar = recibo.tipo_comp === "Recibos" ? afip.numero : parseFloat(recibo.nro_comp.split('-')[1])
+        recibo.nro_comp = await traerUltimoNroRecibo();
+        const numeroAModificar = parseFloat(recibo.nro_comp.split('-')[1])
         await modifcarNroRecibo(numeroAModificar,recibo.tipo_comp,clienteTraido.cond_iva);
 
         let listaVentas = clienteTraido.listaVentas;
@@ -318,10 +315,10 @@ const hacerRecibo = async()=>{
         recibo.productos = arregloParaImprimir;
         // arregloParaImprimir contiene todos las ventas que tiene pagadas y total contiene el total del recibo
         alerta.children[1].children[0].innerHTML = "Imprimiendo Recibo";
-        recibo.tipo_comp === "Recibos_P" ? ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,arregloParaImprimir,total.value]) : ipcRenderer.send('imprimir-venta',[recibo,afip,true,1,"Ticket Factura"]);
+        recibo.tipo_comp === "Recibos_P" ? ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,arregloParaImprimir,total.value]) : ipcRenderer.send('imprimir-venta',[recibo,,true,1,"Ticket Factura"]);
         //Mandar Recibo para que se guarde como pdf
         recibo.tipo_comp === "Recibos" && (alerta.children[1].children[0].innerHTML = "Guardando Recibo Como PDF");
-        recibo.tipo_comp === "Recibos" && await axios.post(`${URL}crearPdf`,[recibo,cliente,afip]);
+        recibo.tipo_comp === "Recibos" && await axios.post(`${URL}crearPdf`,[recibo,cliente]);
         location.href = "../index.html";
     } catch (error) {
         console.log(error)
@@ -332,23 +329,14 @@ const hacerRecibo = async()=>{
 }
 
 const traerUltimoNroRecibo = async ()=>{
-    let numero = await axios.get(`${URL}tipoVenta`)
+    let numero = await axios.get(`${URL}tipoVenta`);
     numero = numero.data["Ultimo Recibo"];
     return numero
 }
 
 const modifcarNroRecibo = async(numero,tipo_comp,iva)=>{
     let numeros = (await axios.get(`${URL}tipoVenta`)).data;
-    if (tipo_comp === "Recibos_P") {
-        console.log(numeros["Ultimo Recibo"])
-        numeros["Ultimo Recibo"] = `0004-${(numero + 1).toString().padStart(8,'0')}`;    
-    }else{
-        if (iva === "Inscripto") {
-            numeros["Ultima Recibo A"] = numero + 1;
-        }else{
-            numeros["Ultima Recibo B"] = numero + 1;
-        }
-    }
+    numeros["Ultimo Recibo"] = `0004-${(numero + 1).toString().padStart(8,'0')}`;    
     await axios.put(`${URL}tipoventa`,numeros);
 
 }
@@ -418,86 +406,9 @@ const modificarVentas = (lista)=>{
 
 cancelar.addEventListener('click',e=>{
     if (confirm("Desea cancelar el Recibo")) {
-        location.href = "../index.html"
+        location.href = "../index.html";
     }
 });
-
-const subirAAfip = async(venta)=>{
-    alerta.children[1].children[0].innerHTML = "Esperando Confirmacion de la AFIP";
-    const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
-
-    const serverStatus = await afip.ElectronicBilling.getServerStatus();
-    console.log(serverStatus)
-
-    let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
-    const docTipo = venta.cod_comp === 4 ? 80 : 20;
-    let totalIva105 = 0
-    let totalIva21=0
-    let totalNeto21 = 0 
-    let totalNeto105 = 0
-    let data = {
-        'CantReg': 1,
-        'CbteTipo': venta.cod_comp,
-        'Concepto': 1,
-        'DocTipo': docTipo,
-        'DocNro': venta.dnicuit,
-        'CbteDesde': 1,
-        'CbteHasta': ultimoElectronica+1,
-        'CbteFch': parseInt(fecha.replace(/-/g, '')),
-        'ImpTotal': parseFloat(venta.precioFinal),
-        'ImpTotConc': 0,
-        'ImpNeto': parseFloat((parseFloat(venta.precioFinal)/1.21).toFixed(2)),
-        'ImpOpEx': 0,
-        'ImpIVA':parseFloat((parseFloat(venta.precioFinal) - parseFloat(venta.precioFinal)/1.21).toFixed(2)),
-        'ImpTrib': 0,
-        'MonId': 'PES',
-        'PtoVta': 5,
-        'MonCotiz' 	: 1,
-        "Iva":[],
-        }
-        data.Iva.push(
-            {
-                "Id": 5,
-                "BaseImp": parseFloat((parseFloat(venta.precioFinal)/1.21).toFixed(2)),
-                "Importe": parseFloat((parseFloat(venta.precioFinal) - parseFloat(venta.precioFinal)/1.21).toFixed(2))
-            }
-        )
-        console.log(data)
-        const res = await afip.ElectronicBilling.createNextVoucher(data); //creamos la factura electronica
-        alerta.children[1].children[0].innerHTML = "Recibo Confirmado Por la AFIP";
-        const qr = {
-            ver: 1,
-            fecha: fecga,
-            cuit: 27165767433,
-            ptoVta: 5 ,
-            tipoCmp: venta.cod_comp,
-            nroCmp: ultimoElectronica + 1,
-            importe: data.ImpTotal,
-            moneda: "PES",
-            ctz: 1,
-            tipoDocRec: data.DocTipo,
-            nroDocRec: parseInt(data.DocNro),
-            tipoCodAut: "E",
-            codAut: parseFloat(res.CAE)
-        }
-        const textoQR = btoa(JSON.stringify(qr));//codificamos lo que va en el QR
-        const QR = await generarQR(textoQR,res.CAE,res.CAEFchVto)
-        return {
-            QR,
-            cae:res.CAE,
-            vencimientoCae:res.CAEFchVto,
-            texto:textoQR,
-            numero: ultimoElectronica + 1
-        }
-}
-
-//Generamos el qr
-async function generarQR(texto) {
-    const qrCode = require('qrcode')
-    const url = `https://www.afip.gob.ar/fe/qr/?p=${texto}`;
-    const QR = await qrCode.toDataURL(url);
-    return QR
-}
 
 const verCodComp = (condicionIva) =>{
     if(condicionIva === "Inscripto"){
