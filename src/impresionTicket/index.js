@@ -29,6 +29,7 @@ const importe = document.querySelector('.importe');
 const descuento = document.querySelector('.descuento');
 const total = document.querySelector('.total');
 const tipoVenta = document.querySelector('.tipoVenta');
+const divAfip = document.querySelector('.afip');
 
 //afip
 const qr = document.querySelector('.qr');
@@ -105,8 +106,7 @@ const venciCae = document.querySelector('.venciCae');
             `
         }
     }
-    console.log(venta)
-    if (venta.condIva === "Inscripto") {
+    if (venta.condIva === "Inscripto" && venta.tipo_comp !== "Recibos") {
         if (venta.gravado21 !== 0) {
             discriminadorIva.innerHTML += `
                 <div class="margin-1-t">
@@ -136,9 +136,13 @@ const venciCae = document.querySelector('.venciCae');
     descuento.innerHTML = parseFloat(venta.descuento).toFixed(2);
     total.innerHTML = venta.precioFinal.toFixed(2);
     tipoVenta.innerHTML = (venta.tipo_venta !== "CC" || venta.cliente === "M122") ? `Contado: ${venta.precioFinal.toFixed(2)}` : "Cuenta Corriente";
-    qr.children[0].src = afip.QR;
-    cae.innerHTML = afip.cae;
-    venciCae.innerHTML = afip.vencimientoCae;
+    if (afip) {
+        qr.children[0].src = afip.QR;
+        cae.innerHTML = afip.cae;
+        venciCae.innerHTML = afip.vencimientoCae;
+    }else{
+        divAfip.classList.add('none');
+    }
  }
 
 
@@ -152,8 +156,8 @@ const venciCae = document.querySelector('.venciCae');
      }else if(codigo === 8){
         return "Nota Credito B"
     }else if(codigo === 4){
-        return "Recibos A"
+        return "Recibos"
     }else if(codigo === 9){
-        return "Recibos B"
+        return "Recibos"
     }
  };

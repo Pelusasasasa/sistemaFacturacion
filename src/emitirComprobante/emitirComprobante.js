@@ -637,8 +637,6 @@ async function sumarSaldoAlCliente(precio,codigo,venta) {
     cliente.listaVentas.push(venta);
     let saldo = (parseFloat(precio)+parseFloat(cliente.saldo)).toFixed(2);
     cliente.saldo = saldo;
-    console.log(cliente);
-    console.log(venta)
     await axios.put(`${URL}clientes/${codigo}`,cliente)
 }
 const sacarIdentificadorTabla = (arreglo)=>{
@@ -799,9 +797,9 @@ ticketFactura.addEventListener('click',async (e) =>{
                     venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente,venta.nro_comp);
                     venta.tipo_pago === "CC" && ponerEnCuentaCorrienteCompensada(venta,true);
                     venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
-                    actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp);
+                   // actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp);
                     
-                    nuevaVenta = await axios.post(`${URL}ventas`,venta)
+                   // nuevaVenta = await axios.post(`${URL}ventas`,venta)
                     const cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
 
                     alerta.children[1].children[0].innerHTML = "Imprimiendo Venta";//cartel de que se esta imprimiendo la venta
@@ -823,7 +821,6 @@ ticketFactura.addEventListener('click',async (e) =>{
                     }
         
                     if (borraNegro) {
-                        console.log("BORRAR")
                         //traemos los movimientos de productos de la venta anterior y lo modificamos a la nueva venta
                         const movimientosViejos = (await axios.get(`${URL}movProductos/${ventaAnterior.nro_comp}/Presupuesto`)).data;
                         for await (let mov of movimientosViejos){
@@ -839,7 +836,7 @@ ticketFactura.addEventListener('click',async (e) =>{
                         await borrarCuentaHistorica(ventaAnterior.nro_comp,ventaAnterior.cliente,ventaAnterior.tipo_comp);
                         await borrarVenta(ventaAnterior.nro_comp)
                     };
-                    !borraNegro ? (window.location = '../index.html') : window.close();
+                    //!borraNegro ? (window.location = '../index.html') : window.close();
                 } catch (error) {
                     alert("No se puedo generar la Venta")
                     console.log(error)
@@ -1145,14 +1142,15 @@ const subirAAfip = async(venta)=>{
                     'Importe' 	: venta.iva21 // Importe 
             })
         };
-
         const res = await afip.ElectronicBilling.createVoucher(data); //creamos la factura electronica
+        console.log(data);
+        console.log(venta);
         alerta.children[1].children[0].innerHTML = "Venta en AFIP Aceptada";
         const qr = {
             ver: 1,
             fecha: fecha,
             cuit: 27165767433,
-            ptoVta: 5 ,
+            ptoVta: 5,
             tipoCmp: venta.cod_comp,
             nroCmp: ultimoElectronica + 1,
             importe: data.ImpTotal,

@@ -101,3 +101,7 @@ p{
     font-size: 1rem;
     padding: 2rem 0;
 }
+
+.none{
+    display: none;
+}
