@@ -457,6 +457,7 @@ const templateMenu = [
         }
     },
     {
+        label:"",
         accelerator: process.platform == 'darwin' ? 'Comand+D' : 'Ctrl+D',
         click(item, focusedWindow) {
             focusedWindow.toggleDevTools();

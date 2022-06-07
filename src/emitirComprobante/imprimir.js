@@ -74,7 +74,7 @@ const fecha = document.querySelector('.fecha');
                     <tr>
                         <td>${(parseFloat(cantidad)).toFixed(2)}</td>
                         <td>${objeto._id}</td>
-                        <td class="descripcion">${objeto.descripcion} ${objeto.marca}</td>
+                        <td class="descripcion">${objeto.descripcion.slice(0,40)} ${objeto.marca}</td>
                         <td>${parseFloat(objeto.precio_venta).toFixed(2)}</td>
                         <td>${(parseFloat(objeto.precio_venta)*cantidad).toFixed(2)}</td>
                     </tr>
@@ -84,7 +84,7 @@ const fecha = document.querySelector('.fecha');
                     <tr>
                         <td>${(parseFloat(cantidad)).toFixed(2)}</td>
                         <td class="descripcion">${objeto._id}</td>
-                        <td>${objeto.descripcion}</td>
+                        <td>${objeto.descripcion.slice(0,40)} ${objeto.marca}</td>
                     </tr>
                     `
                 }
