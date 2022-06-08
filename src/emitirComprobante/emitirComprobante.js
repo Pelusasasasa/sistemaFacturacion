@@ -250,12 +250,12 @@ precioAgregar.addEventListener('keypress',e=>{
     if (e.key === "Enter" && codigo.value !== "888-888") {
         const product = {
             descripcion: descripcionAgregar.children[0].value,
-            precio_venta: parseFloat(precioAgregar.children[0].value),
+            precio_venta: precioAgregar.children[0].value !== "" ? parseFloat(precioAgregar.children[0].value) : 0,
             _id:codigo.value,
             marca:""
         }
         dialogs.prompt("Cantidad",async valor =>{
-            if (valor !== "" || parseFloat(valor) !== 0) {
+            if (valor !== "" && parseFloat(valor) !== 0) {
                 await mostrarVentas(product,parseFloat(valor));
             }
             codigo.value = await "";
