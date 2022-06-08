@@ -84,7 +84,7 @@ const venciCae = document.querySelector('.venciCae');
                     <p></p>
                 </div>
                 <div class="descripcionProducto">
-                    <p>${objeto.descripcion}</p>
+                    <p>${objeto.descripcion.slice(0,27)}</p>
                     <p>${venta.condIva === "Inscripto" ? ((objeto.precio_venta/iva)*cantidad).toFixed(2) : (objeto.precio_venta * cantidad).toFixed(2)}</p>
                 </div>
             `

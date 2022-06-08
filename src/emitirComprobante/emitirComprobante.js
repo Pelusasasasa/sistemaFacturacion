@@ -797,9 +797,9 @@ ticketFactura.addEventListener('click',async (e) =>{
                     venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente,venta.nro_comp);
                     venta.tipo_pago === "CC" && ponerEnCuentaCorrienteCompensada(venta,true);
                     venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
-                   // actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp);
+                    actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp);
                     
-                   // nuevaVenta = await axios.post(`${URL}ventas`,venta)
+                    nuevaVenta = await axios.post(`${URL}ventas`,venta)
                     const cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
 
                     alerta.children[1].children[0].innerHTML = "Imprimiendo Venta";//cartel de que se esta imprimiendo la venta
@@ -836,7 +836,7 @@ ticketFactura.addEventListener('click',async (e) =>{
                         await borrarCuentaHistorica(ventaAnterior.nro_comp,ventaAnterior.cliente,ventaAnterior.tipo_comp);
                         await borrarVenta(ventaAnterior.nro_comp)
                     };
-                    //!borraNegro ? (window.location = '../index.html') : window.close();
+                    !borraNegro ? (window.location = '../index.html') : window.close();
                 } catch (error) {
                     alert("No se puedo generar la Venta")
                     console.log(error)
