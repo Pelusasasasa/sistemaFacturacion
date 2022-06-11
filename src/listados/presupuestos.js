@@ -3,6 +3,8 @@ const { DateTime } = require("luxon");
 const axios = require("axios");
 require("dotenv").config;
 const URL = process.env.URL;
+
+
 const hoy = new Date()
 let dia = hoy.getDate()
 if (dia<10) {
@@ -21,7 +23,20 @@ const desde =  document.querySelector('#desde')
 const hasta =  document.querySelector('#hasta')
 desde.value = fechaDeHoy
 hasta.value = fechaDeHoy
-const tbody =  document.querySelector('.tbody')
+const tbody =  document.querySelector('.tbody');
+
+desde.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        hasta.focus();
+    };
+});
+
+hasta.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        buscar.focus();
+    };
+});
+
 buscar.addEventListener('click',async e=>{
     const desdeFecha = new Date(desde.value);
     let hastaFecha = DateTime.fromISO(hasta.value).endOf('day');

@@ -29,7 +29,7 @@ modificar.addEventListener('click',async e=>{
     let productos = await axios.get(`${URL}productos/marcas/${marca}`)
     productos = productos.data;
     await productos.forEach(async producto=>{
-        if (parseFloat(producto.costodolar) === 0) {
+        if (producto.costodolar === 0) {
             producto.costo = (parseFloat(producto.costo) + parseFloat(producto.costo)*porcentaje/100).toFixed(2);
             producto.impuestos = (producto.iva === "N") ? (parseFloat(producto.costo) * 26 / 100) : (parseFloat(producto.costo) * 15 / 100);
             producto.precio_venta = ((parseFloat(producto.costo) + parseFloat(producto.impuestos))*parseFloat(producto.utilidad)/100) +(parseFloat(producto.costo) + parseFloat(producto.impuestos))

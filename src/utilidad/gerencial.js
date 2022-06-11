@@ -28,6 +28,18 @@ const tbody = document.querySelector('.tbody')
 desde.value = fechaDeHoy
 hasta.value = fechaDeHoy
 
+desde.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        hasta.focus();
+    };
+});
+
+hasta.addEventListener('keypress',e=>{
+    if (e.key === "Enter") {
+        buscar.focus();
+    };
+});
+
 
 buscar.addEventListener('click',async e=>{
     const desdeFecha = new Date(desde.value);

@@ -102,7 +102,16 @@ ipcRenderer.on('get-productos', (e,args) =>{
 
 select.addEventListener('click',(e) =>{
     seleccion = e.target.value;
-})
+});
+
+select.addEventListener('keydown',(e) =>{
+    if (e.keyCode === 39) {
+        e.preventDefault();
+        buscarProducto.focus()
+    }
+});
+
+
 
 buscarProducto.addEventListener('keyup',filtrar);
 
@@ -123,6 +132,13 @@ seleccionarTBody.addEventListener('dblclick',(e) =>{
 
 filtrar();
 
+buscarProducto.addEventListener('keyup',e=>{
+    if (e.keyCode === 37) {
+        if (buscarProducto.value === "") {
+            select.focus();   
+        };
+    }
+})
 
 async function cantidad(e) {
     await dialogs.prompt("cantidad",async(valor) =>{
