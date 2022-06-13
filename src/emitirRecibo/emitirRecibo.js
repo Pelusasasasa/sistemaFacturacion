@@ -269,9 +269,8 @@ const hacerRecibo = async()=>{
 
      const recibo = {}
      recibo.cod_comp = verCodComp(cond_iva.value)
-     recibo.dnicuit = cuit.value
-     recibo._id = await tamanioVentas();
-     recibo.fecha = new Date()
+     recibo.dnicuit = cuit.value;
+     recibo.fecha = new Date();
      recibo.cliente = cliente._id;
      recibo.nombreCliente = cliente.cliente;
      recibo.vendedor = Vendedor;
@@ -381,13 +380,6 @@ const inputsCliente = async (cliente)=>{
         inputSeleccionado = trSeleccionado.children[5].children[0]  
     }
 }   
-
-const tamanioVentas = async()=>{
-    let retornar
-    retornar = await axios.get(`${URL}ventas`);
-    retornar = retornar.data;
-    return (retornar + 1); 
-}
 
 
 const modificarVentas = (lista)=>{

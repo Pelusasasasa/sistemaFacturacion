@@ -588,7 +588,7 @@ function redondear(numero) {
 }
 
 const tamanioVentas = async(tipoVenta)=>{//tipoVenta = Presupuesto o Ticket Factura
-    tipoVenta === "presupuesto" ? tamanio = await axios.get(`${URL}presupuesto`)  : tamanio = await axios.get(`${URL}ventas`)
+    tamanio = await axios.get(`${URL}presupuesto`);
     tamanio = tamanio.data + 1;
     return tamanio
 }
@@ -762,7 +762,6 @@ ticketFactura.addEventListener('click',async (e) =>{
             const listaSinDescuento = JSON.parse(JSON.stringify(listaProductos))
             venta.productos = listaProductos;
             venta.nombreCliente = buscarCliente.value;
-            venta._id = await tamanioVentas("ticket factura");
             venta.observaciones = observaciones.value;
             venta.fecha = new Date();
             venta.direccion = direccion.value

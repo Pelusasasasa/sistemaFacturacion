@@ -282,8 +282,6 @@ factura.addEventListener('click',async e=>{
         venta.productos = listaProductos
         venta.fecha = new Date()
         venta.cliente = codigoC.value;
-        //Traemos el tamanio de ventas de la BD para el _id
-        venta._id = await tamanioVentas() + 1 ;
         venta.nombreCliente = buscarCliente.value;
         venta.tipo_comp = "Nota Credito";
         venta.observaciones = observaciones.value;
@@ -421,11 +419,6 @@ const verCod_comp = (iva)=>{
     }else{
         return 8
     }
-}
-
-const tamanioVentas = async()=>{
-    let tamanio = (await axios.get(`${URL}ventas`)).data;
-    return tamanio
 }
 
 cancelar.addEventListener('click',e=>{

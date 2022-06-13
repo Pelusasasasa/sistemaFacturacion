@@ -58,7 +58,6 @@ totalIva.addEventListener('blur',()=>{
 
 guardar.addEventListener('click',async ()=>{
     const venta = {};
-    venta._id = (await axios.get(`${URL}ventas`)).data + 1
     venta.cliente = "9999";
     venta.fecha = new Date(fecha.value);
     venta.nombreCliente = nombre.value;
