@@ -36,6 +36,7 @@ if (process.env.NODE_ENV !== 'production') {
 };
 global.nuevaVentana = null;
 global.ventanaPrincipal = null
+global.nuevaVentanaDos = null
 
 app.on('window-all-closed',()=>{
     if (process.platform !== "darwin") {
@@ -235,8 +236,8 @@ ipcMain.on('ventaModificada',async (e,[args,id])=>{
     ipcMain.on('abrir-ventana-emitir-comprobante',(e,args)=>{
         const[vendedor,numeroVenta,empresa] = args
         abrirVentana("emitirComprobante/emitirComprobante.html",1000,1000)
-        nuevaVentana.on('ready-to-show',async ()=>{
-            nuevaVentana.webContents.send('venta',JSON.stringify([vendedor,numeroVenta,empresa]))
+        nuevaVentanaDos.on('ready-to-show',async ()=>{
+            nuevaVentanaDos.webContents.send('venta',JSON.stringify([vendedor,numeroVenta,empresa]))
         })
     })
 
@@ -538,6 +539,27 @@ function abrirVentana(texto,width,height,reinicio){
         nuevaVentana.on('ready-to-show',()=>{
         })
         nuevaVentana.setMenuBarVisibility(false)
+    }else if(texto === "emitirComprobante/emitirComprobante.html"){
+        nuevaVentanaDos = new BrowserWindow({
+            parent:ventanaPrincipal,
+            modal:true,
+            width: width,
+            height: height,
+            webPreferences: {
+                contextIsolation: false,
+                nodeIntegration: true
+            }
+        })
+        nuevaVentanaDos.loadURL(url.format({
+            pathname: path.join(__dirname, `./${texto}`),
+            protocol: 'file',
+            slashes: true
+        }));
+        nuevaVentanaDos.setMenuBarVisibility(false)
+        nuevaVentanaDos.on('close',e=>{
+            nuevaVentanaDos = null;
+            reinicio !== "noReinician" && ventanaPrincipal.reload()
+        })
     }else if(texto.includes("usuarios")){
         const a = texto.split('?')[1];
         nuevaVentana = new BrowserWindow({
