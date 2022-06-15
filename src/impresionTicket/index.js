@@ -151,7 +151,7 @@ const venciCae = document.querySelector('.venciCae');
          return "Factura B";
      }else if(codigo === 1){
          return "Factura A";
-     }else if(codigo === 2){
+     }else if(codigo === 3){
          return "Nota Credito A"
      }else if(codigo === 8){
         return "Nota Credito B"

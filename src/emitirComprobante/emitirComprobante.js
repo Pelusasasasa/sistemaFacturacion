@@ -1141,9 +1141,9 @@ const subirAAfip = async(venta)=>{
                     'Importe' 	: venta.iva21 // Importe 
             })
         };
-        const res = await afip.ElectronicBilling.createVoucher(data); //creamos la factura electronica
         console.log(data);
         console.log(venta);
+        const res = await afip.ElectronicBilling.createVoucher(data); //creamos la factura electronica
         alerta.children[1].children[0].innerHTML = "Venta en AFIP Aceptada";
         const qr = {
             ver: 1,

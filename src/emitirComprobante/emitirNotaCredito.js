@@ -348,8 +348,9 @@ factura.addEventListener('click',async e=>{
                 arregloMovimiento = [];
                 arregloProductosDescontarStock = [];
             }
-
+            //creamos el pdf
             await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
+            //reiniciamos la pagina
             location.href="../index.html";
         }}});
 
@@ -458,7 +459,8 @@ divNuevoPrecio.children[1].addEventListener('keypress',e=>{
         tr.children[4].innerHTML = parseFloat(producto.objeto.precio_venta).toFixed(2);
         tr.children[5].innerHTML = (parseFloat(producto.cantidad) * parseFloat(producto.objeto.precio_venta)).toFixed(2);
         nuevoTotal += parseFloat(producto.cantidad) * parseFloat(producto.objeto.precio_venta);
-        total.value = nuevoTotal.toFixed(2)
+        totalPrecioProductos = nuevoTotal;
+        total.value = nuevoTotal.toFixed(2);
         divNuevoPrecio.children[1].value = "";
         divNuevaCantidad.children[1].value = "";
         codigo.focus();
@@ -584,7 +586,6 @@ const subirAAfip = async(venta,ventaAsociada)=>{
     const ventaAnterior = await afip.ElectronicBilling.getVoucherInfo(parseFloat(ventaAsociada.nro_comp),5,parseFloat(ventaAsociada.cod_comp)); 
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
-    //(ultimoElectronica === 0) && (ultimoElectronica=1); 
     let totalIva105 = 0
     let totalIva21=0
     let totalNeto21 = 0 
