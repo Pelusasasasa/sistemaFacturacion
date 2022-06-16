@@ -17,7 +17,7 @@ const vendedor = getParameterByName('vendedor');
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
 
-
+//cliente
 const codigoC = document.querySelector('#codigoC');
 const buscarCliente = document.querySelector('#nombre');
 const saldo = document.querySelector('#saldo');
@@ -29,7 +29,15 @@ const dnicuit = document.querySelector('#dnicuit');
 const telefono = document.querySelector('#telefono');
 const conIva = document.querySelector('#conIva');
 const observaciones = document.querySelector('#observaciones');
+
+//buscador
 const codigo = document.querySelector('#codigo');
+const descripcionAgregar = document.querySelector('.parte-producto_descripcion');
+const precioAgregar = document.querySelector('.parte-producto_precio');
+const agregarIva = document.querySelector('.parte-producto_iva');
+const divNuevaCantidad = document.querySelector('.nuevaCantidad');
+const divNuevoPrecio = document.querySelector('.nuevoPrecio');
+
 const resultado = document.querySelector('#resultado');
 const total = document.querySelector('#total');
 const original = document.querySelector('#original')
@@ -38,11 +46,8 @@ const cancelar = document.querySelector('.cancelar');
 const borrarProducto = document.querySelector('.borrarProducto')
 const facturaOriginal = document.querySelector('#original');
 const radios = document.querySelectorAll('input[name=tipo]');
-const divNuevaCantidad = document.querySelector('.nuevaCantidad');
-const divNuevoPrecio = document.querySelector('.nuevoPrecio');
 const cobrado = document.querySelector('#cobrado');
-const descripcionAgregar = document.querySelector('.parte-producto_descripcion');
-const precioAgregar = document.querySelector('.parte-producto_precio');
+
 const divVendedor = document.querySelector('.vendedor');
 divVendedor.children[0].innerHTML = vendedor
 
@@ -143,6 +148,7 @@ codigo.addEventListener('keypress',async (e) => {
     if (e.key === 'Enter') {
         if (e.target.value === "999-999") {
             descripcionAgregar.classList.remove('none');
+            agregarIva.classList.remove('none');
             precioAgregar.classList.remove('none');
             descripcionAgregar.children[0].focus();
         }else if (e.target.value !== "") {
@@ -178,7 +184,18 @@ codigo.addEventListener('keypress',async (e) => {
 
 descripcionAgregar.children[0].addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        precioAgregar.children[0].focus();
+        agregarIva.children[0].focus();
+    }
+});
+
+agregarIva.children[0].addEventListener('keypress',e=>{
+    e.preventDefault();
+    if (e.key === "Enter") {
+        if (precioAgregar.classList.contains('none')) {
+            divNuevoPrecio.children[1].focus();
+        }else{
+            precioAgregar.children[0].focus();
+        }
     }
 })
 
@@ -188,7 +205,9 @@ precioAgregar.addEventListener('keypress',e=>{
             descripcion: descripcionAgregar.children[0].value,
             precio_venta: parseFloat(precioAgregar.children[0].value),
             _id:codigo.value,
-            marca:""
+            marca:"",
+            unidad:"",
+            iva:agregarIva.children[0].value
         }
     dialogs.prompt("Cantidad",async valor=>{
         if(valor !== "" && parseFloat(valor) !== 0){
@@ -198,6 +217,8 @@ precioAgregar.addEventListener('keypress',e=>{
         codigo.focus();
         precioAgregar.children[0].value = await "";
         precioAgregar.classList.add('none');
+        agregarIva.classList.add('none');
+        agregarIva.children[0].value = "N";
         descripcionAgregar.children[0].value = await "";
         descripcionAgregar.classList.add('none');
     })}
@@ -320,8 +341,6 @@ factura.addEventListener('click',async e=>{
             //subimos a la afip la factura electronica
             let afip = await subirAAfip(venta,ventaRelacionada);
             venta.nro_comp = `0005-${(afip.numero).toString().padStart(8,'0')}`;
-            venta.comprob = venta.nro_comp;
-            //Actualizamos el numero de comprobante
             await actualizarNroCom(venta.nro_comp,venta.cod_comp);
 
             //mandamos para que sea compensada
@@ -435,6 +454,7 @@ resultado.addEventListener('click',e=>{
     seleccionado.classList.add('seleccionado');
     if (seleccionado) {
         divNuevaCantidad.classList.remove('none');
+        agregarIva.classList.remove('none');
         divNuevoPrecio.classList.remove('none');
         borrarProducto.classList.remove('none');
     }
@@ -443,7 +463,7 @@ resultado.addEventListener('click',e=>{
 //modificamos la cantidad del producto
 divNuevaCantidad.children[1].addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        divNuevoPrecio.children[1].focus();
+        agregarIva.children[0].focus();
     }
 });
 
@@ -454,17 +474,22 @@ divNuevoPrecio.children[1].addEventListener('keypress',e=>{
         nuevoTotal -= parseFloat(producto.cantidad) * parseFloat(producto.objeto.precio_venta);
         producto.cantidad = divNuevaCantidad.children[1].value !== "" ? divNuevaCantidad.children[1].value : producto.cantidad;
         producto.objeto.precio_venta = divNuevoPrecio.children[1].value !== "" ? divNuevoPrecio.children[1].value : producto.objeto.precio_venta;
+        producto.objeto.iva = agregarIva.children[0].value;
         const tr = document.getElementById(`${seleccionado.id}`);
         tr.children[0].innerHTML = parseFloat(producto.cantidad).toFixed(2);
+        tr.children[3].innerHTML = producto.objeto.iva === "R" ? "10.50%" : "21.00";
         tr.children[4].innerHTML = parseFloat(producto.objeto.precio_venta).toFixed(2);
         tr.children[5].innerHTML = (parseFloat(producto.cantidad) * parseFloat(producto.objeto.precio_venta)).toFixed(2);
         nuevoTotal += parseFloat(producto.cantidad) * parseFloat(producto.objeto.precio_venta);
         totalPrecioProductos = nuevoTotal;
         total.value = nuevoTotal.toFixed(2);
+        divNuevaCantidad.classList.add('none');
+        divNuevoPrecio.classList.add('none');
+        agregarIva.classList.add('none');
         divNuevoPrecio.children[1].value = "";
         divNuevaCantidad.children[1].value = "";
+        agregarIva.children[0].value = "N";
         codigo.focus();
-
     }
 })
 
@@ -583,7 +608,7 @@ dnicuit.addEventListener('focus',e=>{
 
 
 const subirAAfip = async(venta,ventaAsociada)=>{
-    const ventaAnterior = await afip.ElectronicBilling.getVoucherInfo(parseFloat(ventaAsociada.nro_comp),5,parseFloat(ventaAsociada.cod_comp)); 
+    const ventaAnterior = await afip.ElectronicBilling.getVoucherInfo(parseFloat(original.value),5,1); 
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
     let totalIva105 = 0

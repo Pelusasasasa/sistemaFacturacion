@@ -27,6 +27,8 @@ usuario.appendChild(textoUsuario)
 
 const body = document.querySelector('body');
 const resultado = document.querySelector('#resultado');
+
+//Parte Cliente
 const codigoC = document.querySelector('#codigoC')
 const buscarCliente = document.querySelector('#nombre');
 const saldo = document.querySelector('#saldo');
@@ -36,13 +38,24 @@ const provincia = document.querySelector('#provincia');
 const dnicuit = document.querySelector('#dnicuit');
 const telefono = document.querySelector('#telefono');
 const conIva = document.querySelector('#conIva');
+const observaciones = document.querySelector('#observaciones')
+
+//parte buscador Producto
+const codigo = document.querySelector('#codigo');
+const cambioPrecio = document.querySelector('.parte-producto_cambioPrecio');
+const nuevaCantidadDiv = document.querySelector('.parte-producto_cantidad');
+const descripcionAgregar = document.querySelector('.parte-producto_descripcion');
+const precioAgregar = document.querySelector('.parte-producto_precio');
+const agregariva = document.querySelector('.parte-producto_iva');
+
+
 const total = document.querySelector('#total');
 const ventaValorizado = document.querySelector('.ventaValorizado')
 const valorizado = document.querySelector('.valorizado')
 const imprimirCheck = document.querySelector('.imprimirCheck')
 const impresion = document.querySelector('.impresion')
-const observaciones = document.querySelector('#observaciones')
-const codigo = document.querySelector('#codigo')
+
+
 const tiposVentas = document.querySelectorAll('input[name="tipoVenta"]')
 const borrarProducto = document.querySelector('.borrarProducto')
 const inputEmpresa = document.querySelector('#empresa');
@@ -237,22 +250,36 @@ observaciones.addEventListener('keypress',e=>{
     }
 });
 
+//hacemos enter despues de agregar la descripcion al producto 999-999
 descripcion.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        precio.focus();
+        agregariva.children[0].focus();
     }
 });
 
-const descripcionAgregar = document.querySelector('.parte-producto_descripcion');
-const precioAgregar = document.querySelector('.parte-producto_precio');
+//hacemos enter al iva del producto 999-999
+agregariva.children[0].addEventListener('keypress',e=>{
+    e.preventDefault();
+    if (e.key === "Enter") {
+        if (precioAgregar.classList.contains('none')) {
+            cambioPrecio.children[1].focus();
+        }else{
+            precio.focus();
+        }
+    }
+})
 
+
+//creamos un producto para listarlo en la pantalla
 precioAgregar.addEventListener('keypress',e=>{
     if (e.key === "Enter" && codigo.value !== "888-888") {
         const product = {
             descripcion: descripcionAgregar.children[0].value,
             precio_venta: precioAgregar.children[0].value !== "" ? parseFloat(precioAgregar.children[0].value) : 0,
             _id:codigo.value,
-            marca:""
+            marca:"",
+            unidad:"",
+            iva: agregariva.children[0].value
         }
         dialogs.prompt("Cantidad",async valor =>{
             if (valor !== "" && parseFloat(valor) !== 0) {
@@ -262,6 +289,7 @@ precioAgregar.addEventListener('keypress',e=>{
             codigo.focus()
             precioAgregar.children[0].value = await "";
             precioAgregar.classList.add('none');
+            agregariva.classList.add('none')
             descripcionAgregar.children[0].value = await "";
             descripcionAgregar.classList.add('none');
         });
@@ -278,14 +306,16 @@ codigo.addEventListener('keypress',async (e) => {
     }
     if (e.key === 'Enter') {
         if (e.target.value !== "") {
-            if (codigo.value === "999-999") {               
+            if (codigo.value === "999-999") {          
+                //habilitamos para que podamos escribir un producto     
                 descripcionAgregar.classList.remove('none');
                 precioAgregar.classList.remove('none');
+                agregariva.classList.remove('none');
                 descripcionAgregar.children[0].focus();
                 
             }else if(codigo.value === "888-888"){
                 const precio = document.querySelector('.parte-producto_precio')
-                let descripcion = document.querySelector('.parte-producto_descripcion')
+                let descripcion = document.querySelector('.parte-producto_descripcion');
                 descripcion.classList.remove('none')
                 let producto = (await axios.get(`${URL}productos/888-888`)).data;
                 descripcion.children[0].value = producto.descripcion;
@@ -341,6 +371,7 @@ ipcRenderer.on('mando-el-producto',(e,args) => {
 })
 let id = 1 //id de la tabla de ventas
 function mostrarVentas(objeto,cantidad) {
+    console.log(objeto.iva)
     Preciofinal += (parseFloat(objeto.precio_venta)*cantidad);
     total.value = (parseFloat(Preciofinal)).toFixed(2)
     resultado.innerHTML += `
@@ -359,8 +390,7 @@ function mostrarVentas(objeto,cantidad) {
     listaProductos.push({objeto,cantidad});
 }
 
-const cambioPrecio = document.querySelector('.parte-producto_cambioPrecio')
-const nuevaCantidadDiv = document.querySelector('.parte-producto_cantidad')
+
 
 body
 
@@ -375,6 +405,7 @@ resultado.addEventListener('click',e=>{
         borrarProducto.classList.remove('none');
         cambioPrecio.classList.remove('none');
         nuevaCantidadDiv.classList.remove('none');
+        agregariva.classList.remove('none');
     }
 })
 
@@ -386,10 +417,12 @@ cambioPrecio.children[1].addEventListener('keypress',async (e)=>{
         await borrarUnProductoDeLaLista(seleccionado);
         producto.objeto.precio_venta = cambioPrecio.children[1].value !== "" ? parseFloat(cambioPrecio.children[1].value) : producto.objeto.precio_venta;
         producto.cantidad = nuevaCantidad.value !== "" ? nuevaCantidad.value : producto.cantidad;
+        producto.objeto.iva = agregariva.children[0].value;
         mostrarVentas(producto.objeto,parseFloat(producto.cantidad));
         cambioPrecio.children[1].value = "";
         nuevaCantidad.value = "";
         cambioPrecio.classList.add('none');
+        agregariva.classList.add('none');
         borrarProducto.classList.add('none');
         nuevaCantidadDiv.classList.add('none');
         codigo.focus()
@@ -400,7 +433,7 @@ cambioPrecio.children[1].addEventListener('keypress',async (e)=>{
 const nuevaCantidad = document.querySelector('#nuevaCantidad');
 nuevaCantidad.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        cambioPrecio.children[1].focus();
+        agregariva.children[0].focus();
     }
 })
 
