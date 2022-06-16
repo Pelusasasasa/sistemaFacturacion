@@ -300,11 +300,17 @@ precioAgregar.addEventListener('keypress',e=>{
 
 //Cuando buscamos un producto
 codigo.addEventListener('keypress',async (e) => {
-
     if((codigo.value.length===3 || codigo.value.length===7) && e.key != "Backspace" && e.key !== "-" && e.key !== "Enter"){
         codigo.value = codigo.value + "-"
     }
     if (e.key === 'Enter') {
+
+        if (!nuevaCantidadDiv.classList.contains('none')) {
+            nuevaCantidadDiv.classList.add('none');
+            cambioPrecio.classList.add('none');
+            agregariva.classList.add('none');
+        }
+
         if (e.target.value !== "") {
             if (codigo.value === "999-999") {          
                 //habilitamos para que podamos escribir un producto     

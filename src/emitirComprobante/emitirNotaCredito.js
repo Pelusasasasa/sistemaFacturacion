@@ -146,6 +146,13 @@ codigo.addEventListener('keypress',async (e) => {
         codigo.value = codigo.value + "-"
     }
     if (e.key === 'Enter') {
+
+        if (!divNuevaCantidad.classList.contains('none')) {
+            divNuevaCantidad.classList.add('none');
+            divNuevoPrecio.classList.add('none');
+            agregarIva.classList.add('none');
+        }
+
         if (e.target.value === "999-999") {
             descripcionAgregar.classList.remove('none');
             agregarIva.classList.remove('none');

@@ -2,7 +2,6 @@ const { ipcRenderer } = require("electron");
 require('dotenv').config();
 const URL = process.env.URL;
 const axios = require("axios");
-const formData = require('form-data');
 let data = new FormData();
 
 

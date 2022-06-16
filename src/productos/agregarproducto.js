@@ -1,7 +1,6 @@
 const axios = require('axios');
 require('dotenv').config();
 const URL = process.env.URL;
-const formData = require('form-data');
 let data = new FormData();
 
 const codigo = document.querySelector('#codigo');
