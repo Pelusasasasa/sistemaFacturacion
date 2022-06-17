@@ -38,28 +38,35 @@ const agregarIva = document.querySelector('.parte-producto_iva');
 const divNuevaCantidad = document.querySelector('.nuevaCantidad');
 const divNuevoPrecio = document.querySelector('.nuevoPrecio');
 
+//tabla
 const resultado = document.querySelector('#resultado');
+
+//descuento
+const facturaOriginal = document.querySelector('#original');
 const total = document.querySelector('#total');
-const original = document.querySelector('#original')
+
+//cobrado
+const cobrado = document.querySelector('#cobrado');
+const divVendedor = document.querySelector('.vendedor');
+const radios = document.querySelectorAll('input[name=tipo]');
+
+//parte Final
 const factura = document.querySelector('.factura');
 const cancelar = document.querySelector('.cancelar');
-const borrarProducto = document.querySelector('.borrarProducto')
-const facturaOriginal = document.querySelector('#original');
-const radios = document.querySelectorAll('input[name=tipo]');
-const cobrado = document.querySelector('#cobrado');
+const borrarProducto = document.querySelector('.borrarProducto');
 
-const divVendedor = document.querySelector('.vendedor');
+//alerta
+const alerta = document.querySelector('.alerta');
+
 divVendedor.children[0].innerHTML = vendedor
 
 let cliente = {};
-let venta = {};
 let listaProductos = [];
 let seleccionado;
 let subseleccionado
 let totalPrecioProductos = 0;
 let arregloMovimiento = [];
 let arregloProductosDescontarStock = [];
-let precioFinal = 0
 
 codigoC.addEventListener('keypress',async e=>{
     if ((e.key === "Enter")) {
@@ -259,7 +266,7 @@ const mostrarVentas = (objeto,cantidad)=>{
 
 descuento.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
-        original.focus()
+        facturaOriginal.focus()
     }
 })
 descuento.addEventListener('blur',e=>{
@@ -298,87 +305,97 @@ function inputCobrado(numero) {
 
 factura.addEventListener('click',async e=>{
     e.preventDefault();
-    const venta = {};
-    venta.tipo_pago = await verTipoPago();
-    if (facturaOriginal.value === "") {
-        alert("No se escribio el numero de la factura Original")
-    }else if(listaProductos.length === 0){
-        alert("No se cargo productos")
-    }else if(venta.tipo_pago === "NINGUNO"){
-        alert("Elegir tipo de pago");
-    }else{
-        venta.productos = listaProductos
-        venta.fecha = new Date()
-        venta.cliente = codigoC.value;
-        venta.nombreCliente = buscarCliente.value;
-        venta.tipo_comp = "Nota Credito";
-        venta.observaciones = observaciones.value;
-        venta.descuento = descuentoN.value;
-        venta.cod_comp = verCod_comp(cliente.cond_iva)
-        venta.productos = listaProductos;
-        venta.numeroAsociado = facturaOriginal.value;
-        venta.dnicuit = dnicuit.value;
-        venta.cod_doc = (venta.dnicuit.length > 8) ? 80 : 96;
-        venta.cod_doc = venta.dnicuit === "00000000" ? 99 : venta.cod_doc
-        venta.condIva = conIva.value;
-        venta.descuento = parseFloat(descuentoN.value);
-        venta.precioFinal = parseFloat(total.value);
-        venta.vendedor = vendedor;
-        venta.direccion = direccion.value;
-         if (venta.precioFinal>10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" || dnicuit.value === "00000000")) {
-             alert("Factura mayor a 10000, poner valores clientes")
-         }else{
-            //modifcamos el precio del producto correspondiente con el descuenta
-            for (let producto of venta.productos){
-                if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
-                    producto.objeto.precio_venta =  (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
-                    producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
+    alerta.classList.remove('none');
+    try {
+        const venta = {};
+        venta.tipo_pago = await verTipoPago();
+        if (facturaOriginal.value === "") {
+            alert("No se escribio el numero de la factura Original")
+        }else if(listaProductos.length === 0){
+            alert("No se cargo productos")
+        }else if(venta.tipo_pago === "NINGUNO"){
+            alert("Elegir tipo de pago");
+        }else{
+            venta.productos = listaProductos
+            venta.fecha = new Date()
+            venta.cliente = codigoC.value;
+            venta.nombreCliente = buscarCliente.value;
+            venta.tipo_comp = "Nota Credito";
+            venta.observaciones = observaciones.value;
+            venta.descuento = descuentoN.value;
+            venta.cod_comp = verCod_comp(cliente.cond_iva)
+            venta.productos = listaProductos;
+            venta.numeroAsociado = facturaOriginal.value;
+            venta.dnicuit = dnicuit.value;
+            venta.cod_doc = (venta.dnicuit.length > 8) ? 80 : 96;
+            venta.cod_doc = venta.dnicuit === "00000000" ? 99 : venta.cod_doc
+            venta.condIva = conIva.value;
+            venta.descuento = parseFloat(descuentoN.value);
+            venta.precioFinal = parseFloat(total.value);
+            venta.vendedor = vendedor;
+            venta.direccion = direccion.value;
+            if (venta.precioFinal>10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" || dnicuit.value === "00000000")) {
+                alert("Factura mayor a 10000, poner valores clientes")
+            }else{
+                //modifcamos el precio del producto correspondiente con el descuenta
+                for (let producto of venta.productos){
+                    if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
+                        producto.objeto.precio_venta =  (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
+                        producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
+                    }
                 }
-            }
-            const [iva21,iva105,gravado21,gravado105,cant_iva] = gravadoMasIva(venta.productos);
-            venta.iva21 = iva21;
-            venta.iva105 = iva105;
-            venta.gravado21 = gravado21;
-            venta.gravado105 = gravado105;
-            venta.cant_iva = cant_iva;  
+                const [iva21,iva105,gravado21,gravado105,cant_iva] = gravadoMasIva(venta.productos);
+                venta.iva21 = iva21;
+                venta.iva105 = iva105;
+                venta.gravado21 = gravado21;
+                venta.gravado105 = gravado105;
+                venta.cant_iva = cant_iva;  
 
-            
-            //Traemos la venta relacionada con la nota de credito
-            let ventaRelacionada = (await axios.get(`${URL}ventas/factura/${venta.numeroAsociado}/${"Ticket Factura"}/${venta.condIva}`)).data;
-            //subimos a la afip la factura electronica
-            let afip = await subirAAfip(venta,ventaRelacionada);
-            venta.nro_comp = `0005-${(afip.numero).toString().padStart(8,'0')}`;
-            await actualizarNroCom(venta.nro_comp,venta.cod_comp);
+                
+                //Traemos la venta relacionada con la nota de credito
+                let ventaRelacionada = (await axios.get(`${URL}ventas/factura/${venta.numeroAsociado}/${"Ticket Factura"}/${venta.condIva}`)).data;
+                //subimos a la afip la factura electronica
+                let afip = await subirAAfip(venta,ventaRelacionada);
+                venta.nro_comp = `0005-${(afip.numero).toString().padStart(8,'0')}`;
+                await actualizarNroCom(venta.nro_comp,venta.cod_comp);
 
-            //mandamos para que sea compensada
-            venta.tipo_pago === "CC" &&  ponerEnCuentaCorrienteCompensada(venta,true);
-            //Mandamos par que sea historica
-            venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
-            
-            //mandamos la venta
-            nuevaVenta = await axios.post(`${URL}ventas`,venta)
-            //Imprimos el ticket
-            ipcRenderer.send('imprimir-venta',[venta,afip,true,1,'Ticket Factura']);
-            
-            //Si la venta no es Presupuesto Presupuesto descontamos el stock y hacemos movimiento de producto
-            if (venta.tipo_pago !== "PP") {
-                //Si la venta es CC le sumamos el saldo
-                venta.tipo_pago === "CC" && sumarSaldo(venta.precioFinal,venta.cliente);
-                //movimiento de producto y stock
-               for await (let producto of venta.productos){
-                    await agregarStock(producto.objeto._id,producto.cantidad);
-                    await movimientoProducto(producto.objeto,producto.cantidad,venta);
+                //mandamos para que sea compensada
+                venta.tipo_pago === "CC" &&  ponerEnCuentaCorrienteCompensada(venta,true);
+                //Mandamos par que sea historica
+                venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
+                
+                //mandamos la venta
+                nuevaVenta = await axios.post(`${URL}ventas`,venta)
+                //Imprimos el ticket
+                ipcRenderer.send('imprimir-venta',[venta,afip,true,1,'Ticket Factura']);
+                
+                //Si la venta no es Presupuesto Presupuesto descontamos el stock y hacemos movimiento de producto
+                if (venta.tipo_pago !== "PP") {
+                    //Si la venta es CC le sumamos el saldo
+                    venta.tipo_pago === "CC" && sumarSaldo(venta.precioFinal,venta.cliente);
+                    //movimiento de producto y stock
+                for await (let producto of venta.productos){
+                        await agregarStock(producto.objeto._id,producto.cantidad);
+                        await movimientoProducto(producto.objeto,producto.cantidad,venta);
+                    }
+                    await axios.put(`${URL}productos`,arregloProductosDescontarStock);
+                    await axios.post(`${URL}movProductos`,arregloMovimiento);
+                    arregloMovimiento = [];
+                    arregloProductosDescontarStock = [];
                 }
-                await axios.put(`${URL}productos`,arregloProductosDescontarStock);
-                await axios.post(`${URL}movProductos`,arregloMovimiento);
-                arregloMovimiento = [];
-                arregloProductosDescontarStock = [];
-            }
-            //creamos el pdf
-            await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
-            //reiniciamos la pagina
-            location.href="../index.html";
-        }}});
+                //creamos el pdf
+                alerta.children[0].innerHTML = "Guardando nota de credito como pdf"
+                await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
+                //reiniciamos la pagina
+                location.href="../index.html";
+           
+        }}
+    } catch (error) {
+        console.error(error)
+    }finally{
+        alerta.classList.add('none');
+    }
+    });
 
 
 //Agregamos el stock nuevo
@@ -615,7 +632,8 @@ dnicuit.addEventListener('focus',e=>{
 
 
 const subirAAfip = async(venta,ventaAsociada)=>{
-    const ventaAnterior = await afip.ElectronicBilling.getVoucherInfo(parseFloat(original.value),5,1); 
+    alerta.children[0].innerHTML = "Esperando confirmacion de la afip"
+    const ventaAnterior = await afip.ElectronicBilling.getVoucherInfo(parseFloat(facturaOriginal.value),5,1); 
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
     let totalIva105 = 0
@@ -675,7 +693,7 @@ const subirAAfip = async(venta,ventaAsociada)=>{
             })
         };
         const res = await afip.ElectronicBilling.createVoucher(data); //creamos la factura electronica
-
+        alerta.children[0].innerHTML = "Nota de Credito Afip Aceptada"
         const qr = {
             ver: 1,
             fecha: fecha,

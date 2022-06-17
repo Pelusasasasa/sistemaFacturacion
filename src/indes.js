@@ -1,4 +1,5 @@
 const { ipcRenderer } = require("electron")
+const sweet = require('sweetalert2');
 
 const Afip = require('@afipsdk/afip.js');
 const afip = new Afip({ CUIT: 27165767433 });
@@ -81,24 +82,38 @@ body.addEventListener('keydown',e=>{
 let vendedor
 let acceso
 let empresa
-function validacionUsuario(texto) {
-    dialogs.promptPassword("Contraseña").then(value=>{
-        if (value === undefined) {
-            location.reload()
-        }else{
-            vendedores.forEach(e=>{
-                value === e._id && (vendedor=e.nombre)
-                value === e._id && (acceso = e.acceso)
-                value === e._id && (empresa = e.empresa)
-            })
-            if(vendedor !== undefined){ 
-                window.location = `${texto}?vendedor=${vendedor}&acceso=${acceso}&empresa=${empresa}`;
-                ipcRenderer.send('cerrar-menu');
-            }else{
-                alert("Contraseña incorrecta")
-                validacionUsuario(texto)
-            }
-        }
+async function validacionUsuario(texto) {
+    sweet.fire({
+                title:"Contraseña",
+                input:"text",
+                showCancelButton: true,
+                width:600,
+                size:"2rem",
+                confirmButtonText: 'Aceptar',
+                inputAttributes:{
+                    autofocus: "on"
+                }
+             })
+             .then(async ({value})=>{
+                console.log(value)
+                if (value === "") {
+                    location.reload();
+                }else{
+                    vendedores.forEach(e=>{
+                        value === e._id && (vendedor=e.nombre)
+                        value === e._id && (acceso = e.acceso)
+                        value === e._id && (empresa = e.empresa)
+                    })
+                    if(vendedor !== undefined){ 
+                        window.location = `${texto}?vendedor=${vendedor}&acceso=${acceso}&empresa=${empresa}`;
+                        ipcRenderer.send('cerrar-menu');
+                    }else{
+                        await sweet.fire({
+                            title:"Contraseña incorrecta"
+                        })
+                        validacionUsuario(texto)
+                    }
+                }
        })
        .catch(()=>{
         location.reload()

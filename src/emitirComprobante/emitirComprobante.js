@@ -9,7 +9,6 @@ function getParameterByName(name) {
 }
 const { ipcRenderer } = require("electron");
 const axios = require("axios");
-const { DateTime } = require("luxon");
 require("dotenv").config;
 const URL = process.env.URL;
 
