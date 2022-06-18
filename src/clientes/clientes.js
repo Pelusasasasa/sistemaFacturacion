@@ -1,6 +1,5 @@
 const {ipcRenderer} = require('electron');
-const Dialogs = require("dialogs");
-const dialogs = Dialogs();
+const sweet = require('sweetalert2');
 const axios = require('axios');
 require('dotenv').config
 const URL = process.env.URL;
@@ -84,12 +83,15 @@ agregar.addEventListener('click',e=>{
 
 
 const modificar = document.querySelector('.modificar')
-modificar.addEventListener('click',() =>{
+modificar.addEventListener('click',async () =>{
     if (seleccionado) {
         ipcRenderer.send('abrir-ventana-modificar-cliente',[seleccionado.id,acceso])
     }else{
-        dialogs.alert('Cliente no seleccionado')
-        document.querySelector('.ok').focus()
+        await sweet.fire({
+            title:"Cliente no Seleccionado",
+            returnFocus:false
+        });
+        buscarCliente.focus()
     }
 })
 
@@ -97,15 +99,7 @@ ipcRenderer.on('pasandocliente',(e,args) =>{
     console.log(args)
 })
 
-const inputseleccionado = (e) =>{
-    yaSeleccionado = document.querySelector('.seleccionado')
-    yaSeleccionado && yaSeleccionado.classList.remove('seleccionado')
-   e.classList.toggle('seleccionado')
-}
-
-
 eliminar.addEventListener('click',async e=>{
-    e.preventDefault()
     const clienteEliminar = document.querySelector('.seleccionado')
     if (clienteEliminar ) {
         const cliente = clienteEliminar.children[1].innerHTML;
@@ -114,7 +108,11 @@ eliminar.addEventListener('click',async e=>{
             location.reload()
         }
     }else{
-        alert("Cliente no Seleccionado")
+        await sweet.fire({
+            title:"Cliente no Seleccionado",
+            returnFocus:false
+        });
+        buscarCliente.focus()
     }
 })
 

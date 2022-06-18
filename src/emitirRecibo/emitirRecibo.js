@@ -5,6 +5,8 @@ function getParameterByName(name) {
     results = regex.exec(location.search);
     return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
 }
+const sweet = require('sweetalert2');
+
 const axios = require("axios");
 require("dotenv").config;
 const URL = process.env.URL;
@@ -104,7 +106,11 @@ codigo.addEventListener('keypress', async (e)=>{
         if (codigo.value !== "") {
             cliente = (await axios.get(`${URL}clientes/id/${codigo.value.toUpperCase()}`)).data;
             if ((cliente === "")) {
-                alert("Cliente no encontrado")
+                await sweet.fire({
+                    title:"Cliente no encontrado",
+                    returnFocus:false,
+                })
+                codigo.focus();
                 codigo.value = "";
             }else{
                 inputsCliente(cliente);
@@ -222,12 +228,18 @@ saldoAfavor.addEventListener('keydown',e=>{
     }
 })
 
-imprimir.addEventListener('click', e=>{
+imprimir.addEventListener('click',async e=>{
     e.preventDefault;
     if(parseFloat(total.value) === 0){
-        if (confirm("RECIBO EN 0,DESEA CONTINUAR?")) {
-            hacerRecibo();
-        }
+        await sweet.fire({
+            title:"Recibo en 0, Desea Continuar",
+            showCancelButton:true,
+            confirmButtonText: "Aceptar"
+        }).then(({isConfirmed}) =>{
+            if (isConfirmed) {
+                hacerRecibo();
+            }
+        })
     }else{
            hacerRecibo();
     }

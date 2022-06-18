@@ -96,7 +96,7 @@ async function validacionUsuario(texto) {
              })
              .then(async ({value})=>{
                 console.log(value)
-                if (value === "") {
+                if (value === "" || value === undefined) {
                     location.reload();
                 }else{
                     vendedores.forEach(e=>{

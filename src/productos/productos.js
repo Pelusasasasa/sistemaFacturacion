@@ -1,7 +1,7 @@
 const { ipcRenderer } = require("electron");
-const Dialogs = require("dialogs");
-const { default: axios } = require("axios");
-const dialogs = Dialogs()
+const axios = require("axios");
+const sweet = require('sweetalert2');
+
 require('dotenv').config();
 const URL = process.env.URL;
 
@@ -163,11 +163,15 @@ ipcRenderer.once('Historial',async(e,args)=>{
 
 //modificar el producto
 
-modificar.addEventListener('click',e=>{
+modificar.addEventListener('click',async e=>{
     if(seleccionado){
         ipcRenderer.send('abrir-ventana-modificar-producto',[seleccionado.id,acceso,texto,select.value]);
     }else{
-            alert('Producto no seleccionado');
+        await sweet.fire({
+            title:'Producto no seleccionado',
+            returnFocus:false
+        });
+        buscarProducto.focus();
     }
 });
 
@@ -178,22 +182,29 @@ agregarProducto.addEventListener('click',e=>{
 
 
 //Info Movimiento de producto
-movimiento.addEventListener('click',()=>{
+movimiento.addEventListener('click',async ()=>{
     if (seleccionado) {
         ipcRenderer.send('abrir-ventana-info-movimiento-producto',seleccionado.id)
     }else{
-            alert('Producto no seleccionado')
+        await sweet.fire({
+            title:'Producto no seleccionado',
+            returnFocus:false
+        });
+        buscarProducto.focus();
     }
 })
 
 //Ingresar movimientoProducto
-ingresarMov.addEventListener('click', e => {
+ingresarMov.addEventListener('click',async e => {
    if (seleccionado) {
         let vendedor = getParameterByName('vendedor');
-        console.log(vendedor)
-        vendedor ?  ipcRenderer.send('abrir-ventana-movimiento-producto',[seleccionado.id,vendedor]) : alert("Contraseña Incorrecta");
+        vendedor ?  ipcRenderer.send('abrir-ventana-movimiento-producto',[seleccionado.id,vendedor]) : sweet.fire({title:"Contraseña Incorrecta"});
    }else{
-        alert('Producto no seleccionado')
+        await sweet.fire({
+            title:'Producto no seleccionado',
+            returnFocus:false
+        });
+        buscarProducto.focus();
        }
 })
 
@@ -206,7 +217,11 @@ eliminar.addEventListener('click',async e=>{
         location.reload()
        }
     }else{
-            alert('Producto no seleccionado')
+        await sweet.fire({
+            title:'Producto no seleccionado',
+            returnFocus:false
+        });
+        buscarProducto.focus();
     }
 
 })
