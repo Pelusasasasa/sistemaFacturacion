@@ -187,7 +187,7 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
             trSeleccionado.children[6].innerHTML = (parseFloat(trSeleccionado.children[3].innerHTML)-parseFloat(trSeleccionado.children[4].innerHTML) - parseFloat(inputSeleccionado.value)).toFixed(2)
         }
     
-            if ((trSeleccionado.children[6].innerHTML < 0 && trSeleccionado.children[1].innerHTML === "Ticket Factura") || ((trSeleccionado.children[6].innerHTML > 0 && trSeleccionado.children[1].innerHTML === "Nota Credito"))) {
+            if ((trSeleccionado.children[6].innerHTML < 0 && (trSeleccionado.children[1].innerHTML === "Ticket Factura" || trSeleccionado.children[1].innerHTML === "Presupuesto")) || ((trSeleccionado.children[6].innerHTML > 0 && trSeleccionado.children[1].innerHTML === "Nota Credito"))) {
                 alert("El monto abonado es mayor al de la venta")
                 trSeleccionado.children[6].innerHTML = aux;
                 trSeleccionado.children[5].children[0].value = "";

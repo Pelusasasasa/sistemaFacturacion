@@ -85,7 +85,7 @@ let empresa
 async function validacionUsuario(texto) {
     sweet.fire({
                 title:"Contraseña",
-                input:"text",
+                input:"password",
                 showCancelButton: true,
                 width:600,
                 size:"2rem",
