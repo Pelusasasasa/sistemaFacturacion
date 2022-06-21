@@ -1,4 +1,4 @@
-const { ipcRenderer } = require("electron");
+const sweet = require('sweetalert2');
 const select = document.querySelector('#marca')
 const porcentajeInput = document.querySelector('#porcentaje')
 const modificar = document.querySelector('.modificar')
@@ -43,6 +43,6 @@ modificar.addEventListener('click',async e=>{
             producto.precio_venta = (producto.precio_venta).toFixed(2)
         }
         await axios.put(`${URL}productos/${producto._id}`,producto)
-        alert(`Se Modifico el precio de los productos ${select.value}`)
+        sweet.fire({title:`Se Modifico el precio de los productos ${select.value}`})
     })
 })

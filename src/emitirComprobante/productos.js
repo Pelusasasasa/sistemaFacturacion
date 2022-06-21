@@ -1,3 +1,4 @@
+const sweet = require('sweetalert2');
 const { ipcRenderer } = require("electron");
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
@@ -19,7 +20,7 @@ body.addEventListener('keypress',e=>{
         if(seleccionado){
             cantidad(seleccionado)
         }else{
-            alert("Producto no seleccionado")
+            sweet.fire({title:"Producto no seleccionado"});
             document.querySelector('.ok').focus()
         } ; 
     }})
@@ -127,7 +128,7 @@ seleccionarTBody.addEventListener('click',e=>{
 
 seleccionarTBody.addEventListener('dblclick',(e) =>{
     seleccionado = document.querySelector('.seleccionado');
-    seleccionado ? cantidad(seleccionado) : alert("Producto no seleccionado");
+    seleccionado ? cantidad(seleccionado) : sweet.fire({title:"Producto no seleccionado"});
 })
 
 filtrar();
@@ -149,10 +150,10 @@ async function cantidad(e) {
             buscarProducto.focus()
         }else{
             if(!Number.isInteger(parseFloat(valor)) && pro.unidad==="U"){
-                alert("El producto no se puede escribir con decimal")
+                sweet.fire({title:"El producto no se puede escribir con decimal"})
             }else{
-                parseFloat(e.children[4].innerHTML)<0 && alert("Stock Negativo");
-                (parseFloat(e.children[2].innerHTML) === 0 && alert("Precio del producto en 0"));
+                parseFloat(e.children[4].innerHTML)<0 && sweet.fire({title:"Stock Negativo"});
+                (parseFloat(e.children[2].innerHTML) === 0 && sweet.fire({title:"Precio del producto en 0"}));
                ipcRenderer.send('mando-el-producto',{
                    _id: e.id
                     ,cantidad: valor

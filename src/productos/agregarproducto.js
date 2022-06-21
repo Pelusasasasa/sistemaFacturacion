@@ -1,4 +1,6 @@
 const axios = require('axios');
+const sweet = require('sweetalert2');
+
 require('dotenv').config();
 const URL = process.env.URL;
 let data = new FormData();
@@ -49,7 +51,7 @@ codigo.addEventListener('blur',async e=>{
     if(codigo.value !== ""){
         let producto = (await axios.get(`${URL}productos/${codigo.value}`)).data;
             if(producto !== ""){
-                alert("El codigo ya es utilizador por " + producto.descripcion)
+                sweet.fire({title:"El codigo ya es utilizador por " + producto.descripcion});
                 codigo.value = "";
                 codigo.focus(); 
             }

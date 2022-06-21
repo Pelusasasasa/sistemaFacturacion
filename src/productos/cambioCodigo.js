@@ -1,6 +1,5 @@
 const { ipcRenderer } = require("electron")
-const Dialogs = require("dialogs");
-const dialogs = Dialogs()
+const sweet = require('sweetalert2');
 const codigo = document.querySelector('#codigo')
 const nuevoCodigo = document.querySelector('#nuevoCodigo')
 const aceptar = document.querySelector('.aceptar')
@@ -19,7 +18,8 @@ codigo.addEventListener('keydown',async e=>{
             descripcion.value = producto.descripcion;
             nuevoCodigo.focus();
         }else{
-            alert("Producto no existe")
+            await sweet.fire({title:"Producto no existe"});
+            codigo.value = "";
         }
     }else if((codigo.value.length === 3 || codigo.value.length === 7) && e.key !== "-" && e.key !== "Backspace"){
         codigo.value = codigo.value + "-"
@@ -33,7 +33,8 @@ nuevoCodigo.addEventListener('keydown',async e=>{
             let productoYaExistente = await axios.get(`${URL}productos/${e.target.value}`);
             productoYaExistente = productoYaExistente.data;
                 if (productoYaExistente.length!==0 ) {
-                    alert("codigo ya utilizado")
+                    await sweet.fire({title:"codigo ya utilizado"});
+                    nuevoCodigo.value = "";
                 }else{
                     aceptar.focus()
                 }

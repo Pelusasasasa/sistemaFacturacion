@@ -1,5 +1,4 @@
-const Dialogs = require("dialogs");
-const dialogs = Dialogs()
+const sweet = require('sweetalert2');
 const axios = require("axios");
 const { default: cuitValidator } = require("cuit-validator");
 
@@ -66,10 +65,10 @@ direccion.addEventListener('keypress',e=>{
 dnicuit.addEventListener('keypress',e=>{
     if (e.key === "Enter") {
         if((dnicuit.value.length !== 11 && conIva.value !== "Consumidor Final") || (dnicuit.value.length !== 8 && conIva.value === "Consumidor Final")){
-            alert("El dni o cuit no es Valido")
+            sweet.fire({title:"El dni o cuit no es Valido"});
         }else{
             if(!cuitValidator(dnicuit.value) && dnicuit.value.length === 11){
-                alert("El cuit no es valido");
+                sweet.fire({title:"El cuit no es valido"});
                 dnicuit.value = "";
                 dnicuit.focus();
             }else{

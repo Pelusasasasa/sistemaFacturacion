@@ -1,4 +1,5 @@
-const { ipcRenderer } = require("electron/renderer")
+const { ipcRenderer } = require("electron");
+const sweet = require('sweetalert2');
 let permiso;
 let idSeleccionado;
 ipcRenderer.on('acceso',(e,args)=>{
@@ -66,7 +67,7 @@ lista.addEventListener('click',e=>{
     }else{
         idSeleccionado = e.path[1].id
         const click = e.path[1].id;
-        (permiso === "0") ? ponerValoresInputs(click) : alert("No tiene permisos para interactuar");
+        (permiso === "0") ? ponerValoresInputs(click) : sweet.fire({title:"No tiene permisos para interactuar"});
         (permiso === "0") && guardar.classList.remove('none');
         (permiso === "0") && eliminar.classList.remove('none');
         (permiso === "0") && enviar.classList.add('none');

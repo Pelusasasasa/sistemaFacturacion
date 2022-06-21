@@ -1,4 +1,6 @@
 const { ipcRenderer } = require("electron")
+const sweet = require('sweetalert2');
+
 const Afip = require('@afipsdk/afip.js');
 const afip = new Afip({ CUIT: 27165767433 });
 function getParameterByName(name) {
@@ -73,8 +75,8 @@ codigoC.addEventListener('keypress',async e=>{
         if (codigoC.value !== "") {
             let cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
                 if (cliente==="") {
-                    alert("Cliente no encontrado")
-                    codigoC.value = ""
+                    await sweet.fire({title:"Cliente no encontrado"});
+                    codigoC.value = "";
                 }else{
                     ponerInputsClientes(cliente)
                     codigoC.value === "9999" ? buscarCliente.focus() : observaciones.focus()
@@ -103,7 +105,7 @@ const verTipoPago = async ()=>{
 
 
  //Ponemos valores a los inputs
- function ponerInputsClientes(cliente) {
+ async function ponerInputsClientes(cliente) {
     const iva = (cliente.cond_iva !== "") ? cliente.cond_iva : "Consumidor Final"
 
     codigoC.value = cliente._id
@@ -117,7 +119,7 @@ const verTipoPago = async ()=>{
     telefono.value = cliente.telefono;
     conIva.value = iva;
     if (cliente.condicion==="M") {
-        alert(`${cliente.observacion}`)
+        await sweet.fire({title:`${cliente.observacion}`});
     }
     if (codigoC.value === "9999") {
         buscarCliente.removeAttribute('disabled');
@@ -168,26 +170,25 @@ codigo.addEventListener('keypress',async (e) => {
         }else if (e.target.value !== "") {
             let producto = (await axios.get(`${URL}productos/${e.target.value}`)).data
                 if (producto.length === 0) {
-                        alert("No existe ese Producto")
+                        await sweet.fire({title:"No existe ese Producto"});
                         codigo.value = "";
-                        codigo.focus()
                 }else{
-                    dialogs.prompt("Cantidad",async valor=>{
-                        if (valor === undefined || valor === "" || parseFloat(valor) === 0) {
-                            e.target.value = await "";
-                            codigo.focus()
-                        }else{
-                            if (!Number.isInteger(parseFloat(valor)) && producto.unidad === "U") {
-                                await alert("La cantidad de este producto no puede ser en decimal")
-                                codigo.focus()
+                    sweet.fire({
+                        title:"Cantidad",
+                        input:"text",
+                        showCancelButton:true,
+                        confirmButtonText:"Aceptar"
+                    }).then(async({isConfirmed,value})=>{
+                        if (isConfirmed && value !== "") {
+                            if (!Number.isInteger(parseFloat(value)) && producto.unidad === "U") {
+                                await sweet.fire({title:"La cantidad de este producto no puede ser en decimal"});
                             }else{
-                                await mostrarVentas(producto,valor)
+                                await mostrarVentas(producto,value)
                                 e.target.value=""
                                 codigo.focus()
-                                }
+                            }
                         }
-
-                        })   
+                    }) 
                 }
         }else{
             ipcRenderer.send('abrir-ventana',"productos")
@@ -310,11 +311,13 @@ factura.addEventListener('click',async e=>{
         const venta = {};
         venta.tipo_pago = await verTipoPago();
         if (facturaOriginal.value === "") {
-            alert("No se escribio el numero de la factura Original")
+            await sweet.fire({title:"No se escribio el numero de la factura Original",returnFocus:false})
+            facturaOriginal.focus()
         }else if(listaProductos.length === 0){
-            alert("No se cargo productos")
+            await sweet.fire({title:"No se cargo productos",returnFocus:false});
+            codigo.focus();
         }else if(venta.tipo_pago === "NINGUNO"){
-            alert("Elegir tipo de pago");
+            await sweet.fire({title:"Elegir tipo de pago"});
         }else{
             venta.productos = listaProductos
             venta.fecha = new Date()
@@ -335,7 +338,7 @@ factura.addEventListener('click',async e=>{
             venta.vendedor = vendedor;
             venta.direccion = direccion.value;
             if (venta.precioFinal>10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" || dnicuit.value === "00000000")) {
-                alert("Factura mayor a 10000, poner valores clientes")
+                await sweet.fire({title:"Factura mayor a 10000, poner valores clientes"})
             }else{
                 //modifcamos el precio del producto correspondiente con el descuenta
                 for (let producto of venta.productos){

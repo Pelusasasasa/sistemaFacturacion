@@ -1,5 +1,7 @@
+const sweet = require('sweetalert2');
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
+
 const axios = require("axios");
 require("dotenv").config;
 const URL = process.env.URL;
@@ -46,13 +48,19 @@ codigo.addEventListener('keypress', async (e) => {
             let producto = await axios.get(`${URL}productos/${codigo.value}`)
             producto = producto.data;
                 if (producto !== "") {
-                    dialogs.prompt('Cantidad',async valor=>{
-                        await mostrarVentas(producto,valor)
-                        codigo.value="";
-                        codigo.focus()
+                    sweet.fire({
+                        title:"Cantidad",
+                        input:"text",
+                        showCancelButton:true,
+                        confirmButtonText:"Aceptar"
+                    }).then(async ({isConfirmed,value})=>{
+                        if (isConfirmed && value !== "") {
+                            await mostrarVentas(producto,value);
+                            codigo.value = "";
+                        }
                     })
                 }else{
-                    alert("El producto no existe")
+                    sweet.fire({title:"El producto no existe"})
                     codigo.value = ""
                 }
         }

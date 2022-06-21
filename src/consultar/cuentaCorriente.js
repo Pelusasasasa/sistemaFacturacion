@@ -1,4 +1,5 @@
 const { ipcRenderer } = require("electron")
+const sweet = require('sweetalert2');
 const Dialogs = require("dialogs");
 const dialogs = Dialogs()
 
@@ -177,9 +178,8 @@ codigoCliente.addEventListener('keypress', async e =>{
                 if (clienteTraido !== "") {
                     ponerDatosCliente(clienteTraido);
                 }else{
-                     alert("El cliente no existe");
+                     await sweet.fire({title:"El cliente no existe"});
                      codigoCliente.value = "";
-                     codigoCliente.focus();
                 }
             }else{
             ipcRenderer.send('abrir-ventana',"clientes");
@@ -377,7 +377,7 @@ let saldoABorrar = 0
                 }
                 
         }else{
-            alert("Venta no seleccionada")
+            sweet.fire({title:"Venta no seleccionada"});
         }
     })
 
@@ -385,14 +385,21 @@ let saldoABorrar = 0
 const botonFacturar = document.querySelector('#botonFacturar')
 botonFacturar.addEventListener('click',() =>{
     if (seleccionado) {
-        dialogs.promptPassword("Contraseña").then(async value=>{
-            let vendedor = (await axios.get(`${URL}usuarios/${value}`)).data;
-            if (vendedor !== "") {
-                ipcRenderer.send('abrir-ventana-emitir-comprobante',[vendedor.nombre,seleccionado.id,vendedor.empresa])   
+        sweet.fire({
+            title:"Contraseña",
+            input:"password",
+            showCancelButton:true,
+            confirmButtonText:"Aceptar"
+        }).then(async ({isConfirmed,value})=>{
+            if (isConfirmed && value !== "") {
+                let vendedor = (await axios.get(`${URL}usuarios/${value}`));
+                if (vendedor !== "") {
+                    ipcRenderer.send('abrir-ventana-emitir-comprobante',[vendedor.nombre,seleccionado.id,vendedor.empresa]);
+                }
             }
         })
     }else{
-        alert('Venta no seleccionada')
+        sweet.fire({title:'Venta no seleccionada'});
     }
 })
 

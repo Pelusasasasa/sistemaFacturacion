@@ -1,4 +1,5 @@
 
+const sweet = require('sweetalert2');
 const axios = require("axios");
 const { DateTime } = require("luxon");
 require("dotenv").config;
@@ -97,7 +98,7 @@ const traerVenta = async(venta)=>{
         tbody.innerHTML = ``;
         listarVentas(venta) ;
     }else{
-        alert("No se encontro ninguna Venta");
+        sweet.fire({title:"No se encontro ninguna Venta"});
     }
 }
 
@@ -163,7 +164,7 @@ async function traerTodasLasVentas(lista) {
     }
     tbody.innerHTML = ``;
     if(retornar.length === 0){
-        alert("No hay ventas, fijarse nombre y fechas")
+        sweet.fire({title:"No hay ventas, fijarse nombre y fechas"});
     }
     retornar = retornar.filter(venta=>{
         if(venta.tipo_comp !== "Recibos" && venta.tipo_comp !== "Recibos_P"){

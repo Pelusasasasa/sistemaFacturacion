@@ -1,3 +1,4 @@
+const sweet = require('sweetalert2');
 const axios = require("axios");
 require("dotenv").config;
 const URL = process.env.URL;
@@ -77,7 +78,7 @@ eliminarPedido.addEventListener("click", async e =>{
                 location.reload();
             }
         }else{
-            alert('Pedido no seleccionado');
+            sweet.fire({title:'Pedido no seleccionado'});
         }
 });
 document.addEventListener('keydown',e=>{

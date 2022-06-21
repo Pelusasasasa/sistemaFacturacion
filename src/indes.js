@@ -122,28 +122,51 @@ async function validacionUsuario(texto) {
 
 ipcRenderer.on("validarUsuario",(e,args)=>{
 
-        dialogs.promptPassword("Contraseña",value=>{
-            if (value === undefined) {
-                location.reload();
-            }else{
-                vendedores.forEach(e=>{
-                    value === e._id && (vendedor=e.nombre)
-                    value === e._id && (acceso = e.acceso)
-                    
-                })
-                if(vendedor !== undefined){ 
+        sweet.fire({
+            title: "Contraseña",
+            input: "password",
+            showCancelButton:true,
+            confirmButtonText:"Aceptar"
+        }).then(async ({isConfirmed,value})=>{
+            if (isConfirmed && value !== "") {
+                const usuario = (await axios.get(`${URL}usuarios/${value}`)).data;
+                let vendedor;
+                let acceso;
+                if (usuario !== "") {
+                    vendedor = usuario.nombre;
+                    acceso = usuario.acceso;
                     if (JSON.parse(args) === "ValidarUsuario") {
                         ipcRenderer.send('abrir-ventana',`usuarios?${acceso}?${vendedor}`)
-                    }else if (JSON.parse(args) === "aumPorPorcentaje" ) {
-                        (acceso === "0") ? ipcRenderer.send('abrir-ventana',`conexion?${acceso}`) : alert("No tiene permisos")
+                    }else if(JSON.parse(args) === "aumPorPorcentaje"){
+                        (acceso === "0") ? ipcRenderer.send('abrir-ventana',`conexion?${acceso}`) : await sweet.fire({title:"No tiene permisos"})
                     }
-
                 }else{
-                    alert("Contraseña incorrecta").then(()=>{
-                        validacionUsuario(texto)
-                    })
-            }}
+                    sweet.fire({title:"Contraseña Incorrecta"})
+                }
+            }
         })
+
+        // dialogs.promptPassword("Contraseña",async value=>{
+        //     if (value === undefined) {
+        //         location.reload();
+        //     }else{
+        //         vendedores.forEach(e=>{
+        //             value === e._id && (vendedor=e.nombre)
+        //             value === e._id && (acceso = e.acceso)
+                    
+        //         })
+        //         if(vendedor !== undefined){ 
+        //             if (JSON.parse(args) === "ValidarUsuario") {
+        //                 ipcRenderer.send('abrir-ventana',`usuarios?${acceso}?${vendedor}`)
+        //             }else if (JSON.parse(args) === "aumPorPorcentaje" ) {
+        //                 (acceso === "0") ? ipcRenderer.send('abrir-ventana',`conexion?${acceso}`) : await sweet.fire({title:"No tiene permisos"})
+        //             }
+
+        //         }else{
+        //             console.log("a")
+        //             await sweet.fire({title:"Contraseña incorrecta"})
+        //     }}
+        // })
 })
 
 const salir = document.querySelector('.salir');
