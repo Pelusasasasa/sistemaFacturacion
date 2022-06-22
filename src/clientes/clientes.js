@@ -103,10 +103,16 @@ eliminar.addEventListener('click',async e=>{
     const clienteEliminar = document.querySelector('.seleccionado')
     if (clienteEliminar ) {
         const cliente = clienteEliminar.children[1].innerHTML;
-        if(confirm("Eliminar Cliente " + cliente)){
-            await axios.delete(`${URL}clientes/${clienteEliminar.id}`);
-            location.reload()
-        }
+        await sweet.fire({
+            title:"Eliminar Cliente " + cliente,
+            showCancelButton:true,
+            confirmButtonText:"Aceptar"
+        }).then(async ({isConfirmed})=>{
+            if (isConfirmed) {
+                await axios.delete(`${URL}clientes/${clienteEliminar.id}`);
+                location.reload()    
+            }
+        })
     }else{
         await sweet.fire({
             title:"Cliente no Seleccionado",

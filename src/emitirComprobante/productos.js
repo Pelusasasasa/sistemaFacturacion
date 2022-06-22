@@ -142,21 +142,27 @@ buscarProducto.addEventListener('keyup',e=>{
 })
 
 async function cantidad(e) {
-    await dialogs.prompt("cantidad",async(valor) =>{
-        const pro = productos.find(e=>e._id === seleccionado.id)
-        if (valor === undefined || valor === "" || parseFloat(valor) === 0) {
+    await sweet.fire({
+        title:"Cantidad",
+        input:"text",
+        showCancelButton:true,
+        confirmButtonText:"Aceptar"
+    }).then(async ({isConfirmed,value})=>{
+        if (isConfirmed && value !== "") {
+            const pro = productos.find(e=>e._id === seleccionado.id)
+        if (value === undefined || value === "" || parseFloat(value) === 0) {
             await seleccionado.classList.remove('seleccionado')
             seleccionado = "";
             buscarProducto.focus()
         }else{
-            if(!Number.isInteger(parseFloat(valor)) && pro.unidad==="U"){
+            if(!Number.isInteger(parseFloat(value)) && pro.unidad==="U"){
                 sweet.fire({title:"El producto no se puede escribir con decimal"})
             }else{
                 parseFloat(e.children[4].innerHTML)<0 && sweet.fire({title:"Stock Negativo"});
                 (parseFloat(e.children[2].innerHTML) === 0 && sweet.fire({title:"Precio del producto en 0"}));
                ipcRenderer.send('mando-el-producto',{
                    _id: e.id
-                    ,cantidad: valor
+                    ,cantidad: value
                 })
                 await seleccionado.classList.remove('seleccionado');
                 await subseleccion.classList.remove('subseleccionado');
@@ -165,6 +171,7 @@ async function cantidad(e) {
                 buscarProducto.value = "";
                 buscarProducto.focus();
             }
+        }
         }
     })
 };

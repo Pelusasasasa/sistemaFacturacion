@@ -179,7 +179,7 @@ let a;
         inputSeleccionado.select();
     })
 
-inputSeleccionado.addEventListener('keydown',(e)=>{
+inputSeleccionado.addEventListener('keyup',async (e)=>{
     if (e.key==="Tab" || e.key === "Enter") {
         const aux = trSeleccionado.children[6].innerHTML
         const aDescontar = parseFloat(trSeleccionado.children[3].innerHTML) - parseFloat(trSeleccionado.children[4].innerHTML) - parseFloat(trSeleccionado.children[6].innerHTML)
@@ -188,10 +188,9 @@ inputSeleccionado.addEventListener('keydown',(e)=>{
         }
     
             if ((trSeleccionado.children[6].innerHTML < 0 && (trSeleccionado.children[1].innerHTML === "Ticket Factura" || trSeleccionado.children[1].innerHTML === "Presupuesto")) || ((trSeleccionado.children[6].innerHTML > 0 && trSeleccionado.children[1].innerHTML === "Nota Credito"))) {
-                alert("El monto abonado es mayor al de la venta")
+                await sweet.fire({title:"El monto abonado es mayor al de la venta"})
                 trSeleccionado.children[6].innerHTML = aux;
                 trSeleccionado.children[5].children[0].value = "";
-                trSeleccionado.children[5].children[0].focus();
              }else{
                  //tomamos todos los inputs y ponemos el total.value
                 const inputs = document.querySelectorAll('tr input');
@@ -245,13 +244,19 @@ imprimir.addEventListener('click',async e=>{
     }
     
 })
-imprimir.addEventListener('keydown',e=>{
+imprimir.addEventListener('keydown',async e=>{
     e.preventDefault()
     if (e.key === "Enter") {
         if(parseFloat(total.value) === 0){
-            if (confirm("RECIBO EN 0,DESEA CONTINUAR?")) {
-                hacerRecibo();
-            }
+            await sweet.fire({
+                title:"RECIBO EN 0,DESEA CONTINUAR?",
+                showCancelButton:true,
+                confirmButtonText:"Aceptar"
+            }).then(({isConfirmed})=>{
+                if (isConfirmed) {
+                    hacerRecibo();
+                }
+            })
         }else{
                hacerRecibo();
         }
@@ -333,7 +338,7 @@ const hacerRecibo = async()=>{
         location.href = "../index.html";
     } catch (error) {
         console.log(error)
-        alert("No se pudo generar el recibo")
+        sweet.fire({title:"No se pudo generar el recibo"})
     }finally{
         alerta.classList.add('none');   
     }
@@ -408,10 +413,16 @@ const modificarVentas = (lista)=>{
     })
 }
 
-cancelar.addEventListener('click',e=>{
-    if (confirm("Desea cancelar el Recibo")) {
-        location.href = "../index.html";
-    }
+cancelar.addEventListener('click',async e=>{
+    await sweet.fire({
+        title:"Desea cancelar el Recibo",
+        showCancelButton:true,
+        confirmButtonText:"Aceptar"
+    }).then(({isConfirmed})=>{
+        if (isConfirmed) {
+            location.href = "../index.html";
+        }
+    })
 });
 
 const verCodComp = (condicionIva) =>{

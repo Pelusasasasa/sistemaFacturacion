@@ -224,19 +224,27 @@ precioAgregar.addEventListener('keypress',e=>{
             unidad:"",
             iva:agregarIva.children[0].value
         }
-    dialogs.prompt("Cantidad",async valor=>{
-        if(valor !== "" && parseFloat(valor) !== 0){
-            await mostrarVentas(product,parseFloat(valor));
-        };
-        codigo.value = await "";
-        codigo.focus();
-        precioAgregar.children[0].value = await "";
-        precioAgregar.classList.add('none');
-        agregarIva.classList.add('none');
-        agregarIva.children[0].value = "N";
-        descripcionAgregar.children[0].value = await "";
-        descripcionAgregar.classList.add('none');
-    })}
+        sweet.fire({
+            input:"text",
+            title:"Cantidad",
+            showCancelButton:true,
+            confirmButtonText:"Aceptar"
+        }).then(async({isConfirmed,value})=>{
+            if (isConfirmed && value !== "") {
+                if(value !== "" && parseFloat(value) !== 0){
+                    await mostrarVentas(product,parseFloat(value));
+                };
+                codigo.value = await "";
+                codigo.focus();
+                precioAgregar.children[0].value = await "";
+                precioAgregar.classList.add('none');
+                agregarIva.classList.add('none');
+                agregarIva.children[0].value = "N";
+                descripcionAgregar.children[0].value = await "";
+                descripcionAgregar.classList.add('none');
+            }
+        })
+    }
 })
 
 ipcRenderer.on('mando-el-producto',async(e,args)=>{
@@ -468,10 +476,16 @@ const verCod_comp = (iva)=>{
     }
 }
 
-cancelar.addEventListener('click',e=>{
-    if (confirm("Desea cancelar Nota Credito")) {
-        window.location = '../index.html'
-    }
+cancelar.addEventListener('click',async e=>{
+    sweet.fire({
+        title:"Cancelar Nota Credito",
+        showCancelButton:true,
+        confirmButtonText:"Aceptar"
+    }).then(({isConfirmed})=>{
+        if (isConfirmed) {
+            window.location = '../index.html'    
+        }
+    });
 })
 
 

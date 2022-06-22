@@ -73,10 +73,14 @@ tbody.addEventListener("click" , e=>{
 const eliminarPedido = document.querySelector('.eliminarPedido');
 eliminarPedido.addEventListener("click", async e =>{
         if (seleccionado) {
-            if (confirm("Seguro quiere Eliminar el Pedido")) {
+            await sweet.fire({
+                title:"Eliminar Pedido",
+                showCancelButton:true,
+                confirmButtonText:"Aceptar"
+            }).then(async ({isConfirmed})=>{
                 await axios.delete(`${URL}pedidos/${seleccionado.id}`);
                 location.reload();
-            }
+            })
         }else{
             sweet.fire({title:'Pedido no seleccionado'});
         }

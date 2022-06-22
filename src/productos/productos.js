@@ -212,10 +212,16 @@ ingresarMov.addEventListener('click',async e => {
 
 eliminar.addEventListener('click',async e=>{
     if (seleccionado) {
-       if ( confirm('Quieres eliminar producto')) {
-        await axios.delete(`${URL}productos/${seleccionado.id}`)
-        location.reload()
-       }
+        await sweet.fire({
+            title: "Eliminar Producto",
+            showCancelButton:true,
+            confirmButtonText:"Aceptar"
+        }).then(async ({isConfirmed})=>{
+            if (isConfirmed) {
+                await axios.delete(`${URL}productos/${seleccionado.id}`)
+                location.reload()        
+            }
+        })
     }else{
         await sweet.fire({
             title:'Producto no seleccionado',

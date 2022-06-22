@@ -1,3 +1,4 @@
+const sweet = require('sweetalert2');
 
 const tbody = document.querySelector('.tbody')
 const body = document.querySelector('body')
@@ -5,7 +6,6 @@ const salir = document.querySelector('.salirBoton')
 const cambiar = document.querySelector('.cambiarBoton')
 const impirmir = document.querySelector('.imprimirBoton')
 const Dialogs = require("dialogs");
-const { dialog } = require("electron/main");
 const dialogs = Dialogs();
 const axios = require("axios");
 require("dotenv").config;
@@ -64,14 +64,21 @@ tbody.addEventListener('click',e=>{
     seleccionado.classList.toggle('seleccionado')
 })
 
-cambiar.addEventListener('click',e=>{
-    dialogs.prompt("Nuevo Stock",async valor=>{
-        let producto = await axios.get(`${URL}productos/${seleccionado.id}`)
-        producto = producto.data;
-        producto.stock = valor;
-        crearMovimiento(producto,producto.stock);
-        await axios.put(`${URL}productos/${seleccionado.id}`,producto);
-        location.reload()
+cambiar.addEventListener('click',async e=>{
+    await sweet.fire({
+        title:"Nuevo Stock",
+        showCancelButton:false,
+        input:"text",
+        confirmButtonText:"Aceptar",
+    }).then(async ({isConfirmed,value})=>{
+        if (isConfirmed && value !== "") {
+            let producto = await axios.get(`${URL}productos/${seleccionado.id}`)
+            producto = producto.data;
+            producto.stock = value;
+            crearMovimiento(producto,producto.stock);
+            await axios.put(`${URL}productos/${seleccionado.id}`,producto);
+            location.reload()    
+        }
     })
 });
 

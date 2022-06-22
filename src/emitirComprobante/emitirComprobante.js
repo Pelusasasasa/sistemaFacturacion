@@ -1,6 +1,6 @@
 const Afip = require('@afipsdk/afip.js');
 const afip = new Afip({ CUIT: 27165767433 });
-
+const sweet = require('sweetalert2');
 function getParameterByName(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
@@ -220,8 +220,8 @@ codigoC.addEventListener('keypress', async(e) =>{
             let cliente = await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`);
             cliente = cliente.data;
                 if (cliente === "") {
-                    alert("Cliente no encontrado")
-                    codigoC.value = ""
+                    sweet.fire({title:"Cliente no encontrado"});
+                    codigoC.value = "";
                 }else{
                     ponerInputsClientes(cliente)
                     codigoC.value === "9999" ? buscarCliente.focus() : observaciones.focus()
@@ -280,17 +280,22 @@ precioAgregar.addEventListener('keypress',e=>{
             unidad:"",
             iva: agregariva.children[0].value
         }
-        dialogs.prompt("Cantidad",async valor =>{
-            if (valor !== "" && parseFloat(valor) !== 0) {
-                await mostrarVentas(product,parseFloat(valor));
+        sweet.fire({
+            title:"Cantidad",
+            input:"text",
+            showCancelButton:true,
+            confirmButtonText:"Aceptar"
+        }).then(async ({isConfirmed,value})=>{
+            if (isConfirmed && value !== "") {
+                await mostrarVentas(product,parseFloat(value));
+                codigo.value = await "";
+                codigo.focus()
+                precioAgregar.children[0].value = await "";
+                precioAgregar.classList.add('none');
+                agregariva.classList.add('none')
+                descripcionAgregar.children[0].value = await "";
+                descripcionAgregar.classList.add('none');
             }
-            codigo.value = await "";
-            codigo.focus()
-            precioAgregar.children[0].value = await "";
-            precioAgregar.classList.add('none');
-            agregariva.classList.add('none')
-            descripcionAgregar.children[0].value = await "";
-            descripcionAgregar.classList.add('none');
         });
     }
 
@@ -333,42 +338,58 @@ codigo.addEventListener('keypress',async (e) => {
                             precio_venta: parseFloat(precio.children[0].value),
                             _id:codigo.value
                         }
-                        dialogs.prompt("Cantidad",async valor =>{
-                            await mostrarVentas(product,parseFloat(valor));
-                            codigo.value = "";
-                            precio.children[0].value = "";
-                            descripcion.children[0].value = "";
-                            await codigo.focus();
-                            precio.classList.add('none')
-                            descripcion.classList.add('none')
+                        sweet.fire({
+                            title:"Cantidad",
+                            showCancelButton:true,
+                            confirmButtonText:"Aceptar",
+                            input:"text"
+                        }).then(async ({isConfirmed,value})=>{
+                            if (isConfirmed && value !== "") {
+                                await mostrarVentas(product,parseFloat(valor));
+                                codigo.value = "";
+                                precio.children[0].value = "";
+                                descripcion.children[0].value = "";
+                                await codigo.focus();
+                                precio.classList.add('none')
+                                descripcion.classList.add('none')    
+                            }
                         })
                     }
                 })
             }else{
             let producto = (await axios.get(`${URL}productos/${e.target.value}`)).data;
                 if (producto.length === 0) {
-                        alert("No existe ese Producto");
+                        sweet.fire({title:"No existe ese Producto"});
                         codigo.value = "";
-                        codigo.focus();
                 }else{
-                    dialogs.prompt("Cantidad",async valor=>{
-                        if (valor === undefined || valor === "" || parseFloat(valor) === 0) {
-                            e.target.value = await "";
-                            codigo.focus()
-                        }else{
-                            if (!Number.isInteger(parseFloat(valor)) && producto.unidad === "U") {
-                                await alert("La cantidad de este producto no puede ser en decimal")
+                    sweet.fire({
+                        title:"Cantidad",
+                        input:"text",
+                        showCancelButton:true,
+                        confirmButtonText:"Aceptar"
+                    }).then(async ({isConfirmed,value})=>{
+                        if (isConfirmed && value !== "") {
+                            if (value === undefined || value === "" || parseFloat(value) === 0) {
+                                e.target.value = await "";
                                 codigo.focus()
                             }else{
-                                producto.stock<0 && alert("Stock En Negativo");
-                               (parseFloat(producto.precio_venta) === 0 && alert("Precio del producto en 0"))
-                                await mostrarVentas(producto,parseFloat(valor));
-                                e.target.value="";
-                                codigo.focus();
-                            }}})}}
+                                if (!Number.isInteger(parseFloat(value)) && producto.unidad === "U") {
+                                    await sweet.fire({title:"La cantidad de este producto no puede ser en decimal"});
+                                }else{
+                                    producto.stock<0 && sweet.fire({title:"Stock En Negativo"});
+                                   (parseFloat(producto.precio_venta) === 0 && sweet.fire({title:"Precio del producto en 0"}));
+                                    await mostrarVentas(producto,parseFloat(value));
+                                    e.target.value="";
+                                    codigo.focus();
+                                }}    
+                        }
+                    })
+                }}
         }else{
             ipcRenderer.send('abrir-ventana',"productos")
-        }}})
+        }
+    }
+})
 
 ipcRenderer.on('mando-el-producto',(e,args) => {
     const {producto,cantidad} = JSON.parse(args);
@@ -688,113 +709,122 @@ const presupuesto = document.querySelector('.presupuesto');
 
 presupuesto.addEventListener('click',async (e)=>{
     e.preventDefault()
-    
-    if (confirm("Presupuesto?")) {
-
-        if (listaProductos.length===0) {
-            //Avisamos que no se puede hacer una venta sin productos
-            alert("Cargar Productos")
-        }else{
-            //creamos una lista sin los descuentos para imprimirlos
-            const listaSinDescuento = JSON.parse(JSON.stringify(listaProductos));
-
-            venta.productos = listaProductos;
-            venta.tipo_pago = await verElTipoDeVenta(tiposVentas); //vemos si es CD,CC o PP en el input[radio]
-            if (venta.tipo_pago === "Ninguno") {
-                    alert("Seleccionar un modo de venta");
+    sweet.fire({
+        title:"Presupuesto?",
+        showCancelButton:true,
+        confirmButtonText:"Acepetar"
+    }).then(async ({isConfirmed})=>{
+        if (isConfirmed) {
+            if (listaProductos.length===0) {
+                //Avisamos que no se puede hacer una venta sin productos
+                sweet.fire({title:"Cargar Productos"});
             }else{
-                try {
-                    alerta.classList.remove('none');
-                    venta.nombreCliente = buscarCliente.value;
-                    tipoVenta="Presupuesto";
-                    venta._id = await tamanioVentas("presupuesto")
-                    venta.descuento = (descuentoN.value);
-                    venta.precioFinal = redondear(total.value);
-                    venta.fecha = new Date();
-                    venta.tipo_comp = tipoVenta;
-                    venta.observaciones = observaciones.value;
-                    //Le pasamos que es un presupuesto contado CD
-                    venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.cod_comp,venta.tipo_pago);
-                    venta.empresa = inputEmpresa.value;
-                    let valorizadoImpresion = "valorizado"
-                    if (!valorizado.checked && venta.tipo_pago === "CC") {
-                    valorizadoImpresion="no valorizado";
-                    }
-                    sacarIdentificadorTabla(venta.productos);
-                    
-                    for await (let producto of venta.productos){
-                            if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
-                                producto.objeto.precio_venta =  (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
-                                producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
-                            }
-                        }
-
-                    await axios.post(`${URL}presupuesto`,venta)
-                    await actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
-                     //si la venta es CC Sumamos un saldo al cliente y ponemos en cuenta corriente compensada y historica
-                     if (venta.tipo_pago === "CC") {
-                        await sumarSaldoAlClienteEnNegro(venta.precioFinal,venta.cliente,valorizado.checked,venta.nro_comp);
-                        await  ponerEnCuentaCorrienteCompensada(venta,valorizado.checked);
-                        await ponerEnCuentaCorrienteHistorica(venta,valorizado.checked,saldo_p.value);
-                    }
-                     if (impresion.checked) {
-                         let cliente = {
-                             _id:codigoC.value,
-                             cliente: buscarCliente.value,
-                             cuit: dnicuit.value,
-                             direccion: direccion.value,
-                             localidad: localidad.value,
-                             cond_iva: conIva.value
-                         }
-                         if (venta.tipo_pago === "CC") {
-                            ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion,listaSinDescuento])
-                         }else{
-                             ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion,listaSinDescuento])
-                         }
-                     }
-                     //si la venta es distinta de presupuesto sacamos el stock y movimiento de producto
-                     if(venta.tipo_pago !== "PP"){
-                        for(let producto of venta.productos){
-                            producto.objeto._id !== "999-999" &&  await sacarStock(producto.cantidad,producto.objeto);
-                            await movimientoProducto(producto.cantidad,producto.objeto,venta.cliente,venta.nombreCliente);
-                         }
-                         await axios.put(`${URL}productos`,arregloProductosDescontarStock)
-                         await axios.post(`${URL}movProductos`,arregloMovimiento);
-                         arregloMovimiento = [];
-                         arregloProductosDescontarStock = [];
-                     }
+                //creamos una lista sin los descuentos para imprimirlos
+                const listaSinDescuento = JSON.parse(JSON.stringify(listaProductos));
     
-                    window.location = "../index.html";
-                     
-                } catch (error) {
-                    console.log(error)
-                    alert("No se puedo cargar la venta")
-                }finally{
-                    alerta.classList.add('none');
+                venta.productos = listaProductos;
+                venta.tipo_pago = await verElTipoDeVenta(tiposVentas); //vemos si es CD,CC o PP en el input[radio]
+                if (venta.tipo_pago === "Ninguno") {
+                        sweet.fire({title:"Seleccionar un modo de venta"});
+                }else{
+                    try {
+                        alerta.classList.remove('none');
+                        venta.nombreCliente = buscarCliente.value;
+                        tipoVenta="Presupuesto";
+                        venta._id = await tamanioVentas("presupuesto")
+                        venta.descuento = (descuentoN.value);
+                        venta.precioFinal = redondear(total.value);
+                        venta.fecha = new Date();
+                        venta.tipo_comp = tipoVenta;
+                        venta.observaciones = observaciones.value;
+                        //Le pasamos que es un presupuesto contado CD
+                        venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.cod_comp,venta.tipo_pago);
+                        venta.empresa = inputEmpresa.value;
+                        let valorizadoImpresion = "valorizado"
+                        if (!valorizado.checked && venta.tipo_pago === "CC") {
+                        valorizadoImpresion="no valorizado";
+                        }
+                        sacarIdentificadorTabla(venta.productos);
+                        
+                        for await (let producto of venta.productos){
+                                if (parseFloat(descuentoN.value) !== 0 && descuentoN.value !== "" ) {
+                                    producto.objeto.precio_venta =  (parseFloat(producto.objeto.precio_venta)) - parseFloat(producto.objeto.precio_venta)*parseFloat(descuento.value)/100
+                                    producto.objeto.precio_venta = producto.objeto.precio_venta.toFixed(2)
+                                }
+                            }
+    
+                        await axios.post(`${URL}presupuesto`,venta)
+                        await actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+                         //si la venta es CC Sumamos un saldo al cliente y ponemos en cuenta corriente compensada y historica
+                         if (venta.tipo_pago === "CC") {
+                            await sumarSaldoAlClienteEnNegro(venta.precioFinal,venta.cliente,valorizado.checked,venta.nro_comp);
+                            await  ponerEnCuentaCorrienteCompensada(venta,valorizado.checked);
+                            await ponerEnCuentaCorrienteHistorica(venta,valorizado.checked,saldo_p.value);
+                        }
+                         if (impresion.checked) {
+                             let cliente = {
+                                 _id:codigoC.value,
+                                 cliente: buscarCliente.value,
+                                 cuit: dnicuit.value,
+                                 direccion: direccion.value,
+                                 localidad: localidad.value,
+                                 cond_iva: conIva.value
+                             }
+                             if (venta.tipo_pago === "CC") {
+                                ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion,listaSinDescuento])
+                             }else{
+                                 ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion,listaSinDescuento])
+                             }
+                         }
+                         //si la venta es distinta de presupuesto sacamos el stock y movimiento de producto
+                         if(venta.tipo_pago !== "PP"){
+                            for(let producto of venta.productos){
+                                producto.objeto._id !== "999-999" &&  await sacarStock(producto.cantidad,producto.objeto);
+                                await movimientoProducto(producto.cantidad,producto.objeto,venta.cliente,venta.nombreCliente);
+                             }
+                             await axios.put(`${URL}productos`,arregloProductosDescontarStock)
+                             await axios.post(`${URL}movProductos`,arregloMovimiento);
+                             arregloMovimiento = [];
+                             arregloProductosDescontarStock = [];
+                         }
+        
+                        window.location = "../index.html";
+                         
+                    } catch (error) {
+                        console.log(error)
+                        sweet.fire({title:"No se puedo cargar la venta"});
+                    }finally{
+                        alerta.classList.add('none');
+                    }
+                   
                 }
-               
             }
         }
-    }
+    })
 })
 
 //Aca mandamos la venta con tikect Factura
 const ticketFactura = document.querySelector('.ticketFactura')
 ticketFactura.addEventListener('click',async (e) =>{
     e.preventDefault();
-   if (confirm("Ticket Factura?")) {
-    //Vemos si algun producto tiene lista negativa
+    sweet.fire({
+        title:"Ticket Factura?",
+        showCancelButton:true,
+        confirmButtonText:"Aceptar"
+    }).then(async ({isConfirmed})=>{
+        if (isConfirmed) {
+                //Vemos si algun producto tiene lista negativa
     const stockNegativo = listaProductos.find(producto=>producto.cantidad < 0);
     //mostramos alertas
     if(stockNegativo){
-        alert("Ticket Factura no puede ser productos en negativo");
+        sweet.fire({title:"Ticket Factura no puede ser productos en negativo"});
     }else if(listaProductos.length===0){
-        alert("Ningun producto cargado")
+        sweet.fire({title:"Ningun producto cargado"})
     }else{  
      tipoVenta = "Ticket Factura";
      venta.tipo_pago = await verElTipoDeVenta(tiposVentas)//vemos si es contado,cuenta corriente o presupuesto en el input[radio]
      if (venta.tipo_pago === "Ninguno") {
-            alert("Seleccionar un modo de venta");
+            sweet.fire({title:"Seleccionar un modo de venta"});
         }else{
             alerta.classList.remove('none');
             const listaSinDescuento = JSON.parse(JSON.stringify(listaProductos))
@@ -810,7 +840,7 @@ ticketFactura.addEventListener('click',async (e) =>{
             venta.empresa = inputEmpresa.value;
             venta.cod_comp = verCodComprobante(tipoVenta);
             if (venta.precioFinal >=10000 && (buscarCliente.value === "A CONSUMIDOR FINAL" || dnicuit.value === "00000000")) {
-                alert("Factura mayor a 10000, poner datos cliente");
+                sweet.fire({title:"Factura mayor a 10000, poner datos cliente"});
                 alerta.classList.add('none');
             }else{
                 try {
@@ -875,7 +905,7 @@ ticketFactura.addEventListener('click',async (e) =>{
                     };
                     !borraNegro ? (window.location = '../index.html') : window.close();
                 } catch (error) {
-                    alert("No se puedo generar la Venta")
+                    sweet.fire({title:"No se puedo generar la Venta"})
                     console.log(error)
                 }finally{
                     alerta.classList.add('none')
@@ -883,7 +913,8 @@ ticketFactura.addEventListener('click',async (e) =>{
         }
     }
     }
-   }
+        }
+    })
  })
 
  //sacamos el gravado y el iva de una venta
@@ -973,7 +1004,7 @@ async function generarQR(texto) {
                     cliente._id = "9999";
                     ponerInputsClientes(cliente);
                 }else{
-                    alert("Persona no encontrada");
+                    sweet.fire({title:"Persona no encontrada"});
                 }
             }
         }
@@ -1025,20 +1056,25 @@ borrarProducto.addEventListener('click',e=>{
 //Cuando se hace un click en cancelar y se confirma, vemos si hay productos para que se guarde en una base de datos
 cancelar.addEventListener('click',async e=>{
     e.preventDefault()
-    if (confirm("Desea cancelar el Presupuesto")) {
-        if (listaProductos.length !== 0) {
-            const ventaCancelada = {};
-            
-            if (cliente._id) {
-                ventaCancelada.cliente = cliente._id;
+    await sweet.fire({
+        title:"Cancelar el Presupuesto",
+        showCancelButton:true,
+        confirmButtonText:"Aceptar"
+    }).then(async ({isConfirmed})=>{
+        if (isConfirmed) {
+            if (listaProductos.length !== 0) {
+                const ventaCancelada = {};
+                if (cliente._id) {
+                    ventaCancelada.cliente = cliente._id;
+                }
+                ventaCancelada.productos = listaProductos;
+                ventaCancelada._id = await tamanioCancelados();
+                ventaCancelada.vendedor = vendedor;
+                await axios.post(`${URL}cancelados`,ventaCancelada);
             }
-            ventaCancelada.productos = listaProductos;
-            ventaCancelada._id = await tamanioCancelados();
-            ventaCancelada.vendedor = vendedor;
-            await axios.post(`${URL}cancelados`,ventaCancelada);
+                window.location = "../index.html";    
         }
-            window.location = "../index.html";
-    }
+    })
 })
 
 // Vemos el tamanio de los Cancelados
@@ -1061,7 +1097,7 @@ function ponerInputsClientes(cliente) {
     conIva.value = cliente.cond_iva;
     venta.cliente = cliente._id;
     if (cliente.condicion==="M") {
-        alert(`${cliente.observacion}`)
+        sweet.fire({title:`${cliente.observacion}`})
     }
     const cuentaC = document.querySelector('.cuentaC');
     (cliente.cond_fact === "4") ? cuentaC.classList.add('none') : cuentaC.classList.remove('none');

@@ -145,34 +145,17 @@ ipcRenderer.on("validarUsuario",(e,args)=>{
                 }
             }
         })
-
-        // dialogs.promptPassword("Contraseña",async value=>{
-        //     if (value === undefined) {
-        //         location.reload();
-        //     }else{
-        //         vendedores.forEach(e=>{
-        //             value === e._id && (vendedor=e.nombre)
-        //             value === e._id && (acceso = e.acceso)
-                    
-        //         })
-        //         if(vendedor !== undefined){ 
-        //             if (JSON.parse(args) === "ValidarUsuario") {
-        //                 ipcRenderer.send('abrir-ventana',`usuarios?${acceso}?${vendedor}`)
-        //             }else if (JSON.parse(args) === "aumPorPorcentaje" ) {
-        //                 (acceso === "0") ? ipcRenderer.send('abrir-ventana',`conexion?${acceso}`) : await sweet.fire({title:"No tiene permisos"})
-        //             }
-
-        //         }else{
-        //             console.log("a")
-        //             await sweet.fire({title:"Contraseña incorrecta"})
-        //     }}
-        // })
 })
 
 const salir = document.querySelector('.salir');
 salir.addEventListener('click',async e=>{
-    if (confirm("Desea Salir?")) {
-        window.close();
-        
-    }
+    sweet.fire({
+        title:"Desea Salir ?",
+        showCancelButton:true,
+        confirmButtonText:"Aceptar",
+    }).then(({isConfirmed}) =>{
+        if (isConfirmed) {
+            window.close();
+        }
+    })
 })
