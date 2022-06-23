@@ -191,3 +191,45 @@ empresa.addEventListener('keypress',e=>{
         guardar.focus();
     }
 });
+
+gravado.addEventListener('focus',e=>{
+    gravado.select();
+});
+
+nroComp.addEventListener('focus',e=>{
+    nroComp.select();
+});
+
+totalIva.addEventListener('focus',e=>{
+    totalIva.select();
+});
+
+nroCuit.addEventListener('focus',e=>{
+    nroCuit.select();
+});
+
+cantIva.addEventListener('focus',e=>{
+    cantIva.select();
+});
+
+gravado21.addEventListener('focus',e=>{
+    gravado21.select();
+});
+
+iva21.addEventListener('focus',e=>{
+    iva21.select();
+});
+
+gravado105.addEventListener('focus',e=>{
+    gravado105.select();
+});
+
+iva105.addEventListener('focus',e=>{
+    iva105.select();
+});
+diferencia.addEventListener('focus',e=>{
+    diferencia.select();
+});
+nombre.addEventListener('focus',e=>{
+    nombre.select();
+});
