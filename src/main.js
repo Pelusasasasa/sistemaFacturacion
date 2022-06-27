@@ -176,20 +176,31 @@ ipcMain.on('abrir-ventana-clientesConSaldo',async(e,args)=>{
 //imprivimos una venta ya sea presupuesto o ticket factura
 ipcMain.on('imprimir-venta',async(e,args)=>{
     const [,,condicion,cantidad,tipo,,,] = args;
-    const options = {
-        silent: condicion,
-        copies: cantidad,
-    };
+    let options
+    if (tipo === "Ticket Factura") {
+        options = {
+            silent: condicion,
+            copies: cantidad,
+            deviceName: "SAM4S GIANT-100"
+        };
+    }else{
+        options = {
+            silent: condicion,
+            copies: cantidad,
+        };
+    }
+    console.log(options)
     if (tipo === "Recibos_P") {
         abrirVentana("emitirRecibo/imprimirRecibo.html",1000,900,"noReinician");
     }else if(tipo === "Recibos"){
         abrirVentana("emitirComprobante/imprimirTicket.html",800,200,"noReinician");
     }else if(tipo === "Ticket Factura"){
         abrirVentana("impresionTicket/index.html",1000,900,"noReinician")
-        options.deviceName = "SAM4S GIANT-100";
     }else{
         abrirVentana("emitirComprobante/imprimir.html",1000,500,"noReinician");
     }
+    console.log(ventanaPrincipal.webContents._getPrinters())
+    e.reply('impresoras',JSON.stringify(await ventanaPrincipal.webContents._getPrinters()))
     await imprimir(options,args);
 })
 

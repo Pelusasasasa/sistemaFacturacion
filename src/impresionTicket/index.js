@@ -135,7 +135,7 @@ const venciCae = document.querySelector('.venciCae');
 
     descuento.innerHTML = parseFloat(venta.descuento).toFixed(2);
     total.innerHTML = venta.precioFinal.toFixed(2);
-    tipoVenta.innerHTML = (venta.tipo_venta !== "CC" || venta.cliente === "M122") ? `Contado: ${venta.precioFinal.toFixed(2)}` : "Cuenta Corriente";
+    tipoVenta.innerHTML = (venta.tipo_venta !== "CC" || venta.cliente === "M122" || venta.cliente === "A029") ? `Contado: ${venta.precioFinal.toFixed(2)}` : "Cuenta Corriente";
     if (afip) {
         qr.children[0].src = afip.QR;
         cae.innerHTML = afip.cae;

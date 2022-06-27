@@ -12,6 +12,10 @@ const axios = require("axios");
 require("dotenv").config;
 const URL = process.env.URL;
 
+ipcRenderer.on('impresoras',(e,args)=>{
+    console.log(args)
+})
+
 const Dialogs = require("dialogs");
 const dialogs = Dialogs();
 
