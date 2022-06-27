@@ -199,8 +199,6 @@ ipcMain.on('imprimir-venta',async(e,args)=>{
     }else{
         abrirVentana("emitirComprobante/imprimir.html",1000,500,"noReinician");
     }
-    console.log(ventanaPrincipal.webContents._getPrinters())
-    e.reply('impresoras',JSON.stringify(await ventanaPrincipal.webContents._getPrinters()))
     await imprimir(options,args);
 })
 

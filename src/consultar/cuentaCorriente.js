@@ -346,35 +346,41 @@ let saldoABorrar = 0
                 //Guardamos la venta con el nuevo precioFinal
                 venta.precioFinal = parseFloat(total.toFixed(2));
                 ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante","valorizado"]);
-                if (confirm("Grabar Importe")) {
+                sweet.fire({
+                    title: "Grabar Importe",
+                    showCancelButton:true,
+                    confirmButtonText:"Aceptar"
+                }).then(async({isConfirmed})=>{
+                    if (isConfirmed) {
+                        for await (let movProducto of movimientos) {
+                            let producto =(await axios.get(`${URL}productos/${movProducto.codProd}`)).data;
+                            movProducto.precio_unitario = parseFloat(producto.precio_venta);
+                            movProducto.total = parseFloat((movProducto.egreso*movProducto.precio_unitario).toFixed(2));
+                            await axios.put(`${URL}movProductos/${movProducto._id}`,movProducto);
+                        };
+    
+                        venta && await axios.put(`${URL}presupuesto/${venta.nro_comp}`,venta);
+                        saldo += parseFloat(cuentaCompensada.importe);
+                        cuentaHistorica.saldo = parseFloat((parseFloat(cuentaHistorica.saldo) + parseFloat(cuentaHistorica.debe)).toFixed(2))
+                        let ultimoSaldo = cuentaHistorica.saldo;
+                        for await (let e of arregloRestante){
+                            e.saldo= (e.tipo_comp === "Recibos_P") ?  parseFloat((ultimoSaldo - e.haber).toFixed(2)) : parseFloat((e.debe + ultimoSaldo).toFixed(2));
+                            ultimoSaldo = e.saldo;
+                            await axios.put(`${URL}cuentaHisto/id/${e.nro_comp}`,e)
+                        };
+                        cliente.saldo_p = saldo.toFixed(2);
+                        await axios.put(`${URL}cuentaHisto/id/${cuentaHistorica.nro_comp}`,cuentaHistorica);
+                        await axios.put(`${URL}cuentaComp/id/${cuentaCompensada.nro_comp}`,cuentaCompensada);
+                        await axios.put(`${URL}clientes/${cliente._id}`,cliente);
+                        const cuentaCompensadaModificada  = (await axios.get(`${URL}cuentaComp/id/${seleccionado.id}`)).data[0];
+                        seleccionado.children[3].innerHTML = cuentaCompensadaModificada.importe;
+                        seleccionado.children[4].innerHTML = cuentaCompensadaModificada.pagado;
+                        seleccionado.children[5].innerHTML = cuentaCompensadaModificada.saldo;
+                        saldo.value = cliente.saldo;
+                        saldo_p.value = cliente.saldo_p
+                    }
+                })
 
-                    for await (let movProducto of movimientos) {
-                        let producto =(await axios.get(`${URL}productos/${movProducto.codProd}`)).data;
-                        movProducto.precio_unitario = parseFloat(producto.precio_venta);
-                        movProducto.total = parseFloat((movProducto.egreso*movProducto.precio_unitario).toFixed(2));
-                        await axios.put(`${URL}movProductos/${movProducto._id}`,movProducto);
-                    };
-
-                    venta && await axios.put(`${URL}presupuesto/${venta.nro_comp}`,venta);
-                    saldo += parseFloat(cuentaCompensada.importe);
-                    cuentaHistorica.saldo = parseFloat((parseFloat(cuentaHistorica.saldo) + parseFloat(cuentaHistorica.debe)).toFixed(2))
-                    let ultimoSaldo = cuentaHistorica.saldo;
-                    for await (let e of arregloRestante){
-                        e.saldo= (e.tipo_comp === "Recibos_P") ?  parseFloat((ultimoSaldo - e.haber).toFixed(2)) : parseFloat((e.debe + ultimoSaldo).toFixed(2));
-                        ultimoSaldo = e.saldo;
-                        await axios.put(`${URL}cuentaHisto/id/${e.nro_comp}`,e)
-                    };
-                    cliente.saldo_p = saldo.toFixed(2);
-                    await axios.put(`${URL}cuentaHisto/id/${cuentaHistorica.nro_comp}`,cuentaHistorica);
-                    await axios.put(`${URL}cuentaComp/id/${cuentaCompensada.nro_comp}`,cuentaCompensada);
-                    await axios.put(`${URL}clientes/${cliente._id}`,cliente);
-                    const cuentaCompensadaModificada  = (await axios.get(`${URL}cuentaComp/id/${seleccionado.id}`)).data[0];
-                    seleccionado.children[3].innerHTML = cuentaCompensadaModificada.importe;
-                    seleccionado.children[4].innerHTML = cuentaCompensadaModificada.pagado;
-                    seleccionado.children[5].innerHTML = cuentaCompensadaModificada.saldo;
-                    saldo.value = cliente.saldo;
-                    saldo_p.value = cliente.saldo_p
-                }
                 
         }else{
             sweet.fire({title:"Venta no seleccionada"});
