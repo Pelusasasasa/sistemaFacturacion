@@ -345,6 +345,7 @@ let saldoABorrar = 0
                 cuentaHistorica.debe = cuentaCompensada.importe;
                 //Guardamos la venta con el nuevo precioFinal
                 venta.precioFinal = parseFloat(total.toFixed(2));
+                
                 ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante","valorizado"]);
                 sweet.fire({
                     title: "Grabar Importe",

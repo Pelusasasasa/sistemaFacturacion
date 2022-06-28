@@ -227,7 +227,7 @@ codigoC.addEventListener('keypress', async(e) =>{
                     sweet.fire({title:"Cliente no encontrado"});
                     codigoC.value = "";
                 }else{
-                    ponerInputsClientes(cliente)
+                    await ponerInputsClientes(cliente)
                     codigoC.value === "9999" ? buscarCliente.focus() : observaciones.focus()
                 }
         }else{
@@ -241,9 +241,9 @@ codigoC.addEventListener('focus',e=>{
 })
 
 //recibimos el cliente
-ipcRenderer.on('mando-el-cliente',(e,args)=>{ 
+ipcRenderer.on('mando-el-cliente',async (e,args)=>{ 
     cliente = JSON.parse(args)
-    ponerInputsClientes(cliente);//ponemos en los inputs los valores del cliente
+    await ponerInputsClientes(cliente);//ponemos en los inputs los valores del cliente
     codigoC.value === "9999" ? buscarCliente.focus() : observaciones.focus()
 })
 
@@ -956,7 +956,7 @@ async function generarQR(texto) {
  buscarAfip.addEventListener('click',  async (e)=>{
     let cliente = (await axios.get(`${URL}clientes/cuit/${dnicuit.value}`)).data;
         if (cliente !== "") {
-            ponerInputsClientes(cliente)
+            await ponerInputsClientes(cliente)
         }else{
                 if (dnicuit.value) {
                    if (dnicuit.value.length>8) {
@@ -981,7 +981,7 @@ async function generarQR(texto) {
         const url=`https://afip.tangofactura.com/REST/GetContribuyente?cuit=${cuit}`;
         await Https.open("GET", url);
         await Https.send()
-        Https.onreadystatechange = (e) => {
+        Https.onreadystatechange =async  (e) => {
             if (Https.responseText !== "") {
                 const persona = JSON.parse(Https.responseText)
                 if (persona.errorGetData === false) {
@@ -1006,7 +1006,7 @@ async function generarQR(texto) {
                     }
                     cliente.cuit = dnicuit.value;
                     cliente._id = "9999";
-                    ponerInputsClientes(cliente);
+                    await ponerInputsClientes(cliente);
                 }else{
                     sweet.fire({title:"Persona no encontrada"});
                 }
@@ -1088,7 +1088,7 @@ const tamanioCancelados = async() =>{
 }
 
  //Ponemos valores a los inputs
-function ponerInputsClientes(cliente) {
+async function ponerInputsClientes(cliente) {
     cliente._id && (codigoC.value = cliente._id);
     buscarCliente.value = cliente.cliente;
     cliente.saldo && (saldo.value = cliente.saldo);
@@ -1101,7 +1101,7 @@ function ponerInputsClientes(cliente) {
     conIva.value = cliente.cond_iva;
     venta.cliente = cliente._id;
     if (cliente.condicion==="M") {
-        sweet.fire({title:`${cliente.observacion}`})
+        await sweet.fire({title:`${cliente.observacion}`,returnFocus:false});
     }
     const cuentaC = document.querySelector('.cuentaC');
     (cliente.cond_fact === "4") ? cuentaC.classList.add('none') : cuentaC.classList.remove('none');
@@ -1135,7 +1135,7 @@ ipcRenderer.once('venta',async (e,args)=>{
     textoUsuario.innerHTML = usuario;
     ventaAnterior = (await axios.get(`${URL}presupuesto/${numero}`)).data;
     let cliente = (await axios.get(`${URL}clientes/id/${ventaAnterior.cliente}`)).data;
-    ponerInputsClientes(cliente)
+    await ponerInputsClientes(cliente)
     ventaAnterior.productos.forEach(producto =>{
         const {objeto,cantidad} = producto;
         mostrarVentas(objeto,cantidad)
