@@ -498,6 +498,7 @@ resultado.addEventListener('click',e=>{
         agregarIva.classList.remove('none');
         divNuevoPrecio.classList.remove('none');
         borrarProducto.classList.remove('none');
+        agregarIva.children[0].value = seleccionado.children[3].innerHTML === "10.50" ? "R" : "N";
     }
 })
 

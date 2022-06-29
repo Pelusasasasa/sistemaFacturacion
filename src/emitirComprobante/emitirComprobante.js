@@ -436,6 +436,7 @@ resultado.addEventListener('click',e=>{
         cambioPrecio.classList.remove('none');
         nuevaCantidadDiv.classList.remove('none');
         agregariva.classList.remove('none');
+        agregariva.children[0].value = seleccionado.children[3].innerHTML === "10.50" ? "R" : "N";
     }
 })
 
