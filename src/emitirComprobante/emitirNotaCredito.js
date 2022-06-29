@@ -119,7 +119,7 @@ const verTipoPago = async ()=>{
     telefono.value = cliente.telefono;
     conIva.value = iva;
     if (cliente.condicion==="M") {
-        await sweet.fire({title:`${cliente.observacion}`});
+        await sweet.fire({title:`${cliente.observacion}`,returnFocus:false});
     }
     if (codigoC.value === "9999") {
         buscarCliente.removeAttribute('disabled');
