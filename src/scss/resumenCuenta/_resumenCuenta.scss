@@ -9,8 +9,10 @@
         padding: 2rem;
         display: flex;
         justify-content: space-around;
-
         .buscador{
+            width: 15%;
+        }
+        .buscador,.nombreCliente{
             display: flex;
             flex-direction: column;
             font-size: 2rem;

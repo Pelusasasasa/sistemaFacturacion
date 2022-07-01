@@ -14,6 +14,7 @@ const desde = document.querySelector('#desde')
 const ocultar = document.querySelector('.seccion-buscador')
 const volver = document.querySelector('.volver');
 const saldoImprimir = document.querySelector('.saldoImprimir');
+const nombreCliente = document.querySelector('#nombreCliente');
 
 
 const dateNow = new Date()
@@ -40,10 +41,17 @@ desde.addEventListener('keypress',e=>{
     }
 })
 
-buscador.addEventListener('keypress',e=>{
-    if (buscador.value === "" && e.key === "Enter") {
-        ipcRenderer.send('abrir-ventana-clientesConSaldo',situacion)
-    }
+buscador.addEventListener('keypress',async e=>{
+    if (e.key === "Enter") {
+        if (buscador.value === "") {
+            ipcRenderer.send('abrir-ventana-clientesConSaldo',situacion)
+        }else{
+            const cliente = (await axios.get(`${URL}clientes/clienteConSaldo/${buscador.value.toUpperCase()}`)).data;
+            buscador.value = cliente._id;
+            nombreCliente.value = cliente.cliente;
+            ponerDatos(cliente)
+        }
+    }   
 })
 
 document.addEventListener('keydown',(event) =>{
@@ -87,10 +95,7 @@ const mostrarNegro = ()=>{
     volver.classList.add('mostrarNegro')
     
 }
-
-
-ipcRenderer.on('mando-el-cliente',async(e,args)=>{
-    cliente = JSON.parse(args)
+const ponerDatos = async(cliente)=>{
     nombre.innerHTML = cliente.cliente + "&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp" + cliente._id
     direccion.innerHTML = `${cliente.direccion}-${cliente.localidad}`;
     telefono.innerHTML = cliente.telefono;
@@ -109,6 +114,11 @@ ipcRenderer.on('mando-el-cliente',async(e,args)=>{
     listaVentas = cuentas;
 
     listarVentas(listaVentas,situacion,saldoAnterior,saldoAnterior_P)
+}
+
+ipcRenderer.on('mando-el-cliente',async(e,args)=>{
+    cliente = JSON.parse(args)
+    ponerDatos(cliente)
 })
 
 function listarVentas(ventas,situacion,saldoAnterior,saldoAnterior_P) {
