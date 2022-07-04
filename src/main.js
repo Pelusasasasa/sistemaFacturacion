@@ -349,6 +349,12 @@ const templateMenu = [
                         click(){
                             abrirVentana("clientes/imprimirPresupuesto.html",600,500)
                         }
+                    },
+                    {
+                        label: "Arreglar Saldo",
+                        click(){
+                            abrirVentana("clientes/arreglarSaldo.html",550,600)
+                        }
                     }
                 ]
             },

@@ -113,3 +113,54 @@
     }
   }
 }
+
+/*arreglar Saldo*/
+.arreglarSaldo{
+  h1{
+    text-align: center;
+  }
+  .none{
+    display: none;
+  }
+
+  .saldos{
+    display: flex;
+    justify-content: space-between;
+    input{
+      text-align: end;
+    }
+  }
+  .inputs{
+    display: flex;
+    flex-direction: column;
+    .codigo{
+      width: 30%;
+      
+    }
+    .nombre{
+      width: 100%;
+    }
+    main{
+      padding-top: 2rem;
+      padding-bottom: 2rem;
+      display: flex;
+      flex-direction: column;
+    }
+  }
+
+  .botones{
+    display: flex;
+    justify-content: space-around;
+    button{
+      padding: 1rem;
+      font-size: 2rem;
+      border-radius: 7.5rem;
+      border: none;
+      &:hover{
+        transform: scale(1.2);
+        cursor: pointer;
+      }
+    }
+  }
+
+}

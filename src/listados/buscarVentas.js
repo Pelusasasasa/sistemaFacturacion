@@ -104,7 +104,7 @@ const traerVenta = async(venta)=>{
 
 
 function listarVentas(venta) {
-        tbody.innerHTML += `<tr class="titulo"><td>${cliente.cliente}</td></tr>`
+        
         let total = 0;
         venta.productos.forEach(({objeto,cantidad})=>{
             const fecha = mostrarFecha(venta.fecha)
@@ -117,12 +117,14 @@ function listarVentas(venta) {
                 <td>${parseFloat(cantidad).toFixed(2)}</td>
                 <td>${objeto.precio_venta}</td>
                 <td>${(objeto.precio_venta*cantidad).toFixed(2)}</td>
+                <td>${venta.tipo_pago}</td>
             </tr>
         `
         total += (objeto.precio_venta*cantidad)
         })
         tbody.innerHTML += `
         <tr class="total">
+        <td></td>
         <td></td>
         <td></td>
         <td></td>
@@ -143,39 +145,16 @@ const desde = document.querySelector('#desde')
 const hasta = document.querySelector('#hasta')
 let ventas = []
 async function traerTodasLasVentas(lista) {
-    ventas = []
-    lista.forEach(cliente=>{
-        ventas = ventas.concat(cliente.listaVentas)
-    })
     let retornar = [];
     const desdeFecha = desde.value
     const hastaFecha = DateTime.fromISO(hasta.value).endOf('day')
-    for await (const Venta of ventas){
-        let ventaARetornar = await axios.get(`${URL}ventas/${Venta}/${desdeFecha}/${hastaFecha}`)
-        ventaARetornar = ventaARetornar.data;
-        if (ventaARetornar.length === 0) {
-            ventaARetornar = await axios.get(`${URL}presupuesto/${Venta}/${desdeFecha}/${hastaFecha}`);
-            ventaARetornar = ventaARetornar.data
-
+    for await(let cliente of lista){
+        let ventas = (await axios.get(`${URL}presupuesto/cliente/${cliente._id}/${desdeFecha}/${hastaFecha}`)).data;
+        tbody.innerHTML += ventas.length !== 0 && `<tr class="titulo"><td>${cliente.cliente}</td></tr>`
+        for await(let venta of ventas){
+            listarVentas(venta)
         }
-        if(ventaARetornar[0] !== undefined){
-            retornar.push(ventaARetornar[0])
     }
-    }
-    tbody.innerHTML = ``;
-    if(retornar.length === 0){
-        sweet.fire({title:"No hay ventas, fijarse nombre y fechas"});
-    }
-    retornar = retornar.filter(venta=>{
-        if(venta.tipo_comp !== "Recibos" && venta.tipo_comp !== "Recibos_P"){
-            return venta
-        }
-    })
-
-    retornar.forEach(async venta=>{
-        cliente = await buscarCliente(venta.cliente)
-        listarVentas(venta)
-    })  
 }
 
 const mostrarFecha = (string) =>{

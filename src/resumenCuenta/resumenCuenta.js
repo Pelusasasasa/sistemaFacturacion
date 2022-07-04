@@ -1,4 +1,5 @@
 const { ipcRenderer } = require("electron");
+const sweet = require('sweetalert2');
 const axios = require("axios");
 const { DateTime } = require("luxon");
 require("dotenv").config;
@@ -47,9 +48,15 @@ buscador.addEventListener('keypress',async e=>{
             ipcRenderer.send('abrir-ventana-clientesConSaldo',situacion)
         }else{
             const cliente = (await axios.get(`${URL}clientes/clienteConSaldo/${buscador.value.toUpperCase()}`)).data;
-            buscador.value = cliente._id;
-            nombreCliente.value = cliente.cliente;
-            ponerDatos(cliente)
+            if (cliente !== "") {
+                buscador.value = cliente._id;
+                nombreCliente.value = cliente.cliente;
+                ponerDatos(cliente);
+            }else{
+                await sweet.fire({
+                    title:"Cliente No encontrado"
+                })
+            }
         }
     }   
 })
