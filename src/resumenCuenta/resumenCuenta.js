@@ -26,7 +26,7 @@ let year = dateNow.getFullYear()
 day = day < 10 ? `0${day}`: day;
 month = month < 10 ? `0${month}`: month;
 
-const date = `${year}-${month}-${day}`
+const date = `${year}-${month}-01`;
 desde.value = date;
 
 let situacion = "blanco";

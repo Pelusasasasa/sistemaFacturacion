@@ -222,11 +222,17 @@ inputSeleccionado.addEventListener('keyup',async (e)=>{
 
 let saldoAFavorAnterior = "0"
 saldoAfavor.addEventListener('keydown',e=>{
-    
     if (e.key === "Enter" && saldoAfavor.value !== "") {
         total.value = (parseFloat(total.value) + parseFloat(saldoAfavor.value) - parseFloat(saldoAFavorAnterior)).toFixed(2);
         (saldoAfavor.value = (parseFloat(saldoAfavor.value)).toFixed(2));
         saldoAFavorAnterior = saldoAfavor.value 
+    }
+});
+saldoAfavor.addEventListener('blur',e=>{
+    if (saldoAfavor.value !== "") {
+        total.value = (parseFloat(total.value) + parseFloat(saldoAfavor.value) -parseFloat(saldoAFavorAnterior)).toFixed(2);
+        saldoAFavorAnterior = saldoAfavor.value;
+        imprimir.focus();
     }
 })
 
@@ -248,7 +254,7 @@ imprimir.addEventListener('click',async e=>{
     
 })
 imprimir.addEventListener('keydown',async e=>{
-    e.preventDefault()
+    e.preventDefault();
     if (e.key === "Enter") {
         if(parseFloat(total.value) === 0){
             await sweet.fire({
@@ -297,12 +303,12 @@ const hacerRecibo = async()=>{
      recibo.direccion = direccion.value;
      recibo.condIva = cond_iva.value;
      recibo.descuento = 0;
-     recibo.precioFinal =parseFloat( parseFloat(total.value).toFixed(2));
      recibo.tipo_comp = (situacion === "blanco" ? "Recibos" : "Recibos_P" );
      const aux = (situacion === "negro") ? "saldo_p" : "saldo"
      let saldoFavor = 0;
      saldoFavor = (saldoAfavor.value !== "") && parseFloat(saldoAFavor.value);
      recibo.abonado = saldoAfavor.value;
+     recibo.precioFinal = (parseFloat(total.value)).toFixed(2);
      const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2));
 
      //Tomamos el cliente y agregamos a su lista Ventas la venta y tambien modificamos su saldo
@@ -438,8 +444,6 @@ const verCodComp = (condicionIva) =>{
 
 const ponerEnCuentaCorrienteCompensada = async(recibo)=>{
     const cuenta = {};
-    const id = (await axios.get(`${URL}cuentaComp`)).data + 1;
-    cuenta._id = id;
     cuenta.codigo = recibo.cliente;
     cuenta.cliente = cliente.cliente;
     cuenta.tipo_comp = recibo.tipo_comp;
@@ -451,8 +455,6 @@ const ponerEnCuentaCorrienteCompensada = async(recibo)=>{
 
 const ponerEnCuentaCorrienteHistorica = async(recibo)=>{
     const cuenta = {};
-    const id = (await axios.get(`${URL}cuentaHisto`)).data + 1;
-    cuenta._id = id;
     cuenta.codigo = recibo.cliente;
     cuenta.cliente = cliente.cliente;
     cuenta.tipo_comp = recibo.tipo_comp;

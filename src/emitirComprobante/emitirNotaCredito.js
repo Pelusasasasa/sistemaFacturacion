@@ -768,8 +768,6 @@ async function generarQR(texto) {
 //Inicio Compensada
 const ponerEnCuentaCorrienteCompensada = async(venta,valorizado)=>{
     const cuenta = {};
-    let id = await axios.get(`${URL}cuentaComp`)
-    cuenta._id = id.data + 1;
     cuenta.codigo = venta.cliente;
     cuenta.fecha = new Date();
     cuenta.cliente = buscarCliente.value;
@@ -783,9 +781,7 @@ const ponerEnCuentaCorrienteCompensada = async(venta,valorizado)=>{
 
 //inicio historica
 const ponerEnCuentaCorrienteHistorica = async(venta,valorizado,saldo)=>{
-    const id = (await axios.get(`${URL}cuentaHisto`)).data + 1;
     const cuenta = {}
-    cuenta._id = id;
     cuenta.codigo = venta.cliente;
     cuenta.cliente = buscarCliente.value;
     cuenta.tipo_comp = venta.tipo_comp;

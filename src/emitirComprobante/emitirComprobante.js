@@ -651,12 +651,6 @@ function redondear(numero) {
 
 }
 
-const tamanioVentas = async(tipoVenta)=>{//tipoVenta = Presupuesto o Ticket Factura
-    tamanio = await axios.get(`${URL}presupuesto`);
-    tamanio = tamanio.data + 1;
-    return tamanio
-}
-
 async function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
     let numero
     let tipoFactura
@@ -736,7 +730,6 @@ presupuesto.addEventListener('click',async (e)=>{
                         alerta.classList.remove('none');
                         venta.nombreCliente = buscarCliente.value;
                         tipoVenta="Presupuesto";
-                        venta._id = await tamanioVentas("presupuesto")
                         venta.descuento = (descuentoN.value);
                         venta.precioFinal = redondear(total.value);
                         venta.fecha = new Date();
@@ -1332,8 +1325,6 @@ descuento.addEventListener('keypress',e=>{
 //Inicio Compensada
 const ponerEnCuentaCorrienteCompensada = async(venta,valorizado)=>{
     const cuenta = {};
-    let id = await axios.get(`${URL}cuentaComp`)
-    cuenta._id = id.data + 1;
     cuenta.codigo = venta.cliente;
     cuenta.fecha = new Date();
     cuenta.cliente = buscarCliente.value;
@@ -1347,9 +1338,7 @@ const ponerEnCuentaCorrienteCompensada = async(venta,valorizado)=>{
 
 //inicio historica
 const ponerEnCuentaCorrienteHistorica = async(venta,valorizado,saldo)=>{
-    const id = (await axios.get(`${URL}cuentaHisto`)).data + 1;
     const cuenta = {}
-    cuenta._id = id;
     cuenta.codigo = venta.cliente;
     cuenta.cliente = buscarCliente.value;
     cuenta.tipo_comp = venta.tipo_comp;

@@ -189,7 +189,6 @@ ipcMain.on('imprimir-venta',async(e,args)=>{
             copies: cantidad,
         };
     }
-    console.log(options)
     if (tipo === "Recibos_P") {
         abrirVentana("emitirRecibo/imprimirRecibo.html",1000,900,"noReinician");
     }else if(tipo === "Recibos"){
