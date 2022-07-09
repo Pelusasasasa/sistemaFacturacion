@@ -41,7 +41,6 @@ traerDolar()
     })
 ipcRenderer.on('acceso',(e,args)=>{
     acceso = JSON.parse(args)
-    console.log(acceso)
     if (acceso === "2") {
         document.querySelector('.costos').classList.add('none');
         document.querySelector('.utilidad').classList.add('none')
@@ -85,7 +84,8 @@ if (costoPesos.focus) {
     }
 
 costoTotal.addEventListener('focus',()=>{
-    ivaImp.value = (parseFloat(costoDolares.value) !== 0) ? (parseFloat((costoDolares.value * valorTasaIva / 100).toFixed(3))) :  costo.toFixed(3)
+    console.log((costoPesos.value * valorTasaIva / 100))
+    ivaImp.value = (parseFloat(costoDolares.value) !== 0) ? (parseFloat((costoDolares.value * valorTasaIva / 100).toFixed(2))) :  (costoPesos.value * valorTasaIva / 100).toFixed(2)
     
     costoT = parseFloat(ivaImp.value)
     let costoP = 0
@@ -95,9 +95,8 @@ costoTotal.addEventListener('focus',()=>{
         costoTotal.value = ((parseFloat(ivaImp.value)+parseFloat(costoDolares.value))*dolar).toFixed(2)
     }else{
         costoP = parseFloat(costoPesos.value)
-        console.log(costo)
-        console.log(costoP)
-        costoTotal.value = ((costo+costoP).toFixed(2))
+        costoTotal.value = ((parseFloat(ivaImp.value) + costoP).toFixed(2));
+        console.log(costoTotal.value)
     }
 })
 
