@@ -651,7 +651,7 @@ dnicuit.addEventListener('focus',e=>{
 
 const subirAAfip = async(venta,ventaAsociada)=>{
     alerta.children[0].innerHTML = "Esperando confirmacion de la afip"
-    const ventaAnterior = await afip.ElectronicBilling.getVoucherInfo(parseFloat(facturaOriginal.value),5,1); 
+    const ventaAnterior = await afip.ElectronicBilling.getVoucherInfo(parseFloat(facturaOriginal.value),5,ventaAsociada.cod_comp); 
     const fecha = new Date(Date.now() - ((new Date()).getTimezoneOffset() * 60000)).toISOString().split('T')[0];
     let ultimoElectronica = await afip.ElectronicBilling.getLastVoucher(5,parseFloat(venta.cod_comp));
     let totalIva105 = 0
