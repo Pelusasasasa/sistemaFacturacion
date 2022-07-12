@@ -1,0 +1,21 @@
+.listadoPorMarca{
+    display: flex;
+    justify-content: space-between;
+    table,.lista{
+        width: 100%;
+    }
+    .lista{
+        margin-top: 2rem;
+        margin-left: 1rem;
+    }
+    table{
+        border-collapse: collapse;
+        thead{
+            tr{
+                border: .1rem solid black;
+            }
+        }
+    }
+
+
+}

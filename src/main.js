@@ -377,9 +377,14 @@ const templateMenu = [
                         click(){
                             abrirVentana("./productos/aumPorcentaje.html",600,200);
                             nuevaVentana.on('ready-to-show',async()=>{
-                                const marcas = await axios(`${URL}productos`)
+                                const marcas = await axios.get(`${URL}productos`)
                                 nuevaVentana.webContents.send("mandarMarcas",JSON.stringify(marcas.data))
                             })
+                        }
+                    },{
+                        label: "Listado Por Marca",
+                        click(){
+                            abrirVentana("./productos/listadoPorMarca.html",1200,1000)
                         }
                     }
                 ]

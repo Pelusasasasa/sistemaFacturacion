@@ -96,6 +96,8 @@ async function filtrar(){
     if(texto !== ""){ 
         let condicion = select.value;
         condicion === "codigo" && (condicion = "_id")
+        console.log(texto)
+        console.log(condicion)
         productos = await axios.get(`${URL}productos/buscarProducto/${texto}/${condicion}`)
     }else{
         productos = await axios.get(`${URL}productos/buscarProducto/textoVacio/descripcion`)
