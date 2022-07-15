@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { ipcRenderer } = require("electron");
 const sweet = require('sweetalert2');
 require("dotenv").config;
 const URL = process.env.URL;
@@ -12,6 +13,14 @@ const guardar = document.querySelector('.guardar');
 const salir = document.querySelector('.salir');
 
 let cliente = {}
+let acceso;
+ipcRenderer.on('acceso',(e,args)=>{
+    acceso = JSON.parse(args);
+    console.log(acceso)
+    if (acceso !== "0") {
+        
+    }
+});
 
 codigo.addEventListener('keypress',async e=>{
     if (e.key === "Enter") {

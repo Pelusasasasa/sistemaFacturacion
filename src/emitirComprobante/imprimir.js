@@ -55,7 +55,7 @@ const fecha = document.querySelector('.fecha');
 
             descuento.innerHTML = venta.descuento;
     
-            if (venta.tipo_pago === "CC" && valorizado !== "valorizado") {
+            if ((venta.tipo_pago === "CC" && valorizado !== "valorizado") || valorizado === "no valorizado") {
                 precioFinal.innerHTML = ""
                 subtotal.innerHTML=""
                 descuento.innerHTML= ""
@@ -68,7 +68,8 @@ const fecha = document.querySelector('.fecha');
             }
             tbody.innerHTML=""
              for await (let {objeto,cantidad} of lista) {
-                 if (venta.tipo_pago !== "CC" || (valorizado === "valorizado" && venta.tipo_pago === "CC")) {
+                console.log(valorizado)
+                 if ((venta.tipo_pago !== "CC" || (valorizado === "valorizado" && venta.tipo_pago === "CC")) && valorizado !== "no valorizado") {
                         
                     tbody.innerHTML += `
                     <tr>
@@ -98,6 +99,7 @@ const fecha = document.querySelector('.fecha');
         })
 
     ipcRenderer.on('imprimir',(e,args)=>{
-        [venta,cliente,,,,valorizado,lista] = JSON.parse(args)
+        [venta,cliente,,,,valorizado,lista] = JSON.parse(args);
+        console.log(cliente)
         listar(venta,cliente,valorizado,lista)
     })

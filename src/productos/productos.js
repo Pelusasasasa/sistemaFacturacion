@@ -96,8 +96,6 @@ async function filtrar(){
     if(texto !== ""){ 
         let condicion = select.value;
         condicion === "codigo" && (condicion = "_id")
-        console.log(texto)
-        console.log(condicion)
         productos = await axios.get(`${URL}productos/buscarProducto/${texto}/${condicion}`)
     }else{
         productos = await axios.get(`${URL}productos/buscarProducto/textoVacio/descripcion`)
@@ -115,7 +113,7 @@ const ponerProductos = productos =>{
                     <td class="descripcion">${producto.descripcion}</td>
                     <td class= "precio">${(parseFloat(producto.precio_venta)).toFixed(2)}</td>
                     <td>${producto.marca}</td>
-                    <td class="stock">${(parseFloat(producto.stock)).toFixed(2)}</td>
+                    <td class="stock">${parseFloat(producto.stock).toFixed(2)}</td>
                     <td>${producto.cod_fabrica}</td>
                     <td>${producto.observacion}</td>
                 </tr>

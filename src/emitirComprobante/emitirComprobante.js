@@ -227,6 +227,7 @@ codigoC.addEventListener('keypress', async(e) =>{
                     sweet.fire({title:"Cliente no encontrado"});
                     codigoC.value = "";
                 }else{
+                    // location.href = "../index.html";
                     await ponerInputsClientes(cliente)
                     codigoC.value === "9999" ? buscarCliente.focus() : observaciones.focus()
                 }
@@ -349,7 +350,7 @@ codigo.addEventListener('keypress',async (e) => {
                             input:"text"
                         }).then(async ({isConfirmed,value})=>{
                             if (isConfirmed && value !== "") {
-                                await mostrarVentas(product,parseFloat(valor));
+                                await mostrarVentas(product,parseFloat(value));
                                 codigo.value = "";
                                 precio.children[0].value = "";
                                 descripcion.children[0].value = "";
@@ -401,7 +402,6 @@ ipcRenderer.on('mando-el-producto',(e,args) => {
 })
 let id = 1 //id de la tabla de ventas
 function mostrarVentas(objeto,cantidad) {
-    console.log(objeto.iva)
     Preciofinal += (parseFloat(objeto.precio_venta)*cantidad);
     total.value = (parseFloat(Preciofinal)).toFixed(2)
     resultado.innerHTML += `
@@ -553,6 +553,8 @@ function verQueVentaEs(tipo,cod_comp) {
         return "Ultimo Remito Cta Cte"
     }else if(tipo === "Contado"){
         return "Ultimo Remito Contado"
+    }else if(tipo === "Remito"){
+        return "Ultimo Remito";
     }
 }
 
@@ -575,6 +577,10 @@ async function traerUltimoNroComprobante(tipoCom,codigoComprobante,tipo_pago) {
         }else if(tipoCom === "Presupuesto" & tipo_pago === "PP"){
             const numeroFactura = verQueVentaEs("Presupuesto")
             const tipoVenta = ((await axios.get(`${URL}tipoVenta`)).data)[numeroFactura];
+            return tipoVenta
+        }else if(tipoCom === "Remito"){
+            const numeroFactura = verQueVentaEs("Remito")
+            const tipoVenta = ((await axios.get(`${URL}tipoVenta`))).data[numeroFactura];
             return tipoVenta
         }
     }
@@ -658,21 +664,20 @@ async function actualizarNumeroComprobante(comprobante,tipo_pago,codigoComp) {
     n2 = parseFloat(n2)+1;
     n2 = n2.toString().padStart(8,0);
     numero = n1+'-'+n2;
-    if (comprobante.split('-')[0] !== "0005") {
-
-
-    if (tipo_pago==="CD") {
-        tipoFactura = verQueVentaEs("Contado",codigoComp)
-    }else if(tipo_pago==="CC"){
-        tipoFactura = verQueVentaEs("Cuenta Corriente",codigoComp)
-    }else{
-        tipoFactura = verQueVentaEs("Presupuesto",codigoComp)
-    }
+    if (comprobante.split('-')[0] === "0006") {
+        tipoFactura = verQueVentaEs("Remito");
+    }else if (comprobante.split('-')[0] !== "0005") {
+        if (tipo_pago==="CD") {
+            tipoFactura = verQueVentaEs("Contado",codigoComp)
+        }else if(tipo_pago==="CC"){
+            tipoFactura = verQueVentaEs("Cuenta Corriente",codigoComp)
+        }else{
+            tipoFactura = verQueVentaEs("Presupuesto",codigoComp)
+        }
     }else{
         tipoFactura = verQueVentaEs("Ticket Factura",codigoComp)
     }
-    let numeros = await axios.get(`${URL}tipoVenta`)
-    numeros = numeros.data;
+    let numeros = (await axios.get(`${URL}tipoVenta`)).data;
     numeros[tipoFactura] = numero;
     await axios.put(`${URL}tipoventa`,numeros)
 }
@@ -771,7 +776,7 @@ presupuesto.addEventListener('click',async (e)=>{
                              if (venta.tipo_pago === "CC") {
                                 ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion,listaSinDescuento])
                              }else{
-                                 ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion,listaSinDescuento])
+                                ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion,listaSinDescuento])
                              }
                          }
                          //si la venta es distinta de presupuesto sacamos el stock y movimiento de producto
@@ -799,7 +804,26 @@ presupuesto.addEventListener('click',async (e)=>{
             }
         }
     })
-})
+});
+
+const remito = document.querySelector('.remito');
+remito.addEventListener('click',async e=>{
+    e.preventDefault();
+    tipoVenta = "Remito";
+    const venta = {};
+    venta.fecha = new Date();
+    venta.observaciones = "";
+    venta.vendedor = vendedor;
+    venta.productos = listaProductos;
+    let cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
+    venta.nro_comp = await traerUltimoNroComprobante(tipoVenta,venta.cod_comp,venta.tipo_pago);
+    let valorizadoImpresion="no valorizado";
+    await axios.post(`${URL}presupuesto`,venta);
+    await actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp)
+    ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion,listaProductos])
+    window.location = "../index.html";
+});
+
 
 //Aca mandamos la venta con tikect Factura
 const ticketFactura = document.querySelector('.ticketFactura')
@@ -862,8 +886,7 @@ ticketFactura.addEventListener('click',async (e) =>{
                     venta.tipo_pago === "CC" && sumarSaldoAlCliente(venta.precioFinal,venta.cliente,venta.nro_comp);
                     venta.tipo_pago === "CC" && ponerEnCuentaCorrienteCompensada(venta,true);
                     venta.tipo_pago === "CC" && ponerEnCuentaCorrienteHistorica(venta,true,saldo.value);
-                    actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp);
-                    
+                    await actualizarNumeroComprobante(venta.nro_comp,venta.tipo_pago,venta.cod_comp);
                     nuevaVenta = await axios.post(`${URL}ventas`,venta)
                     const cliente = (await axios.get(`${URL}clientes/id/${codigoC.value.toUpperCase()}`)).data;
 
@@ -871,6 +894,7 @@ ticketFactura.addEventListener('click',async (e) =>{
 
                     //mandamos a imprimir el ticket
                     ipcRenderer.send('imprimir-venta',[venta,afip,true,1,'Ticket Factura']);
+                    // location.href = "../index.html";
                     //Le mandamos al servidor que cree un pdf con los datos
                     await axios.post(`${URL}crearPdf`,[venta,cliente,afip]);
                     
@@ -903,7 +927,7 @@ ticketFactura.addEventListener('click',async (e) =>{
                     };
                     !borraNegro ? (window.location = '../index.html') : window.close();
                 } catch (error) {
-                    sweet.fire({title:"No se puedo generar la Venta"})
+                    await sweet.fire({title:"No se puedo generar la Venta"})
                     console.log(error)
                 }finally{
                     alerta.classList.add('none')

@@ -139,6 +139,16 @@ ipcRenderer.on("validarUsuario",(e,args)=>{
                         ipcRenderer.send('abrir-ventana',`usuarios?${acceso}?${vendedor}`)
                     }else if(JSON.parse(args) === "aumPorPorcentaje"){
                         (acceso === "0") ? ipcRenderer.send('abrir-ventana',`conexion?${acceso}`) : await sweet.fire({title:"No tiene permisos"})
+                    }else if(JSON.parse(args) === "arreglarSaldo"){
+                        if (acceso !== "0") {
+                            sweet.fire({
+                                title:"No tiene permisos",
+
+                            })
+                        }else{
+                            ipcRenderer.send('abrir-ventana',`clientes/arreglarSaldo.html`);
+                        }
+                        
                     }
                 }else{
                     sweet.fire({title:"Contraseña Incorrecta"})

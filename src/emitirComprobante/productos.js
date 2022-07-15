@@ -14,9 +14,10 @@ let texto = ""
 let seleccionado
 const body = document.querySelector('body')
 
-body.addEventListener('keypress',e=>{
-    if (e.key === 'Enter' && document.activeElement.tabIndex !== 1 && document.activeElement.tabIndex !== 2 ) {
+body.addEventListener('keydown',e=>{
+    if (e.key === 'Enter' && table.classList.contains('tablaFocus') && document.activeElement.tabIndex !== 1 && document.activeElement.tabIndex !== 2 ) {
         seleccionado = document.querySelector('.seleccionado')
+        e.preventDefault()
         if(seleccionado){
             cantidad(seleccionado)
         }else{
@@ -142,9 +143,11 @@ buscarProducto.addEventListener('keyup',e=>{
 })
 
 async function cantidad(e) {
+    table.classList.remove('tablaFocus')
     await sweet.fire({
         title:"Cantidad",
         input:"text",
+        returnFocus:false,
         showCancelButton:true,
         confirmButtonText:"Aceptar"
     }).then(async ({isConfirmed,value})=>{
@@ -158,8 +161,9 @@ async function cantidad(e) {
             if(!Number.isInteger(parseFloat(value)) && pro.unidad==="U"){
                 sweet.fire({title:"El producto no se puede escribir con decimal"})
             }else{
-                parseFloat(e.children[4].innerHTML)<0 && sweet.fire({title:"Stock Negativo"});
-                (parseFloat(e.children[2].innerHTML) === 0 && sweet.fire({title:"Precio del producto en 0"}));
+                parseFloat(e.children[4].innerHTML)<0 && await sweet.fire({title:"Stock Negativo"});
+                (parseFloat(e.children[2].innerHTML) === 0 &&  await sweet.fire({title:"Precio del producto en 0"}));
+                table.classList.add('tablaFocus');
                ipcRenderer.send('mando-el-producto',{
                    _id: e.id
                     ,cantidad: value

@@ -208,10 +208,10 @@ const imprimir = (opciones,args)=>{
             nuevaVentana.webContents.print(opciones,(success, errorType) => {
                     if (success) {
                         ventanaPrincipal.focus()
-                        nuevaVentana.close();
+                        // nuevaVentana.close();
                     }else{
                         ventanaPrincipal.focus();
-                        nuevaVentana && nuevaVentana.close();
+                        // nuevaVentana && nuevaVentana.close();
                     }
         })
     });
@@ -352,7 +352,7 @@ const templateMenu = [
                     {
                         label: "Arreglar Saldo",
                         click(){
-                            abrirVentana("clientes/arreglarSaldo.html",550,600)
+                            validarUsuario("arreglarSaldo")
                         }
                     }
                 ]
@@ -623,7 +623,7 @@ function abrirVentana(texto,width,height,reinicio){
         nuevaVentana.on('close',e=>{
             nuevaVentana = null;
             reinicio !== "noReinician" && ventanaPrincipal.reload()
-        })
+        });
     }
 
 }

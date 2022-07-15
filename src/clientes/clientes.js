@@ -66,7 +66,7 @@ filtrar()
 
 buscarCliente.addEventListener('keyup',filtrar)
 
-const cliente = document.querySelector("tbody")
+const cliente = document.querySelector("tbody");
 cliente.addEventListener('click',e =>{
     seleccionado && (seleccionado.classList.remove('seleccionado'));
     subseleccionado && (subseleccionado.classList.remove('subseleccionado'));
@@ -177,5 +177,35 @@ body.addEventListener('keydown',e=>{
                 }
             })
         }
+    }
+});
+
+
+const th = document.querySelector('table');
+let precionado = false;
+th.addEventListener('mousedown',e=>{
+    precionado = true;
+    if (precionado) {
+        e.target.classList.add('resizing');
+    }
+});
+th.addEventListener('mouseup',e=>{
+    if (precionado) {
+        precionado = false;
+        e.target.classList.remove('resizing');
+    }
+});
+let numeroAnterior = 0
+th.addEventListener('mousemove',e=>{
+    if (precionado) {
+        let tamanioActual = parseInt(e.target.style.width.split('p')[0]);
+        if (e.pageX > numeroAnterior) {
+            e.target.style.width = (tamanioActual + (e.pageX/10)).toFixed(2) + "px";
+        }else{
+            e.target.style.width = (tamanioActual - (e.pageX/10)).toFixed(2) + "px";
+        }
+
+        numeroAnterior = e.pageX;
+        console.log(e.target.style.width)
     }
 })
