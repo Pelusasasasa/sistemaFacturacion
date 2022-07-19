@@ -39,9 +39,8 @@ buscar.addEventListener('click',async e=>{
 
     async function listarProductos() {
         tbody.innerHTML = "";
-        console.log("a")
-        for await(let {_id,descripcion,cod_fabrica,stock} of productos){
-            tbody.innerHTML += await  `
+        for(let {_id,descripcion,cod_fabrica,stock} of productos){
+            tbody.innerHTML +=  `
                 <tr>
                 <td>${_id}</td>
                 <td>${descripcion}</td>
