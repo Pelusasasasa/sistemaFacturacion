@@ -40,14 +40,23 @@ buscar.addEventListener('click',async e=>{
     async function listarProductos() {
         tbody.innerHTML = "";
         for(let {_id,descripcion,cod_fabrica,stock} of productos){
-            tbody.innerHTML +=  `
-                <tr>
-                <td>${_id}</td>
-                <td>${descripcion}</td>
-                <td>${cod_fabrica}</td>
-                <td>${parseFloat(stock).toFixed(2)}</td>
-                </tr>
-            `
+              const tr = document.createElement('tr');
+              const tdId = document.createElement('td');
+              tdId.innerHTML = _id;
+              tr.appendChild(tdId);
+
+              const tdDescripcion = document.createElement('td');
+              tdDescripcion.innerHTML = descripcion;
+              tr.appendChild(tdDescripcion);
+
+              const tdCodFabrica = document.createElement('td');
+              tdCodFabrica.innerHTML = cod_fabrica;
+              tr.appendChild(tdCodFabrica);
+
+              const tdStock = document.createElement('td');
+              tdStock.innerHTML = parseFloat(stock).toFixed(2);
+              tr.appendChild(tdStock)
+              tbody.appendChild(tr)
         };
     }
 

@@ -107,17 +107,29 @@ async function filtrar(){
 const ponerProductos = productos =>{
     resultado.innerHTML = '';
     for(let producto of productos){
-            resultado.innerHTML += `
-                <tr id="${producto._id}">
-                    <th scope="row">${producto._id}</th>
-                    <td class="descripcion">${producto.descripcion}</td>
-                    <td class= "precio">${(parseFloat(producto.precio_venta)).toFixed(2)}</td>
-                    <td>${producto.marca}</td>
-                    <td class="stock">${parseFloat(producto.stock).toFixed(2)}</td>
-                    <td>${producto.cod_fabrica}</td>
-                    <td>${producto.observacion}</td>
-                </tr>
-            `
+        const tr = document.createElement('tr');
+        const tdId = document.createElement('td');
+        tdId.innerHTML = producto._id;
+        const tdDscripcion = document.createElement('td');
+        tdDscripcion.innerHTML = producto.descripcion;
+        const tdPrecio = document.createElement('td');
+        tdPrecio.innerHTML = parseFloat(producto.precio_venta).toFixed(2);
+        const tdMarca = document.createElement('td');
+        tdMarca.innerHTML = producto.marca;
+        const tdStock = document.createElement('td');
+        tdStock.innerHTML = parseFloat(producto.stock).toFixed(2);
+        const tdcodFabrica = document.createElement('td');
+        tdcodFabrica.innerHTML = producto.cod_fabrica;
+        const tdObservacion = document.createElement('td');
+        tdObservacion.innerHTML = producto.observacion;
+        tr.appendChild(tdId)
+        tr.appendChild(tdDscripcion)
+        tr.appendChild(tdPrecio)
+        tr.appendChild(tdMarca)
+        tr.appendChild(tdStock)
+        tr.appendChild(tdcodFabrica)
+        tr.appendChild(tdObservacion)
+        resultado.appendChild(tr);
     }
 }
 
