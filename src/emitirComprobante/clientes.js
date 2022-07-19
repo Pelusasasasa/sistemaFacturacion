@@ -1,4 +1,10 @@
-const {ipcRenderer,remote} = require('electron');
+const {ipcRenderer} = require('electron');
+const sweet = require('sweetalert2');
+const axios = require('axios');
+require('dotenv').config;
+const URL = process.env.URL;
+
+
 const buscarCliente = document.querySelector('#buscarCliente');
 const resultado = document.querySelector('#resultado');
 const body = document.querySelector('body');
@@ -18,8 +24,8 @@ body.addEventListener('keypress',e=>{
 })
 
 
-ipcRenderer.on('get-clientes',(e,args) =>{
-    let clientes = JSON.parse(args);
+const listar = async(texto) =>{
+    let clientes = (await axios.get(`${URL}clientes/${texto}`)).data;
     clientes = clientes.sort(function(a,b){
         let A = a.cliente.toUpperCase()
         let B = b.cliente.toUpperCase()
@@ -59,7 +65,7 @@ ipcRenderer.on('get-clientes',(e,args) =>{
     subseleccion = resultado.firstElementChild.children[0];
     subseleccion.classList.add('subseleccionado');
 
-})
+}
 
 function recorrerConFlechas(e) {
         if(e.key === "Control"){
@@ -142,7 +148,7 @@ body.addEventListener('keydown',e=>{
 const filtrar = ()=>{
     resultado.innerHTML='';
     texto = buscarCliente.value.toLowerCase();
-    ipcRenderer.send('get-clientes',texto);
+    listar(texto);
 }
 filtrar()
 
