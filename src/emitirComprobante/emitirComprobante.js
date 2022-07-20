@@ -53,10 +53,11 @@ const agregariva = document.querySelector('.parte-producto_iva');
 
 
 const total = document.querySelector('#total');
-const ventaValorizado = document.querySelector('.ventaValorizado')
-const valorizado = document.querySelector('.valorizado')
-const imprimirCheck = document.querySelector('.imprimirCheck')
-const impresion = document.querySelector('.impresion')
+const ventaValorizado = document.querySelector('.ventaValorizado');
+const valorizado = document.querySelector('.valorizado');
+const imprimirCheck = document.querySelector('.imprimirCheck');
+const impresion = document.querySelector('.impresion');
+const cuentaC = document.querySelector('.cuentaC');
 
 
 const tiposVentas = document.querySelectorAll('input[name="tipoVenta"]')
@@ -990,7 +991,8 @@ async function generarQR(texto) {
                    }
                 }
             }
-    observaciones.focus()
+    await cuentaC.classList.add('none');
+    observaciones.focus();
  })
 
  //Funcion para buscar una persona directamente por el cuit
@@ -1121,7 +1123,6 @@ async function ponerInputsClientes(cliente) {
     if (cliente.condicion==="M") {
         await sweet.fire({title:`${cliente.observacion}`,returnFocus:false});
     }
-    const cuentaC = document.querySelector('.cuentaC');
     (cliente.cond_fact === "4") ? cuentaC.classList.add('none') : cuentaC.classList.remove('none');
     if (codigoC.value === "9999"){
         buscarCliente.removeAttribute('disabled');
