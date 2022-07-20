@@ -25,6 +25,7 @@ body.addEventListener('keypress',e=>{
 
 
 const listar = async(texto) =>{
+    texto === "" && (texto = "A Consumidor Final")
     let clientes = (await axios.get(`${URL}clientes/${texto}`)).data;
     clientes = clientes.sort(function(a,b){
         let A = a.cliente.toUpperCase()
@@ -41,9 +42,6 @@ const listar = async(texto) =>{
     })
     
     for(let cliente of clientes){
-        let nombre = cliente.cliente.toLowerCase();
-        texto = texto[0] === "*" ? texto.substr(1) : texto;
-        if(nombre.indexOf(texto) !== -1){
            resultado.innerHTML += `
            <tr id="${cliente._id}">
                 <td>${cliente._id}</td>
@@ -56,8 +54,6 @@ const listar = async(texto) =>{
                 <td>${(parseFloat(cliente.saldo)).toFixed(2)}</td>
             </tr>
            ` 
-        }
-
     }
 
     seleccionado = resultado.firstElementChild;

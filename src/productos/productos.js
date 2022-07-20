@@ -129,6 +129,7 @@ const ponerProductos = productos =>{
         tr.appendChild(tdStock)
         tr.appendChild(tdcodFabrica)
         tr.appendChild(tdObservacion)
+        tr.id = producto._id;
         resultado.appendChild(tr);
     }
 }

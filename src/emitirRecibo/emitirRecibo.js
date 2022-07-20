@@ -162,7 +162,7 @@ const listarLista = (lista,situacion)=>{
                 <td>${ venta.nro_comp }</td>
                 <td>${ ( venta.tipo_comp === "Nota Credito" ? venta.importe * -1 : venta.importe ).toFixed ( 2 ) }</td>
                 <td>${ parseFloat ( ( venta.pagado ) ).toFixed ( 2 ) } </td>
-                <td> <input type="text" value="0.00" id = ${ venta.nro_comp } name = "pagadoActual"> </td>
+                <td> <input type="number" value="0.00" id = ${ venta.nro_comp } name = "pagadoActual"> </td>
                 <td class = "saldop"> ${ venta.tipo_comp === "Nota Credito" ? (saldo*-1).toFixed(2) : saldo.toFixed( 2 ) } </td>
                 <td> ${ venta.observaciones } </td>
                 </tr>
@@ -208,6 +208,7 @@ inputSeleccionado.addEventListener('keyup',async (e)=>{
                     trSeleccionado.nextElementSibling.children[5].children[0].focus();
                     trSeleccionado = trSeleccionado.nextElementSibling;
                     inputSeleccionado = trSeleccionado.children[5].children[0];
+                    inputSeleccionado.select();
                }
         }
         if ((parseFloat(total.value) === parseFloat(cliente.saldo) && situacion === "blanco") || (parseFloat(total.value) === parseFloat(cliente.saldo_p) && situacion === "negro")) {
