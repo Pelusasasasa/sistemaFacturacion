@@ -248,7 +248,8 @@ precioAgregar.addEventListener('keypress',e=>{
 })
 
 ipcRenderer.on('mando-el-producto',async(e,args)=>{
-        const {producto,cantidad} = JSON.parse(args)
+        const {id,cantidad} = JSON.parse(args);
+        const producto = (await axios.get(`${URL}productos/${id}`)).data;
         await mostrarVentas(producto,cantidad)
 
 

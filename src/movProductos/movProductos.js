@@ -17,7 +17,8 @@ let movProducto = {}
 let vendedor
 
 ipcRenderer.on('movimiento-producto-abrir',(e,args)=>{
-    const [producto,usuario] = JSON.parse(args)
+    const [id,usuario] = JSON.parse(args)
+    let producto = (await axios.get(`${URL}productos/${id}`)).data;
     codigo.value = producto._id
     descripcion.value = producto.descripcion
     stock.value = producto.stock

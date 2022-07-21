@@ -107,10 +107,8 @@ ipcMain.on('get-productos', async (e, args=["","descripcion"]) => {
 
 //mandamos el producto a emitir comprobante
 ipcMain.on('mando-el-producto', async (e, args) => {
-    let producto = await axios.get(`${URL}productos/${args._id}`);
-    producto = producto.data
     ventanaPrincipal.webContents.send('mando-el-producto', JSON.stringify({
-        producto: producto,
+        id: args._id,
         cantidad: args.cantidad
     }));
 
@@ -278,10 +276,8 @@ ipcMain.on('abrir-ventana-agregar-producto',async(e,args)=>{
 ipcMain.on('abrir-ventana-movimiento-producto',async (e,arreglo)=>{
     const [id,vendedor] = arreglo
     abrirVentana('movProductos/movProductos.html',800,500,"noReinician")
-    let producto = await axios.get(`${URL}productos/${id}`);
-    producto = producto.data
     nuevaVentana.on('ready-to-show',()=>{
-        nuevaVentana.webContents.send('movimiento-producto-abrir',(JSON.stringify([producto,vendedor])) )
+        nuevaVentana.webContents.send('movimiento-producto-abrir',(JSON.stringify([id,vendedor])) )
     })
 })
 

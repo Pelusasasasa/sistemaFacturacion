@@ -397,8 +397,9 @@ codigo.addEventListener('keypress',async (e) => {
     }
 })
 
-ipcRenderer.on('mando-el-producto',(e,args) => {
-    const {producto,cantidad} = JSON.parse(args);
+ipcRenderer.on('mando-el-producto',async (e,args) => {
+    const {id,cantidad} = JSON.parse(args);
+    const producto = (await axios.get(`${URL}productos/${id}`)).data;
     mostrarVentas(producto,parseFloat(cantidad))
 })
 let id = 1 //id de la tabla de ventas
