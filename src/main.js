@@ -120,15 +120,6 @@ ipcMain.on('mando-el-producto', async (e, args) => {
 
 //INICIO CLIENTES
 
-//traemos los clientes
-ipcMain.on('get-clientes', async (e, args = "") => {
-    let clientes
-    args === "" && (args = "A Consumidor Final")
-    clientes = await axios.get(`${URL}clientes/${args}`)
-    clientes = clientes.data
-    e.reply('get-clientes', JSON.stringify(clientes))
-})
-
 //Abrir ventana para modificar un cliente
 ipcMain.on('abrir-ventana-modificar-cliente', (e, args) => {
     abrirVentana("clientes/modificarCliente.html",1100,450)

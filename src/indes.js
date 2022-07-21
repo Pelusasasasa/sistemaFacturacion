@@ -1,20 +1,13 @@
 const { ipcRenderer } = require("electron")
-const sweet = require('sweetalert2');
 
-const Afip = require('@afipsdk/afip.js');
-const afip = new Afip({ CUIT: 27165767433 });
 
-const tipoConexion = require('./config.js');
 ipcRenderer.send('abrir-menu');
 const axios = require("axios");
 require("dotenv").config;
 const URL = process.env.URL;
-const Dialogs = require("dialogs");
-const dialogs = Dialogs()
-let vendedores = []
+let vendedores = [];
 const traerVendedores = async()=>{
-    vendedores = await axios.get(`${URL}usuarios`);
-    vendedores=vendedores.data;
+    vendedores = (await axios.get(`${URL}usuarios`)).data;
 };
 traerVendedores();
 
@@ -82,6 +75,7 @@ body.addEventListener('keydown',e=>{
 let vendedor
 let acceso
 let empresa
+const sweet = require('sweetalert2');
 async function validacionUsuario(texto) {
     sweet.fire({
                 title:"Contraseña",
