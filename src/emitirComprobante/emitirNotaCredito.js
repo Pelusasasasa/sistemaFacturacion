@@ -89,7 +89,7 @@ codigoC.addEventListener('keypress',async e=>{
 })
 
 ipcRenderer.on('mando-el-cliente',(e,args)=>{
-    cliente = JSON.parse(args)
+    cliente = (await axios.get(`${URL}clientes/id/${args}`)).data
     ponerInputsClientes(cliente)
     
 })

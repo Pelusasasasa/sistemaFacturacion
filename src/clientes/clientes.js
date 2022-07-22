@@ -36,7 +36,7 @@ const ponerClientes = (clientes) =>{
         if(nombre.indexOf(texto) !== -1){
            resultado.innerHTML += `
            <tr id="${cliente._id}">
-                <td >${cliente._id}</td>
+                <td class="codigo">${cliente._id}</td>
                 <th id="nombre">${cliente.cliente}</th>
                 <td >${cliente.localidad}</td>
                 <td>${cliente.direccion}</td>
@@ -195,17 +195,3 @@ th.addEventListener('mouseup',e=>{
         e.target.classList.remove('resizing');
     }
 });
-let numeroAnterior = 0
-th.addEventListener('mousemove',e=>{
-    if (precionado) {
-        let tamanioActual = parseInt(e.target.style.width.split('p')[0]);
-        if (e.pageX > numeroAnterior) {
-            e.target.style.width = (tamanioActual + (e.pageX/10)).toFixed(2) + "px";
-        }else{
-            e.target.style.width = (tamanioActual - (e.pageX/10)).toFixed(2) + "px";
-        }
-
-        numeroAnterior = e.pageX;
-        console.log(e.target.style.width)
-    }
-})

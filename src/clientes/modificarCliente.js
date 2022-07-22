@@ -55,8 +55,8 @@ const ocultarNegro = ()=>{
 }
 
 
-ipcRenderer.on('datos-clientes',(e,args)=>{
-    cliente = JSON.parse(args)[0];
+ipcRenderer.on('datos-clientes',async(e,args)=>{
+    cliente = (await axios.get(`${URL}clientes/id/${JSON.parse(args)[0]}`)).data;
     acceso = JSON.parse(args)[1];
 
 

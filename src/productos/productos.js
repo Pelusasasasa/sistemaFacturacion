@@ -131,8 +131,17 @@ const ponerProductos = productos =>{
         tr.appendChild(tdObservacion)
         tr.id = producto._id;
         resultado.appendChild(tr);
+
+        seleccionado && seleccionado.classList.remove('seleccionado');
+        subseleccion && subseleccion.classList.remove('subseleccionado');
+        seleccionado = resultado.firstElementChild;
+        seleccionado.classList.add('seleccionado');
+        subseleccion = seleccionado.children[0];
+        subseleccion.classList.add('subseleccionado');
     }
-}
+};
+
+filtrar();
 
 buscarProducto.addEventListener('keydown',e=>{
     if (e.key === "ArrowLeft" && buscarProducto.value === "") {
@@ -243,9 +252,12 @@ eliminar.addEventListener('click',async e=>{
         buscarProducto.focus();
     }
 
-})
+}
+
+)
  buscarProducto.addEventListener('keyup',filtrar);
-filtrar();
+
+
 buscarProducto.addEventListener('keypress',e=>{
     if (buscarProducto.value.length === 3 && e.key !== "-" && select.value === "codigo") {
         buscarProducto.value = buscarProducto.value + "-"

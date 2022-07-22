@@ -190,7 +190,8 @@ codigoCliente.addEventListener('keypress', async e =>{
 
 //Recibimos el cliente que nos mandaron desde la otra ventana
 ipcRenderer.on('mando-el-cliente',async(e,args)=>{
-    ponerDatosCliente(JSON.parse(args));
+    let cliente = (await axios.get(`${URL}clientes/id/${args}`)).data
+    ponerDatosCliente(cliente);
 })
 
 //si hacemos click en el tbody vamos a seleccionar una cuenta compensada o historica y pasamos a mostrar los detalles de la cuenta

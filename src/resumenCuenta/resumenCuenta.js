@@ -124,7 +124,7 @@ const ponerDatos = async(cliente)=>{
 }
 
 ipcRenderer.on('mando-el-cliente',async(e,args)=>{
-    cliente = JSON.parse(args)
+    cliente = (await axios.get(`${URL}clientes/id/${args}`)).data;
     ponerDatos(cliente)
 })
 

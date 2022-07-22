@@ -23,21 +23,7 @@
 
   .contenedor-tabla {
     overflow: scroll;
-    border: 0.1rem solid black;
-    height: 45rem;
-    @include Chico(){
-      height: 47rem;
-    }
-    @include Comun(){
-      height: 50rem;
-    }
-    @include P900(){
-      height: 60rem;
-    }
-    @include P950(){
-      height: 65rem;
-    }
-
+     height: 65vh;
     .tabla {
       background-color: white;
       width: 100%;
@@ -49,7 +35,7 @@
         tr {
           th {
             border: 0.1rem solid black;
-            font-size: 2.4rem;
+            font-size: 2.2rem;
             padding: 0.5rem 0;
           }
         }
@@ -57,10 +43,6 @@
       th{
         cursor: pointer;
       }
-
-      table th.resizing {
-        cursor: col-resize;
-    }
 
       tbody {
         .seleccionado{
@@ -70,26 +52,17 @@
           background-color: rgb(47, 120, 129);
         }
         tr {
-          padding: 2rem
-          td {
-            font-size: 1.5rem;
-            text-align: center;
-            text-transform: uppercase;
-          }
-
           td,
           th {
             font-size: 2.2rem;
             border: 0.1rem solid black;
-            overflow-x: hidden;
-            max-width: 15rem;
-            white-space: nowrap;
           }
 
 
           &:hover,
           .seleccionado {
             cursor: pointer;
+            background-color: #72c7b4;
           }
         }
       }

@@ -1,11 +1,15 @@
-const { ipcRenderer } = require("electron")
+const { ipcRenderer } = require("electron");
+const axios = require("axios");
+require("dotenv").config;
+const URL = process.env.URL;
 
 const tbody = document.querySelector('.tbody')
 
 // ipcRenderer.send('informacion-movimiento-producto')
 
-ipcRenderer.on('datos-movimiento-producto', (e,args)=>{
-    const listaMovimiento = JSON.parse(args)
+ipcRenderer.on('datos-movimiento-producto',async (e,args)=>{
+    const listaMovimiento = (await axios.get(`${URL}movProductos/${args}`)).data;
+    console.log(listaMovimiento)
     listaMovimiento.sort((a,b)=>{
         if (a.fecha > b.fecha) {
             return 1;

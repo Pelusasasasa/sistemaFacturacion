@@ -123,33 +123,15 @@ ipcMain.on('abrir-ventana-modificar-cliente', (e, args) => {
     abrirVentana("clientes/modificarCliente.html",1100,450)
     const [idCliente,acceso] = args
     nuevaVentana.on('ready-to-show',async ()=>{
-        let cliente = await axios.get(`${URL}clientes/id/${idCliente}`)
-        cliente = cliente.data
-        nuevaVentana.webContents.send('datos-clientes', JSON.stringify([cliente,acceso]))
+        nuevaVentana.webContents.send('datos-clientes', JSON.stringify([idCliente,acceso]))
     })
     nuevaVentana.setMenuBarVisibility(false)
 })
 
 //mandamos el cliente a emitir comprobante
 ipcMain.on('mando-el-cliente', async (e, args) => {
-    let cliente = (await axios.get(`${URL}clientes/id/${args}`)).data
-    ventanaPrincipal.webContents.send('mando-el-cliente', JSON.stringify(cliente))
+    ventanaPrincipal.webContents.send('mando-el-cliente', args)
     ventanaPrincipal.focus()
-})
-
-ipcMain.on('borrarVentaACliente',async (e,args)=>{
-    const [id,numero] = args;
-
-    let cliente = await axios.get(`${URL}clientes/id/${id}`)
-    cliente = cliente.data;
-    let venta = (await axios.get(`${URL}presupuesto/${numero}`)).data;
-
-    cliente.saldo_p = (parseFloat(cliente.saldo_p)-venta.precioFinal).toFixed(2);
-
-    cliente.listaVentas = cliente.listaVentas.filter(num=>(numero!== num))
-
-    await axios.put(`${URL}clientes/${id}`,cliente)
-    await axios.delete(`${URL}presupuesto/${numero}`)
 })
 
 ipcMain.on('abrir-ventana-clientesConSaldo',async(e,args)=>{
@@ -206,37 +188,13 @@ const imprimir = (opciones,args)=>{
     });
 }   
 
-//Mandamos la modificacion de la venta
-ipcMain.on('ventaModificada',async (e,[args,id])=>{
-     let venta = await axios.get(`${URL}ventas/${id}`)
-    if(venta.data.length === 0){
-        venta = await axios.get(`${URL}presupuesto/${id}`)
-        venta = venta.data;
-    }else{
-        venta = venta.data[0]
-    }
-
-    let saldoABorrar = venta.precioFinal
-    venta.precioFinal = args.precioFinal;
-    venta.productos = args.productos;
-    venta.tipo_comp === "Ticket Factura" ? await axios.put(`${URL}ventas/${venta._id}`,venta) : await axios.put(`${URL}presupuesto/${venta._id}`,venta);
-    let cliente = await axios.get(`${URL}clientes/id/${args.cliente}`);
-    cliente = cliente.data;
-    let total = 0
-    total = args.precioFinal
-    total = (parseFloat(total) - parseFloat(saldoABorrar) + parseFloat(cliente.saldo_p)).toFixed(2)
-    cliente.saldo_p = total
-     await axios.put(`${URL}clientes/${args.cliente}`,cliente)
-     e.reply('devolverVenta',JSON.stringify([venta,cliente]))
-})
-
-    ipcMain.on('abrir-ventana-emitir-comprobante',(e,args)=>{
-        const[vendedor,numeroVenta,empresa] = args
-        abrirVentana("emitirComprobante/emitirComprobante.html",1000,1000)
-        nuevaVentanaDos.on('ready-to-show',async ()=>{
-            nuevaVentanaDos.webContents.send('venta',JSON.stringify([vendedor,numeroVenta,empresa]))
-        })
+ipcMain.on('abrir-ventana-emitir-comprobante',(e,args)=>{
+    const[vendedor,numeroVenta,empresa] = args
+    abrirVentana("emitirComprobante/emitirComprobante.html",1000,1000)
+    nuevaVentanaDos.on('ready-to-show',async ()=>{
+        nuevaVentanaDos.webContents.send('venta',JSON.stringify([vendedor,numeroVenta,empresa]))
     })
+})
 
 
     ipcMain.on('eliminar-venta',async(e,id)=>{
@@ -287,8 +245,7 @@ ipcMain.on('abrir-ventana-info-movimiento-producto',async (e,args)=>{
 
 //informacion de movimiento de producto
     nuevaVentana.on('ready-to-show',async()=>{
-        let producto = (await axios.get(`${URL}movProductos/${args}`)).data;
-        nuevaVentana.webContents.send('datos-movimiento-producto',JSON.stringify(producto))
+        nuevaVentana.webContents.send('datos-movimiento-producto',args)
     })
 })
 
@@ -363,10 +320,6 @@ const templateMenu = [
                         label: "Aum porcentaje",
                         click(){
                             abrirVentana("./productos/aumPorcentaje.html",600,200);
-                            nuevaVentana.on('ready-to-show',async()=>{
-                                const marcas = await axios.get(`${URL}productos`)
-                                nuevaVentana.webContents.send("mandarMarcas",JSON.stringify(marcas.data))
-                            })
                         }
                     },{
                         label: "Listado Por Marca",

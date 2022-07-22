@@ -244,7 +244,7 @@ codigoC.addEventListener('focus',e=>{
 
 //recibimos el cliente
 ipcRenderer.on('mando-el-cliente',async (e,args)=>{ 
-    cliente = JSON.parse(args)
+    cliente = (await axios.get(`${URL}clientes/id/${args}`)).data
     await ponerInputsClientes(cliente);//ponemos en los inputs los valores del cliente
     codigoC.value === "9999" ? buscarCliente.focus() : observaciones.focus()
 })
@@ -776,9 +776,9 @@ presupuesto.addEventListener('click',async (e)=>{
                                  cond_iva: conIva.value
                              }
                              if (venta.tipo_pago === "CC") {
-                                ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion,listaSinDescuento])
+                               await ipcRenderer.send('imprimir-venta',[venta,cliente,true,2,"imprimir-comprobante",valorizadoImpresion,listaSinDescuento])
                              }else{
-                                ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion,listaSinDescuento])
+                                await ipcRenderer.send('imprimir-venta',[venta,cliente,false,1,"imprimir-comprobante",valorizadoImpresion,listaSinDescuento])
                              }
                          }
                          //si la venta es distinta de presupuesto sacamos el stock y movimiento de producto

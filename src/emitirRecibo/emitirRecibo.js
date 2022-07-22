@@ -122,8 +122,8 @@ codigo.addEventListener('keypress', async (e)=>{
 })
 
 ipcRenderer.on('mando-el-cliente',async(e,args)=>{
-    cliente=JSON.parse(args)
-    inputsCliente(JSON.parse(args))
+    let cliente = (await axios.get(`${URL}clientes/id/${args}`)).data
+    inputsCliente(cliente)
 })
 
 const listarLista = (lista,situacion)=>{
@@ -171,7 +171,6 @@ const listarLista = (lista,situacion)=>{
     });
 
 }
-let a;
 //Vemos que tr se selecciono y lo guardamos en una varaible
     listar.addEventListener('click',e=>{
         trSeleccionado = e.path[2];
