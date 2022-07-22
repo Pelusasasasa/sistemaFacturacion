@@ -321,8 +321,14 @@ let saldoABorrar = 0
                 let productos = [];
                 let total = 0;
                 for await(let movimiento of movimientos ){
-                    const producto = (await axios.get(`${URL}productos/${movimiento.codProd}`)).data;
-                    total += parseFloat(movimiento.egreso)*parseFloat(producto.precio_venta);
+                    let producto = (await axios.get(`${URL}productos/${movimiento.codProd}`)).data;
+                    producto = producto ? producto : {
+                        precio_venta: movimiento.precio_unitario,
+                        descripcion:movimiento.descripcion,
+                        _id:movimiento.codProd,
+                        marca:""
+                    }
+                    total =  parseFloat((total + parseFloat(movimiento.egreso)*parseFloat(producto.precio_venta)).toFixed(2));
                     productos.push({cantidad:movimiento.egreso,objeto:producto});
                 };
                 venta.productos = productos;

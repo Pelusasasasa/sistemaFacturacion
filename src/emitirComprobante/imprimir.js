@@ -68,14 +68,13 @@ const fecha = document.querySelector('.fecha');
             }
             tbody.innerHTML=""
              for await (let {objeto,cantidad} of lista) {
-                console.log(valorizado)
                  if ((venta.tipo_pago !== "CC" || (valorizado === "valorizado" && venta.tipo_pago === "CC")) && valorizado !== "no valorizado") {
-                        
+                        console.log(objeto.descripcion)
                     tbody.innerHTML += `
                     <tr>
                         <td>${(parseFloat(cantidad)).toFixed(2)}</td>
                         <td>${objeto._id}</td>
-                        <td class="descripcion">${objeto.descripcion.slice(0,40)} ${objeto.marca}</td>
+                        <td class="descripcion">${objeto.descripcion} ${objeto.marca}</td>
                         <td>${parseFloat(objeto.precio_venta).toFixed(2)}</td>
                         <td>${(parseFloat(objeto.precio_venta)*cantidad).toFixed(2)}</td>
                     </tr>

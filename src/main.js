@@ -179,10 +179,10 @@ const imprimir = (opciones,args)=>{
             nuevaVentana.webContents.print(opciones,(success, errorType) => {
                     if (success) {
                         ventanaPrincipal.focus()
-                         nuevaVentana.close();
+                        //nuevaVentana.close();
                     }else{
                         ventanaPrincipal.focus();
-                         nuevaVentana && nuevaVentana.close();
+                         //nuevaVentana && nuevaVentana.close();
                     }
         })
     });
