@@ -20,24 +20,48 @@
       </div>
     </div>
 
-    <div class="numeros">
-      <label for="">Numero</label>
-      <input type="text" value="0000" id="primerNumero" />
-      <input type="text" name="hasta" id="segundoNumero" value="00000000" />
-    </div>
+    <section class="porNumero">
+      <main class="numeros">
+        <label for="">Numero</label>
+        <main>
+          <input type="number" value="0000" id="primerNumero" />
+          <input type="number" name="hasta" id="segundoNumero" value="00000000" />
+        </main>
+      </main>
+  
+      <main class="tipoComp">
+        <label for="tipoComp">Tipo Comprobante</label>
+        <select name="tipoComp" id="tipoComp">
+          <option value="presupuesto">Presupuesto</option>
+          <option value="recibo">Recibo</option>
+          <option value="factura">Factura</option>
+        </select>
+      </main>
 
-    <div class="nombre invisible">
+
+      <main class="codComp">
+        <label for="codComp">Codigo Comprobante</label>
+        <select name="codComp" id="codComp">
+          <option value="1">Factura A</option>
+          <option value="3">Nota Credito A</option>
+          <option value="6">Factura B</option>
+          <option value="8">Nota Credito B</option>
+        </select>
+      </main>
+    </section>
+
+    <div class="nombre none">
       <label for="Hasta">Razon social</label>
       <input type="text" id="razon" name="razon" />
     </div>
 
     <div class="buscador">
-      <div class="desde invisible">
+      <div class="desde none">
         <label for="desde">Desde</label>
         <input type="date" autofocus name="desde" id="desde" />
       </div>
 
-      <div class="hasta invisible">
+      <div class="hasta none">
         <label for="Hasta">Hasta</label>
         <input type="date" name="hasta" id="hasta" />
       </div>

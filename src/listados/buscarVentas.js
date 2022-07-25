@@ -14,6 +14,9 @@ const razon = document.querySelector('#razon');
 const tbody = document.querySelector('.tbody');
 let seleccionado = document.querySelector('#porNumero');
 
+const tipoComp = document.querySelector('#tipoComp');
+const codComp = document.querySelector('#codComp');
+
 const hoy = new Date()
 let dia = hoy.getDate()
 let mes = hoy.getMonth() + 1;
@@ -48,9 +51,10 @@ segundoNumero.addEventListener('focus',e=>{
 });
 
 seleccionar.addEventListener('click',e=>{
+    console.log("a")
     seleccion.forEach(e=>{
         e.checked && (seleccionado = e);
-    })
+    });
     const desde = document.querySelector('.desde')
     const hasta = document.querySelector('.hasta')
     const hastafecha = document.querySelector('#hasta')
@@ -58,30 +62,37 @@ seleccionar.addEventListener('click',e=>{
     desdeFecha.value = fechaDeHoy
     hastafecha.value = fechaDeHoy
     const numeros = document.querySelector('.numeros')
+    console.log(seleccionado.id)
     if (seleccionado.id==="razonSocial") {
-        numeros.classList.add('invisible')
-        desde.classList.remove('invisible')
-        hasta.classList.remove('invisible')
-        nombre.classList.remove('invisible')
+        numeros.classList.add('none');
+        desde.classList.remove('none');
+        hasta.classList.remove('none');
+        nombre.classList.remove('none');
+        tipoComp.parentNode.classList.add('none');
+        codComp.parentNode.classList.add('none');
     }else{
-        numeros.classList.remove('invisible')
-        desde.classList.add('invisible')
-        hasta.classList.add('invisible')
-        nombre.classList.add('invisible')
+        numeros.classList.remove('none');
+        desde.classList.add('none');
+        hasta.classList.add('none');
+        nombre.classList.add('none');
+        tipoComp.parentNode.classList.remove('none');
+        codComp.parentNode.classList.remove('none');
     }
 })
 
-const buscar = document.querySelector('.buscar')
+const buscar = document.querySelector('.buscar');
 buscar.addEventListener('click',async e=>{
      if (seleccionado.id==="porNumero") {
-         let idVenta
-        primerNumero.value === "0000" 
-        ? idVenta = (segundoNumero.value).padStart(8,"0")
-        : idVenta = (primerNumero.value.padStart(4,"0") + "-" + (segundoNumero.value).padStart(8,"0"));
-        let venta = (await axios.get(`${URL}ventas/venta/ventaUnica/${idVenta}/Ticket Factura`)).data;
-        venta = venta === "" ? (await axios.get(`${URL}ventas/venta/ventaUnica/${idVenta}/Recibos`)).data : venta;
-        venta = venta === "" ? (await axios.get(`${URL}ventas/venta/ventaUnica/${idVenta}/Recibos_P`)).data : venta;
-        venta = venta === "" ? (await axios.get(`${URL}presupuesto/${idVenta}`)).data : venta;
+        let venta;
+        const numero = primerNumero.value.padStart(4,'0') + "-" + segundoNumero.value.padStart(8,'0');
+        if (tipoComp.value === "presupuesto") {
+           venta = (await axios.get(`${URL}presupuesto/${numero}`)).data;
+        }else if(tipoComp.value === "recibo"){
+            venta = (await axios.get(`${URL}ventas/venta/ventaUnica/${numero}/Recibos_P`)).data;
+            venta = venta === "" ? (await axios.get(`${URL}ventas/venta/ventaUnica/${numero}/Recibos`)).data : venta;
+        }else{
+            venta = (await axios.get(`${URL}ventas/venta/ventaUnica/${numero}/Ticket Factura`)).data;
+        }
         traerVenta(venta);
      }else{
         let texto = razon.value === "" ? "A Consumidor Final" : razon.value;

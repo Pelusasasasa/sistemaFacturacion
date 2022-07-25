@@ -1,12 +1,18 @@
 .buscarVentas {
-  .invisible {
-    visibility: hidden;
+  .none {
+    display: none;
   }
   .seleccionar {
     display: flex;
     justify-content: space-around;
     margin: 1rem auto;
   }
+
+  .porNumero{
+    display: flex;
+    justify-content: space-around;
+  }
+
   .buscador {
     margin: 1rem auto;
     display: flex;
@@ -24,23 +30,27 @@
       }
     }
   }
-
+ .tipoComp,.codComp{
+  display: flex;
+  flex-direction: column;
+ }
   .numeros {
+    width: 40%;
     display: flex;
-    width: 150%;
+    flex-direction: column;
+    main{
+      display: flex;
+    }
     #primerNumero {
-      width: 4%;
+      width: 80%;
       padding: 0;
-      height: 65%;
     }
     #segundoNumero {
-      width: 7%;
+      width: 110%;
       padding: 0;
-      height: 65%;
     }
     input{
       font-size: 2rem;
-      padding: 1rem;
     }
   }
 
