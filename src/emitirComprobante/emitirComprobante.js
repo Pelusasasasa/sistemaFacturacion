@@ -382,8 +382,8 @@ codigo.addEventListener('keypress',async (e) => {
                                 if (!Number.isInteger(parseFloat(value)) && producto.unidad === "U") {
                                     await sweet.fire({title:"La cantidad de este producto no puede ser en decimal"});
                                 }else{
-                                    producto.stock<0 && sweet.fire({title:"Stock En Negativo"});
-                                   (parseFloat(producto.precio_venta) === 0 && sweet.fire({title:"Precio del producto en 0"}));
+                                    producto.stock < 0 && await sweet.fire({title:"Stock En Negativo"});
+                                   (parseFloat(producto.precio_venta) === 0 && await sweet.fire({title:"Precio del producto en 0"}));
                                     await mostrarVentas(producto,parseFloat(value));
                                     e.target.value="";
                                     codigo.focus();
