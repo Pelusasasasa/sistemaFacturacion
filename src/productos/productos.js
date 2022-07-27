@@ -73,6 +73,7 @@ body.addEventListener('keydown',e=>{
 function recorrerConFlechas(e) {
      if(e.key === "Control"){
         document.addEventListener('keydown',e=>{
+            console.log(e.keycode)
             if (e.keyCode === 67) {
               if (subseleccion) {
                   let aux = document.createElement("textarea");
@@ -326,6 +327,7 @@ const funcionSubSeleccion = (codigoKey)=>{
             seleccionado.classList.add('seleccionado');
         }
       }
+      seleccionado.scrollIntoView()
 }
 
 

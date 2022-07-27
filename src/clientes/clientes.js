@@ -178,6 +178,7 @@ body.addEventListener('keydown',e=>{
             })
         }
     }
+    seleccionado && seleccionado.scrollIntoView()
 });
 
 
