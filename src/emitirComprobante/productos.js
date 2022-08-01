@@ -223,4 +223,5 @@ const funcionSubSeleccion = (codigoKey)=>{
             seleccionado.classList.add('seleccionado');
         }
       }
+      seleccionado.scrollIntoView()
 };

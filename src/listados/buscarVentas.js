@@ -91,7 +91,8 @@ buscar.addEventListener('click',async e=>{
             venta = (await axios.get(`${URL}ventas/venta/ventaUnica/${numero}/Recibos_P`)).data;
             venta = venta === "" ? (await axios.get(`${URL}ventas/venta/ventaUnica/${numero}/Recibos`)).data : venta;
         }else{
-            venta = (await axios.get(`${URL}ventas/venta/ventaUnica/${numero}/Ticket Factura`)).data;
+            console.log(codComp.value)
+            venta = (await axios.get(`${URL}ventas/venta/ventaUnica/${numero}/${codComp.value}`)).data;
         }
         traerVenta(venta);
      }else{
@@ -135,7 +136,6 @@ function listarVentas(venta) {
         })
         tbody.innerHTML += `
         <tr class="total">
-        <td></td>
         <td></td>
         <td></td>
         <td></td>

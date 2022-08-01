@@ -16,7 +16,7 @@ const volver = document.querySelector('.volver')
 let movProducto = {}
 let vendedor
 
-ipcRenderer.on('movimiento-producto-abrir',(e,args)=>{
+ipcRenderer.on('movimiento-producto-abrir',async(e,args)=>{
     const [id,usuario] = JSON.parse(args)
     let producto = (await axios.get(`${URL}productos/${id}`)).data;
     codigo.value = producto._id

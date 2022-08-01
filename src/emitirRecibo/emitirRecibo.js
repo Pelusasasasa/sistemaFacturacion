@@ -312,7 +312,7 @@ const hacerRecibo = async()=>{
      let saldoFavor = 0;
      saldoFavor = (saldoAfavor.value !== "") && parseFloat(saldoAFavor.value);
      recibo.abonado = saldoAfavor.value;
-     recibo.precioFinal = (parseFloat(total.value)).toFixed(2);
+     recibo.precioFinal = parseFloat((parseFloat(total.value)).toFixed(2));
      const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2));
 
      //Tomamos el cliente y agregamos a su lista Ventas la venta y tambien modificamos su saldo
@@ -322,7 +322,7 @@ const hacerRecibo = async()=>{
 
      try {
         //modificamos las ventas en cuentas compensada
-        await modificarVentas(nuevaLista);
+        //await modificarVentas(nuevaLista);
         //modificamos el  numero del recibo
         recibo.nro_comp = await traerUltimoNroRecibo();
         const numeroAModificar = parseFloat(recibo.nro_comp.split('-')[1])
@@ -346,7 +346,7 @@ const hacerRecibo = async()=>{
         recibo.tipo_comp === "Recibos_P" ? await ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,arregloParaImprimir,total.value]) : await ipcRenderer.send('imprimir-venta',[recibo,,true,1,"Ticket Factura"]);
         //Mandar Recibo para que se guarde como pdf
         recibo.tipo_comp === "Recibos" && (alerta.children[1].children[0].innerHTML = "Guardando Recibo Como PDF");
-        // recibo.tipo_comp === "Recibos" && await axios.post(`${URL}crearPdf`,[recibo,cliente]);
+        recibo.tipo_comp === "Recibos" && await axios.post(`${URL}crearPdf`,[recibo,cliente,{}]);
         location.href = "../index.html";
     } catch (error) {
         console.log(error)
