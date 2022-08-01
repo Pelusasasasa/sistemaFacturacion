@@ -100,11 +100,15 @@ let listaVentas = []
 let nuevaLista=[]
 vendedor.innerHTML = `<h3>${Vendedor}</h3>`
 
+codigo.addEventListener('focus',e=>{
+    codigo.select();
+})
 
 codigo.addEventListener('keypress', async (e)=>{
     if (e.key === 'Enter') {
         if (codigo.value !== "") {
             cliente = (await axios.get(`${URL}clientes/id/${codigo.value.toUpperCase()}`)).data;
+            console.log(cliente)
             if ((cliente === "")) {
                 await sweet.fire({
                     title:"Cliente no encontrado",
@@ -297,7 +301,7 @@ const hacerRecibo = async()=>{
      recibo.cod_comp = verCodComp(cond_iva.value)
      recibo.dnicuit = cuit.value;
      recibo.fecha = new Date();
-     recibo.cliente = cliente._id;
+     recibo.cliente = nombre.value;
      recibo.nombreCliente = cliente.cliente;
      recibo.vendedor = Vendedor;
      recibo.direccion = direccion.value;
@@ -313,8 +317,7 @@ const hacerRecibo = async()=>{
 
      //Tomamos el cliente y agregamos a su lista Ventas la venta y tambien modificamos su saldo
      const _id = recibo.cliente;
-     let clienteTraido = await axios.get(`${URL}clientes/id/${_id}`);
-     clienteTraido = clienteTraido.data;
+     let clienteTraido = (await axios.get(`${URL}clientes/id/${_id}`)).data;
      clienteTraido[aux] = saldoNuevo.toFixed(2);
 
      try {
@@ -340,7 +343,7 @@ const hacerRecibo = async()=>{
         recibo.productos = arregloParaImprimir;
         // arregloParaImprimir contiene todos las ventas que tiene pagadas y total contiene el total del recibo
         alerta.children[1].children[0].innerHTML = "Imprimiendo Recibo";
-        recibo.tipo_comp === "Recibos_P" ? ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,arregloParaImprimir,total.value]) : ipcRenderer.send('imprimir-venta',[recibo,,true,1,"Ticket Factura"]);
+        recibo.tipo_comp === "Recibos_P" ? await ipcRenderer.send('imprimir-venta',[recibo,cliente,false,1,recibo.tipo_comp,arregloParaImprimir,total.value]) : await ipcRenderer.send('imprimir-venta',[recibo,,true,1,"Ticket Factura"]);
         //Mandar Recibo para que se guarde como pdf
         recibo.tipo_comp === "Recibos" && (alerta.children[1].children[0].innerHTML = "Guardando Recibo Como PDF");
         // recibo.tipo_comp === "Recibos" && await axios.post(`${URL}crearPdf`,[recibo,cliente]);
@@ -460,6 +463,6 @@ const ponerEnCuentaCorrienteHistorica = async(recibo)=>{
     cuenta.tipo_comp = recibo.tipo_comp;
     cuenta.nro_comp = recibo.nro_comp;
     cuenta.haber = parseFloat(recibo.precioFinal);
-    cuenta.saldo = cuenta.tipo_comp === "Recibos" ? parseFloat((parseFloat(cliente.saldo) - cuenta.haber).toFixed(2))  : parseFloat((parseFloat(cliente.saldo_p) - cuenta.haber).toFixed(2));
+    cuenta.saldo = cuenta.tipo_comp === "Recibos" ? parseFloat((parseFloat(saldo.value) - cuenta.haber).toFixed(2))  : parseFloat((parseFloat(saldo_p.value) - cuenta.haber).toFixed(2));
     await axios.post(`${URL}cuentaHisto`,cuenta)
 }

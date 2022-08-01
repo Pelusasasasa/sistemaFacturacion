@@ -47,7 +47,7 @@ buscador.addEventListener('keypress',async e=>{
         if (buscador.value === "") {
             ipcRenderer.send('abrir-ventana-clientesConSaldo',situacion)
         }else{
-            const cliente = (await axios.get(`${URL}clientes/clienteConSaldo/${buscador.value.toUpperCase()}`)).data;
+            cliente = (await axios.get(`${URL}clientes/clienteConSaldo/${buscador.value.toUpperCase()}`)).data;
             if (cliente !== "") {
                 buscador.value = cliente._id;
                 nombreCliente.value = cliente.cliente;
@@ -172,6 +172,7 @@ function listarVentas(ventas,situacion,saldoAnterior,saldoAnterior_P) {
             `
 
         });
+        console.log(cliente)
         if (cliente[saldo] === undefined) {
             saldoImprimir.innerHTML = "0.00"
         }else{
