@@ -91,6 +91,8 @@ function listarVentas(lista) {
             tipo = "P";
         }else if(venta.tipo_comp === "Ticket Factura"){
             tipo = "T";
+        }else if(venta.tipo_comp === "Nota Credito"){
+            tipo = "N";
         }else{
             tipo = "R";
         };
@@ -116,13 +118,13 @@ function listarVentas(lista) {
                 <td>${tipo}</td>
                 <td>${venta.nro_comp}</td>
                 <td>${hoy}/${mes}/${anio} - ${hours}:${minutes}:${seconds}</td>
-                <td>${venta.nombreCliente}</td>
+                <td>${(venta.nombreCliente).slice(0,18)}</td>
                 <td>${objeto._id}</td>
-                <td>${objeto.descripcion}</td>
-                <td>${venta.vendedor.substr(-20,2)}</td>
-                <td class= "egreso">${(parseFloat(cantidad)).toFixed(2)}</td>
+                <td>${objeto.descripcion.slice(0,22)}</td>
+                <td>${venta.vendedor.substr(-20,3)}</td>
+                <td class= "egreso">${venta.tipo_comp === "Nota Credito" ? parseFloat(cantidad)*-1 : (parseFloat(cantidad)).toFixed(2)}</td>
                 <td>${objeto.precio_venta}</td>
-                <td>${(objeto.precio_venta*cantidad).toFixed(2)}</td>
+                <td>${venta.tipo_comp === "Nota Credito" ? (objeto.precio_venta*cantidad*-1).toFixed(2) : (objeto.precio_venta*cantidad).toFixed(2)}</td>
             </tr>
         `
         })
@@ -132,25 +134,27 @@ function listarVentas(lista) {
                     <td>${tipo}</td>
                     <td>${venta.nro_comp}</td>
                     <td>${hoy}/${mes}/${anio} - ${hours}:${minutes}:${seconds}</td>
-                    <td>${venta.nombreCliente}</td>
+                    <td>${(venta.nombreCliente).slice(0,18)}</td>
                     <td></td>
                     <td></td>
-                    <td>${venta.vendedor}</td>
+                    <td>${venta.vendedor.substr(-20,3)}</td>
                     <td></td>
                     <td></td>
                     <td>${venta.precioFinal}</td>
                 </tr>
             `
         }
-        if (venta.tipo_comp === "Ticket Factura" || venta.tipo_comp === "Nota Credito") {
+        if (venta.tipo_comp === "Ticket Factura") {
             totalFactura += venta.precioFinal;
+        }else if(venta.tipo_comp === "Nota Credito"){
+            totalFactura -= venta.precioFinal;
         }else if(venta.tipo_comp === "Presupuesto"){
             totalPresupuesto += venta.precioFinal;
         }else{
             totalRecibos += venta.precioFinal;
         }
         tbody.innerHTML += `
-        <tr class="total"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class=tdTotal>${parseFloat(venta.precioFinal).toFixed(2)}</td></tr>`
+        <tr class="total"><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td class=tdTotal>${venta.tipo_comp === "Nota Credito" ? (parseFloat(venta.precioFinal)*-1).toFixed(2)  : parseFloat(venta.precioFinal).toFixed(2)}</td></tr>`
     });
 
     tbody.innerHTML += `

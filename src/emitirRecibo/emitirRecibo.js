@@ -92,6 +92,7 @@ const cancelar = document.querySelector('.cancelar')
 const vendedor = document.querySelector('.vendedor');
 const saldoAfavor = document.querySelector('#saldoAFavor');
 const total = document.querySelector('#total');
+
 let inputSeleccionado  = listar
 let trSeleccionado
 total.value = 0.00
@@ -126,7 +127,7 @@ codigo.addEventListener('keypress', async (e)=>{
 })
 
 ipcRenderer.on('mando-el-cliente',async(e,args)=>{
-    let cliente = (await axios.get(`${URL}clientes/id/${args}`)).data
+    cliente = (await axios.get(`${URL}clientes/id/${args}`)).data
     inputsCliente(cliente)
 })
 
@@ -295,14 +296,13 @@ const hacerRecibo = async()=>{
             })
         }
     })
-    
 
      const recibo = {}
      recibo.cod_comp = verCodComp(cond_iva.value)
      recibo.dnicuit = cuit.value;
      recibo.fecha = new Date();
-     recibo.cliente = nombre.value;
-     recibo.nombreCliente = cliente.cliente;
+     recibo.cliente = codigo.value;
+     recibo.nombreCliente = nombre.value;
      recibo.vendedor = Vendedor;
      recibo.direccion = direccion.value;
      recibo.condIva = cond_iva.value;
@@ -315,31 +315,29 @@ const hacerRecibo = async()=>{
      recibo.precioFinal = parseFloat((parseFloat(total.value)).toFixed(2));
      const saldoNuevo = parseFloat((parseFloat(cliente[aux]) - parseFloat(total.value)).toFixed(2));
 
-     //Tomamos el cliente y agregamos a su lista Ventas la venta y tambien modificamos su saldo
-     const _id = recibo.cliente;
-     let clienteTraido = (await axios.get(`${URL}clientes/id/${_id}`)).data;
+     //Tomamos el cliente y modificamos su saldo
+     let clienteTraido = (await axios.get(`${URL}clientes/id/${recibo.cliente}`)).data;
      clienteTraido[aux] = saldoNuevo.toFixed(2);
 
      try {
         //modificamos las ventas en cuentas compensada
-        //await modificarVentas(nuevaLista);
+        await modificarVentas(nuevaLista);
+
         //modificamos el  numero del recibo
         recibo.nro_comp = await traerUltimoNroRecibo();
         const numeroAModificar = parseFloat(recibo.nro_comp.split('-')[1])
         await modifcarNroRecibo(numeroAModificar,recibo.tipo_comp,clienteTraido.cond_iva);
 
-        let listaVentas = clienteTraido.listaVentas;
-        listaVentas[0] === "" ? (listaVentas[0] = recibo.nro_comp) : (listaVentas.push(recibo.nro_comp));
-        clienteTraido.listaVentas = listaVentas;
-
         //Ponemos en la historica el Recibo
         await ponerEnCuentaCorrienteHistorica(recibo);
+
         //Ponemos en la compensada si le queda saldo a favor
         saldoAfavor.value !== "" && await ponerEnCuentaCorrienteCompensada(recibo);
         
-        await axios.put(`${URL}clientes/${_id}`,clienteTraido);
+        await axios.put(`${URL}clientes/${recibo.cliente}`,clienteTraido);
         await axios.post(`${URL}ventas`,recibo);
-        //Hacemos que los producos sean las cuentas conpensadas
+
+        //Hacemos que los productos sean las cuentas conpensadas
         recibo.productos = arregloParaImprimir;
         // arregloParaImprimir contiene todos las ventas que tiene pagadas y total contiene el total del recibo
         alerta.children[1].children[0].innerHTML = "Imprimiendo Recibo";

@@ -209,7 +209,7 @@ const listar = async (ventas,diaVentaAnterior)=>{
         tbody.innerHTML += await `
             <tr>
                 <td>${day}/${month}/${year}</td>
-                <td class = "inicio">${venta.nombreCliente}</td>
+                <td class = "inicio">${venta.nombreCliente.slice(0,18)}</td>
                 <td class = "inicio">${cond_iva}</td>
                 <td class = "inicio">${venta.dnicuit ? venta.dnicuit : "00000000"}</td>
                 <td class = "inicio">${venta.tipo_comp}</td>

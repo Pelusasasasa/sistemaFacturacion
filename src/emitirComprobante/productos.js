@@ -15,7 +15,7 @@ let seleccionado
 const body = document.querySelector('body')
 
 body.addEventListener('keydown',e=>{
-    if (e.key === 'Enter' && table.classList.contains('tablaFocus') && document.activeElement.tabIndex !== 1 && document.activeElement.tabIndex !== 2 ) {
+    if (e.key === 'Enter') {
         seleccionado = document.querySelector('.seleccionado')
         e.preventDefault()
         if(seleccionado){
