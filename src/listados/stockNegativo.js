@@ -72,10 +72,9 @@ cambiar.addEventListener('click',async e=>{
         confirmButtonText:"Aceptar",
     }).then(async ({isConfirmed,value})=>{
         if (isConfirmed && value !== "") {
-            let producto = await axios.get(`${URL}productos/${seleccionado.id}`)
-            producto = producto.data;
+            let producto = (await axios.get(`${URL}productos/${seleccionado.id}`)).data
+            await crearMovimiento(producto,value);
             producto.stock = value;
-            crearMovimiento(producto,producto.stock);
             await axios.put(`${URL}productos/${seleccionado.id}`,producto);
             location.reload()    
         }
@@ -87,8 +86,9 @@ const crearMovimiento = async(producto,stock)=>{
     const movimiento = {};
     movimiento.codProd = producto._id;
     movimiento.descripcion = producto.descripcion;
-    movimiento.ingreso = stock;
+    movimiento.ingreso = parseFloat(stock) - parseFloat(producto.stock);
     movimiento.stock = stock;
+    movimiento.tipo_comp = "+";
     movimiento.precio_unitario = producto.precio_venta;
     await axios.post(`${URL}movProductos`,[movimiento]);
 }

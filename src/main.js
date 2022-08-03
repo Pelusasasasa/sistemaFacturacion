@@ -174,8 +174,8 @@ ipcMain.on('imprimir-venta',async(e,args)=>{
 
 //funcion para imprimir presupuesto
 const imprimir = (opciones,args)=>{
-    nuevaVentana.webContents.on('did-finish-load', function() {
-        nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
+    nuevaVentana.webContents.on('did-finish-load',async function() {
+            await nuevaVentana.webContents.send('imprimir',JSON.stringify(args))
             nuevaVentana.webContents.print(opciones,(success, errorType) => {
                     if (success) {
                         ventanaPrincipal.focus()

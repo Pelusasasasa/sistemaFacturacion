@@ -6,7 +6,8 @@
   }
 
   .listar {
-    height: 50rem;
+    height: 90vh;
+    overflow: scroll;
     border: 0.1rem solid black;
     table {
       border-collapse: collapse;

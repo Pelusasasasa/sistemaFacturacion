@@ -4,8 +4,8 @@ const { DateTime } = require("luxon");
 require("dotenv").config;
 const URL = process.env.URL;
 
-const hasta = document.querySelector('#hasta')
-const desde = document.querySelector('#desde')
+const hasta = document.querySelector('#hasta');
+const desde = document.querySelector('#desde');
 
 
 const hoy = new Date();
@@ -39,6 +39,17 @@ hasta.addEventListener('keypress',e=>{
         buscar.focus();
     };
 });
+
+const main = async()=>{
+    const desdeFecha = new Date(desde.value);
+    let hastaFecha = DateTime.fromISO(hasta.value).endOf('day');
+    let ventasCanceladas = (await axios.get(`${URL}cancelados/${desdeFecha}/${hastaFecha}`)).data;
+    for await(let venta of ventasCanceladas){
+        listarVentasCanceladas(venta)
+    }
+};
+
+main();
 
 
 buscar.addEventListener('click',async e=>{
@@ -80,9 +91,8 @@ const listarVentasCanceladas = async (venta)=>{
     });
 }
 
-const doc = document
-doc.addEventListener('keydown',e=>{
+document.addEventListener('keydown',e=>{
     if (e.key==="Escape") {
         window.close()
     }
-})
+});

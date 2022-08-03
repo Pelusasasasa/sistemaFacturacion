@@ -310,3 +310,7 @@ hasta.addEventListener('keypress',e=>{
         buscar.focus();
     };
 });
+
+document.addEventListener('keydown',e=>{
+    window.close();
+});

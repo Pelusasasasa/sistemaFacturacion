@@ -31,13 +31,12 @@ desde.value = fechaDeHoy
 hasta.value = fechaDeHoy
 const tbody =  document.querySelector('.tbody')
 let ventas = []
+
 buscar.addEventListener('click',async e=>{
     const desdefecha = new Date(desde.value)
     let hastafecha = DateTime.fromISO(hasta.value).endOf('day');
-    let tickets = await axios.get(`${URL}ventas/${desdefecha}/${hastafecha}`)
-    tickets = tickets.data;
-    let presupuesto = await axios.get(`${URL}presupuesto/${desdefecha}/${hastafecha}`);
-    presupuesto = presupuesto.data;
+    let tickets = (await axios.get(`${URL}ventas/${desdefecha}/${hastafecha}`)).data;
+    let presupuesto = (await axios.get(`${URL}presupuesto/${desdefecha}/${hastafecha}`)).data;
     ventas = [...tickets,...presupuesto];
     contado.focus();
 });
@@ -55,6 +54,21 @@ hasta.addEventListener('keypress',e=>{
     }
 });
 
+
+const inicio = async()=>{
+    const desdefecha = new Date(desde.value)
+    let hastafecha = DateTime.fromISO(hasta.value).endOf('day');
+    let tickets = (await axios.get(`${URL}ventas/${desdefecha}/${hastafecha}`)).data;
+    let presupuesto = (await axios.get(`${URL}presupuesto/${desdefecha}/${hastafecha}`)).data;
+    ventas = [...tickets,...presupuesto];
+    const recibos_P = ventas.filter(venta=>venta.tipo_comp === "Recibos_P");
+    const recibos = ventas.filter(venta=>venta.tipo_comp === "Recbios");
+    const ventasContado = ventas.filter(venta=> venta.tipo_pago == "CD");
+    listarVentas([...recibos_P,...recibos,...ventasContado])
+};
+
+inicio();   
+
 contado.addEventListener('click',e=>{
     const recibos_P = ventas.filter(venta=>venta.tipo_comp === "Recibos_P");
     const recibos = ventas.filter(venta=>venta.tipo_comp === "Recibos");
@@ -62,18 +76,17 @@ contado.addEventListener('click',e=>{
     contado.classList.add('seleccionado');
     cteCorriente.classList.remove('seleccionado');
     listarVentas([...ventasContado,...recibos,...recibos_P]);
-})
+});
 
 cteCorriente.addEventListener('click',e=>{
     const ventasContado = ventas.filter(venta => venta.tipo_pago === "CC")
     cteCorriente.classList.add('seleccionado');
     contado.classList.remove('seleccionado');
     listarVentas(ventasContado);
-})
+});
 
 
 function listarVentas(lista) {
-    console.log(lista)
     tbody.innerHTML = "";
 
     lista.sort((a,b)=>{
