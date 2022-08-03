@@ -67,11 +67,10 @@ const venciCae = document.querySelector('.venciCae');
 
     fecha.innerHTML = `${day}/${month}/${year}`;
     hora.innerHTML = `${hour}:${minuts}:${seconds}`;
-
     nombre.innerHTML = venta.nombreCliente;
-    cuit.innerHTML = venta.dnicuit;
-    condIva.innerHTML = venta.condIva;
-    direccion.innerHTML = venta.direccion;
+    cuit.innerHTML = venta.dnicuit.length === 11 ? `CUIT:${venta.dnicuit}` : `DNI : ${venta.dnicuit}`;
+    condIva.innerHTML = venta.condIva.toUpperCase();
+    direccion.innerHTML = venta.direccion + " - " + venta.localidad;
     venta.numeroAsociado && (numeroAsociado.innerHTML = "Comp Original Nº:" + venta.numeroAsociado);
     
     if (venta.tipo_comp !== "Recibos") {
